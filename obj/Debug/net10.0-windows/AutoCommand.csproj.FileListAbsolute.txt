@@ -8,7 +8,6 @@ C:\Users\honey\AutoCommand\bin\Debug\net10.0-windows\System.ServiceProcess.Servi
 C:\Users\honey\AutoCommand\bin\Debug\net10.0-windows\runtimes\win\lib\net10.0\System.Management.dll
 C:\Users\honey\AutoCommand\bin\Debug\net10.0-windows\runtimes\win\lib\net10.0\System.ServiceProcess.ServiceController.dll
 C:\Users\honey\AutoCommand\obj\Debug\net10.0-windows\AutoCommand.csproj.AssemblyReference.cache
-C:\Users\honey\AutoCommand\obj\Debug\net10.0-windows\Views\ConnectionsView.baml
 C:\Users\honey\AutoCommand\obj\Debug\net10.0-windows\Views\DbxSafetyView.baml
 C:\Users\honey\AutoCommand\obj\Debug\net10.0-windows\Views\HardeningView.baml
 C:\Users\honey\AutoCommand\obj\Debug\net10.0-windows\Views\HibernationView.baml
@@ -33,6 +32,7 @@ C:\Users\honey\AutoCommand\obj\Debug\net10.0-windows\AutoCommand_MarkupCompile.c
 C:\Users\honey\AutoCommand\obj\Debug\net10.0-windows\AutoCommand_MarkupCompile.lref
 C:\Users\honey\AutoCommand\obj\Debug\net10.0-windows\MainWindow.baml
 C:\Users\honey\AutoCommand\obj\Debug\net10.0-windows\Views\CommandPanelView.baml
+C:\Users\honey\AutoCommand\obj\Debug\net10.0-windows\Views\ConnectionsView.baml
 C:\Users\honey\AutoCommand\obj\Debug\net10.0-windows\Views\FirewallSettingsView.baml
 C:\Users\honey\AutoCommand\obj\Debug\net10.0-windows\Views\TasksView.baml
 C:\Users\honey\AutoCommand\obj\Debug\net10.0-windows\AutoCommand.g.resources

@@ -241,13 +241,24 @@ namespace AutoCommand.Views
                 bool isProtected = false;
                 try
                 {
-                    // Native C# Registry read — replaces PowerShell registry query
-                    object value = Registry.GetValue(
-                        @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows Defender\Features",
-                        "TamperProtection", null);
-                    isProtected = value != null && Convert.ToInt32(value) == 5;
+                    // Use WMI to get accurate Defender status since registry is protected
+                    var searcher = new ManagementObjectSearcher(
+                        @"root\Microsoft\Windows\Defender",
+                        "SELECT IsTamperProtected FROM MSFT_MpComputerStatus");
+                    
+                    foreach (ManagementObject obj in searcher.Get())
+                    {
+                        if (obj["IsTamperProtected"] != null && (bool)obj["IsTamperProtected"])
+                        {
+                            isProtected = true;
+                            break;
+                        }
+                    }
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"TamperCheck Error: {ex.Message}");
+                }
 
                 Dispatcher.Invoke(() =>
                 {

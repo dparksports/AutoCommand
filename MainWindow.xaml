@@ -64,9 +64,13 @@
                 </StackPanel>
 
                 <!-- Threat Alert -->
-                <TextBlock x:Name="ThreatAlertText" Grid.Column="1" Text="" 
-                           Foreground="#E5A631" FontSize="11" Margin="20,0" 
-                           VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="20,0">
+                    <TextBlock x:Name="ThreatAlertText" Text="" 
+                               Foreground="#E5A631" FontSize="11" TextTrimming="CharacterEllipsis"/>
+                    <Button x:Name="ReviewAlertBtn" Content="Review" 
+                            Style="{StaticResource PrimaryButton}" Padding="8,2" FontSize="10" Margin="8,0,0,0"
+                            Visibility="Collapsed" Click="ReviewAlertBtn_Click"/>
+                </StackPanel>
 
                 <!-- Version -->
                 <TextBlock Grid.Column="2" Text="AutoCommand v1.0" 

@@ -30,6 +30,16 @@ namespace AutoCommand
             set => _isSstpAllowed = value;
         }
 
+        private static HashSet<string> _whitelistedTasks = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        public static void WhitelistTask(string taskName)
+        {
+            lock (_whitelistedTasks)
+            {
+                _whitelistedTasks.Add(taskName);
+            }
+        }
+
         public void Start()
         {
             if (_isRunning) return;
@@ -230,8 +240,17 @@ namespace AutoCommand
                         if (runLevel == 1)
                         {
                             string name = task.Name;
-                            _onThreatDetected?.Invoke("Privileged Task", $"High Risk Task detected: {name}");
-                            StatusChanged?.Invoke("Warning: Privileged Task", "Amber");
+                            bool isWhitelisted = false;
+                            lock (_whitelistedTasks)
+                            {
+                                if (_whitelistedTasks.Contains(name)) isWhitelisted = true;
+                            }
+
+                            if (!isWhitelisted)
+                            {
+                                _onThreatDetected?.Invoke("Privileged Task", $"High Risk Task detected: {name}");
+                                StatusChanged?.Invoke("Warning: Privileged Task", "Amber");
+                            }
                         }
                     }
                     catch { }

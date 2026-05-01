@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("AutoCommand")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+eb86e0ed0a3003ced0187bc5905821fcbef5c519")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ef09cfe6aa2c627e9c9bb7661cae113a11eef392")]
 [assembly: System.Reflection.AssemblyProductAttribute("AutoCommand")]
 [assembly: System.Reflection.AssemblyTitleAttribute("AutoCommand")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
