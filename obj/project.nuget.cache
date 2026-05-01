@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "oTJ43+162L0=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\honey\\AutoCommand\\AutoCommand.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\honey\\.nuget\\packages\\system.management\\10.0.0-preview.4.25258.110\\system.management.10.0.0-preview.4.25258.110.nupkg.sha512",
+    "C:\\Users\\honey\\.nuget\\packages\\system.serviceprocess.servicecontroller\\10.0.0-preview.4.25258.110\\system.serviceprocess.servicecontroller.10.0.0-preview.4.25258.110.nupkg.sha512"
+  ],
+  "logs": []
+}

@@ -1,0 +1,73 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v10.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v10.0": {
+      "SecurityToolkit/1.0.0": {
+        "dependencies": {
+          "System.Management": "10.0.0-preview.4.25258.110",
+          "System.ServiceProcess.ServiceController": "10.0.0-preview.4.25258.110"
+        },
+        "runtime": {
+          "SecurityToolkit.dll": {}
+        }
+      },
+      "System.Management/10.0.0-preview.4.25258.110": {
+        "runtime": {
+          "lib/net10.0/System.Management.dll": {
+            "assemblyVersion": "10.0.0.0",
+            "fileVersion": "10.0.25.25910"
+          }
+        },
+        "runtimeTargets": {
+          "runtimes/win/lib/net10.0/System.Management.dll": {
+            "rid": "win",
+            "assetType": "runtime",
+            "assemblyVersion": "10.0.0.0",
+            "fileVersion": "10.0.25.25910"
+          }
+        }
+      },
+      "System.ServiceProcess.ServiceController/10.0.0-preview.4.25258.110": {
+        "runtime": {
+          "lib/net10.0/System.ServiceProcess.ServiceController.dll": {
+            "assemblyVersion": "10.0.0.0",
+            "fileVersion": "10.0.25.25910"
+          }
+        },
+        "runtimeTargets": {
+          "runtimes/win/lib/net10.0/System.ServiceProcess.ServiceController.dll": {
+            "rid": "win",
+            "assetType": "runtime",
+            "assemblyVersion": "10.0.0.0",
+            "fileVersion": "10.0.25.25910"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "SecurityToolkit/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "System.Management/10.0.0-preview.4.25258.110": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-yd/BJTd82QIX1UtjUiMvp5K1iDoZPj6i9rOHz5mQrYJCBPEtVqMrpjrrx/6C68j78a4SaDrHbHVT34YqEDny7g==",
+      "path": "system.management/10.0.0-preview.4.25258.110",
+      "hashPath": "system.management.10.0.0-preview.4.25258.110.nupkg.sha512"
+    },
+    "System.ServiceProcess.ServiceController/10.0.0-preview.4.25258.110": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-mTpWzyyVrVoVOYaPG6lzkj0kVYZYZ1cMUQyA4ottEIVLnQP5VxtlYZbiTCi3JkOmkAt+yREHmDniS7G2MWmbxw==",
+      "path": "system.serviceprocess.servicecontroller/10.0.0-preview.4.25258.110",
+      "hashPath": "system.serviceprocess.servicecontroller.10.0.0-preview.4.25258.110.nupkg.sha512"
+    }
+  }
+}

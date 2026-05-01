@@ -1,0 +1,85 @@
+namespace AutoCommand.Models
+{
+    public class ScheduledTaskItem
+    {
+        public string TaskName { get; set; }
+        public string TaskPath { get; set; }
+        public string State { get; set; }
+        public string Action { get; set; }
+        public string User { get; set; }
+    }
+
+    public class NetworkAdapterItem
+    {
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public string Status { get; set; }
+        public string MacAddress { get; set; }
+        public string InterfaceType { get; set; }
+        public string DeviceID { get; set; }
+    }
+
+    public class FirewallRuleItem : System.ComponentModel.INotifyPropertyChanged
+    {
+        public string Name { get; set; }
+        public string DisplayName { get; set; }
+        public string DisplayGroup { get; set; }
+        public string Direction { get; set; }
+        public string Action { get; set; }
+        public string Profile { get; set; }
+        public string Program { get; set; }
+        public string Protocol { get; set; }
+        public string LocalPort { get; set; }
+        public string RemotePort { get; set; }
+        public string RemoteAddress { get; set; }
+
+        private bool _enabled;
+        public bool Enabled
+        {
+            get => _enabled;
+            set
+            {
+                if (_enabled != value)
+                {
+                    _enabled = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(EnabledDisplay));
+                }
+            }
+        }
+
+        public string EnabledDisplay => Enabled ? "Yes" : "No";
+
+        public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
+        protected void OnPropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string name = null)
+        {
+            PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(name));
+        }
+    }
+
+    public class EfiFileResult
+    {
+        public string Status { get; set; }
+        public string Path { get; set; }
+        public System.Windows.Media.Brush StatusColor { get; set; }
+    }
+
+    public class NetworkConnectionItem
+    {
+        public string Protocol { get; set; }
+        public string LocalAddress { get; set; }
+        public string RemoteAddress { get; set; }
+        public string State { get; set; }
+        public int ProcessId { get; set; }
+        public string ProcessName { get; set; }
+    }
+
+    public class StartupItem
+    {
+        public string Name { get; set; }
+        public string Value { get; set; }
+        public string Location { get; set; }
+        public string TargetPath { get; set; }
+    }
+}
+

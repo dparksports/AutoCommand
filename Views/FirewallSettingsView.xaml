@@ -1,0 +1,88 @@
+<UserControl x:Class="AutoCommand.Views.FirewallSettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:converters="clr-namespace:AutoCommand.Converters"
+             Loaded="UserControl_Loaded">
+    <UserControl.Resources>
+        <converters:EnabledToColorConverter x:Key="EnabledColor"/>
+        <converters:ActionToColorConverter x:Key="ActionColor"/>
+    </UserControl.Resources>
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Grid Grid.Row="0" Margin="0,0,0,12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="Firewall Settings" Style="{StaticResource PageHeader}"/>
+
+            <StackPanel Grid.Column="2" Orientation="Horizontal">
+                <ComboBox x:Name="ProfileCombo" Width="140" Margin="0,0,8,0" SelectionChanged="ProfileCombo_SelectionChanged">
+                    <ComboBoxItem Content="Custom" IsSelected="True"/>
+                    <ComboBoxItem Content="Strict Public"/>
+                    <ComboBoxItem Content="Home Trusted"/>
+                    <ComboBoxItem Content="Gaming / Media"/>
+                    <ComboBoxItem Content="Shield Up"/>
+                </ComboBox>
+                <Button Content="↻ Refresh" Style="{StaticResource PrimaryButton}" Click="RefreshBtn_Click" Margin="0,0,8,0"/>
+                <Button Content="Reset Firewall" Style="{StaticResource DangerButton}" Click="ResetBtn_Click"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- Direction Toggle -->
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,12">
+            <RadioButton x:Name="InboundRadio" Content="Inbound Rules" IsChecked="True" 
+                         Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,20,0"
+                         Checked="DirectionChanged"/>
+            <RadioButton x:Name="OutboundRadio" Content="Outbound Rules" 
+                         Foreground="{StaticResource TextPrimaryBrush}"
+                         Checked="DirectionChanged"/>
+            <TextBlock x:Name="RuleCountText" Text="" Foreground="{StaticResource TextSecondaryBrush}" 
+                       Margin="20,0,0,0" VerticalAlignment="Center" FontSize="11"/>
+        </StackPanel>
+
+        <!-- Rules Grid -->
+        <DataGrid Grid.Row="2" x:Name="RulesGrid" SelectionMode="Single">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Enabled" Binding="{Binding EnabledDisplay}" Width="60">
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Foreground" Value="{Binding Enabled, Converter={StaticResource EnabledColor}}"/>
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+                <DataGridTextColumn Header="Name" Binding="{Binding DisplayName}" Width="*"/>
+                <DataGridTextColumn Header="Group" Binding="{Binding DisplayGroup}" Width="150"/>
+                <DataGridTextColumn Header="Action" Binding="{Binding Action}" Width="60">
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Foreground" Value="{Binding Action, Converter={StaticResource ActionColor}}"/>
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+                <DataGridTextColumn Header="Protocol" Binding="{Binding Protocol}" Width="70"/>
+                <DataGridTextColumn Header="Local Port" Binding="{Binding LocalPort}" Width="80"/>
+                <DataGridTextColumn Header="Remote Address" Binding="{Binding RemoteAddress}" Width="120"/>
+                <DataGridTextColumn Header="Profile" Binding="{Binding Profile}" Width="100"/>
+            </DataGrid.Columns>
+            <DataGrid.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Toggle Rule" Click="ToggleRule_Click"/>
+                    <MenuItem Header="Enable Entire Group" Click="EnableGroup_Click"/>
+                    <MenuItem Header="Disable Entire Group" Click="DisableGroup_Click"/>
+                    <Separator/>
+                    <MenuItem Header="Save to Config" Click="SaveToConfig_Click"/>
+                </ContextMenu>
+            </DataGrid.ContextMenu>
+        </DataGrid>
+    </Grid>
+</UserControl>
+
