@@ -14,6 +14,12 @@ namespace AutoCommand
         {
             InitializeComponent();
             InitializeEnforcer();
+            
+            // Fire telemetry app_open event (fire-and-forget)
+            _ = Services.AnalyticsService.Instance.TrackEventAsync("app_open", new Dictionary<string, object>
+            {
+                { "app_version", "3.2" }
+            });
         }
 
         private void InitializeEnforcer()

@@ -21,6 +21,23 @@ namespace AutoCommand.Views
         private async void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
             await CheckStartupTask();
+            
+            // Load Analytics preference
+            AnalyticsCheck.Checked -= AnalyticsCheck_Checked;
+            AnalyticsCheck.Unchecked -= AnalyticsCheck_Unchecked;
+            AnalyticsCheck.IsChecked = AnalyticsService.Instance.IsAnalyticsEnabled;
+            AnalyticsCheck.Checked += AnalyticsCheck_Checked;
+            AnalyticsCheck.Unchecked += AnalyticsCheck_Unchecked;
+        }
+
+        private void AnalyticsCheck_Checked(object sender, RoutedEventArgs e)
+        {
+            AnalyticsService.Instance.IsAnalyticsEnabled = true;
+        }
+
+        private void AnalyticsCheck_Unchecked(object sender, RoutedEventArgs e)
+        {
+            AnalyticsService.Instance.IsAnalyticsEnabled = false;
         }
 
         private async Task CheckStartupTask()
