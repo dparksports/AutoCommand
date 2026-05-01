@@ -29,10 +29,10 @@
 
         <!-- Filter -->
         <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,12">
-            <RadioButton x:Name="AllRadio" Content="All" IsChecked="True" 
+            <RadioButton x:Name="AllRadio" Content="All" 
                          Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,16,0"
                          Checked="FilterChanged"/>
-            <RadioButton x:Name="RunningRadio" Content="Running" 
+            <RadioButton x:Name="RunningRadio" Content="Running" IsChecked="True"
                          Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,16,0"
                          Checked="FilterChanged"/>
             <RadioButton x:Name="ReadyRadio" Content="Ready" 

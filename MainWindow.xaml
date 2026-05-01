@@ -14,35 +14,35 @@
         </Grid.RowDefinitions>
 
         <!-- Main Content -->
-        <TabControl Grid.Row="0" Margin="0" Padding="0">
-            <TabItem Header="⛨  Command Panel">
+        <TabControl Grid.Row="0">
+            <TabItem Header="Command Panel">
                 <views:CommandPanelView x:Name="CommandPanelTab"/>
             </TabItem>
-            <TabItem Header="🛡  Firewall">
+            <TabItem Header="Firewall">
                 <views:FirewallSettingsView x:Name="FirewallTab"/>
             </TabItem>
-            <TabItem Header="📋  Tasks">
+            <TabItem Header="Tasks">
                 <views:TasksView x:Name="TasksTab"/>
             </TabItem>
-            <TabItem Header="🔒  Privacy">
+            <TabItem Header="Privacy">
                 <views:PrivacyView x:Name="PrivacyTab"/>
             </TabItem>
-            <TabItem Header="⏻  Hibernation">
+            <TabItem Header="Hibernation">
                 <views:HibernationView x:Name="HibernationTab"/>
             </TabItem>
-            <TabItem Header="🔐  DBX Safety">
+            <TabItem Header="DBX Safety">
                 <views:DbxSafetyView x:Name="DbxTab"/>
             </TabItem>
-            <TabItem Header="🌐  Connections">
+            <TabItem Header="Connections">
                 <views:ConnectionsView x:Name="ConnectionsTab"/>
             </TabItem>
-            <TabItem Header="🚀  Startup">
+            <TabItem Header="Startup">
                 <views:StartupView x:Name="StartupTab"/>
             </TabItem>
-            <TabItem Header="🛡️  OS Hardening">
+            <TabItem Header="OS Hardening">
                 <views:HardeningView x:Name="HardeningTab"/>
             </TabItem>
-            <TabItem Header="📡  Svchost Monitor">
+            <TabItem Header="Svchost Monitor">
                 <views:SvchostMonitorView x:Name="SvchostTab"/>
             </TabItem>
         </TabControl>

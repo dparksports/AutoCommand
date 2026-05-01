@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Threading;
 using AutoCommand.Helpers;
 using AutoCommand.Models;
 
@@ -13,15 +14,26 @@ namespace AutoCommand.Views
     public partial class ConnectionsView : UserControl
     {
         private List<NetworkConnectionItem> _allConnections = new();
+        private DispatcherTimer _liveTimer;
 
         public ConnectionsView()
         {
             InitializeComponent();
+            _liveTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
+            _liveTimer.Tick += async (s, e) => await LoadConnections();
         }
 
         private async void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
             await LoadConnections();
+        }
+
+        private void LiveViewChanged(object sender, RoutedEventArgs e)
+        {
+            if (LiveViewCheck.IsChecked == true)
+                _liveTimer.Start();
+            else
+                _liveTimer.Stop();
         }
 
         private async void RefreshBtn_Click(object sender, RoutedEventArgs e) => await LoadConnections();
@@ -52,6 +64,7 @@ namespace AutoCommand.Views
 
         private void ApplyFilter()
         {
+            if (TcpRadio == null || ConnectionsGrid == null || ConnectionCountText == null) return;
             IEnumerable<NetworkConnectionItem> filtered = _allConnections;
 
             if (TcpRadio.IsChecked == true)
@@ -60,8 +73,14 @@ namespace AutoCommand.Views
                 filtered = filtered.Where(c => c.Protocol == "UDP");
 
             var list = filtered.OrderBy(c => c.ProcessName).ThenBy(c => c.Protocol).ToList();
-            ConnectionsGrid.ItemsSource = list;
-            ConnectionCountText.Text = $"{list.Count} connections";
+
+            var view = System.Windows.Data.CollectionViewSource.GetDefaultView(list);
+            view.GroupDescriptions.Clear();
+            view.GroupDescriptions.Add(new System.Windows.Data.PropertyGroupDescription("ProcessName"));
+
+            ConnectionsGrid.ItemsSource = view;
+            ConnectionCountText.Text = $"{list.Count} connections " +
+                $"({list.Count(c => c.Protocol == "TCP")} TCP, {list.Count(c => c.Protocol == "UDP")} UDP)";
         }
 
         private async void KillProcess_Click(object sender, RoutedEventArgs e)

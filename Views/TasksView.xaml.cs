@@ -35,6 +35,7 @@ namespace AutoCommand.Views
 
         private void ApplyFilter()
         {
+            if (RunningRadio == null || TasksGrid == null || TaskCountText == null) return;
             IEnumerable<ScheduledTaskItem> filtered = _allTasks;
 
             if (RunningRadio.IsChecked == true)

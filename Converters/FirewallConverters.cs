@@ -87,5 +87,41 @@ namespace AutoCommand.Converters
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
             => throw new NotImplementedException();
     }
+
+    /// <summary>
+    /// Converts empty app names to "All Applications".
+    /// </summary>
+    public class AppNameToDisplayConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            string app = value?.ToString();
+            if (string.IsNullOrWhiteSpace(app) || app == "Any") return "All Applications";
+            return app;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => throw new NotImplementedException();
+    }
+
+    /// <summary>
+    /// Evaluates if a CollectionViewGroup has 5 or fewer items.
+    /// </summary>
+    public class GroupSizeExpanderConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is System.Windows.Data.CollectionViewGroup group)
+            {
+                return group.ItemCount <= 5;
+            }
+            if (value is int count)
+            {
+                return count <= 5;
+            }
+            return false;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => throw new NotImplementedException();
+    }
 }
 

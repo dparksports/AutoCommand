@@ -128,8 +128,11 @@
                             <TextBlock x:Name="TamperStatusText" Text="Checking..." 
                                        Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" Margin="0,8,0,0"/>
                         </StackPanel>
-                        <TextBlock x:Name="TamperIcon" Grid.Column="1" FontSize="24" VerticalAlignment="Center"
-                                   Margin="16,0,0,0"/>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                            <Button x:Name="TamperEnableBtn" Content="Enable in Windows Security"
+                                    Style="{StaticResource PrimaryButton}" Click="TamperEnableBtn_Click" Margin="0,0,16,0"/>
+                            <TextBlock x:Name="TamperIcon" FontSize="24" VerticalAlignment="Center"/>
+                        </StackPanel>
                     </Grid>
                 </Border>
 

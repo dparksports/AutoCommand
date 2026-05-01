@@ -228,8 +228,8 @@ namespace AutoCommand.Views
         {
             Log("\n[3/4] Analyzing bootloader signature...");
 
-            // Look for sigcheck64.exe in common locations
-            string sigcheckPath = FindSigcheck();
+            // Look for sigcheck64.exe in common locations or download it
+            string sigcheckPath = await FindSigcheckAsync();
             if (sigcheckPath == null)
             {
                 SetStatus(SigcheckStatusText, "⚠ sigcheck64.exe not found — skipping Authenticode verification", false);
@@ -272,13 +272,12 @@ namespace AutoCommand.Views
                 Log($"  SHA256 Hash: {sha256Hash}");
         }
 
-        private string FindSigcheck()
+        private async Task<string> FindSigcheckAsync()
         {
             var searchPaths = new[]
             {
                 Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "sigcheck64.exe"),
-                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Sysinternals", "sigcheck64.exe"),
-                @"C:\Users\honey\SystemMonitor\DeviceMonitorCS\sigcheck64.exe"
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Sysinternals", "sigcheck64.exe")
             };
 
             foreach (var p in searchPaths)
@@ -286,7 +285,6 @@ namespace AutoCommand.Views
                 if (File.Exists(p)) return p;
             }
 
-            // Try PATH
             try
             {
                 var result = ProcessRunner.RunWithDetails("where", "sigcheck64.exe");
@@ -294,6 +292,23 @@ namespace AutoCommand.Views
                     return result.Output.Trim().Split('\n')[0].Trim();
             }
             catch { }
+
+            // If not found, try to download it
+            string dest = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "sigcheck64.exe");
+            try
+            {
+                Log("  Downloading sigcheck64.exe from Sysinternals...");
+                using (var client = new System.Net.Http.HttpClient())
+                {
+                    var data = await client.GetByteArrayAsync("https://live.sysinternals.com/sigcheck64.exe");
+                    File.WriteAllBytes(dest, data);
+                }
+                return dest;
+            }
+            catch(Exception ex)
+            {
+                Log($"  Download failed: {ex.Message}");
+            }
 
             return null;
         }
@@ -435,6 +450,7 @@ namespace AutoCommand.Views
                 return;
 
             Log("\nApplying DBX update...");
+            DbxUpdateStatusText.Text = "Installing...";
             var result = await DbxRemediator.InstallUpdateAsync(_downloadedDbxPath);
             if (result.Success)
             {

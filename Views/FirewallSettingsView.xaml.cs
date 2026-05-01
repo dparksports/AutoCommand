@@ -26,20 +26,18 @@ namespace AutoCommand.Views
 
         private async void RefreshBtn_Click(object sender, RoutedEventArgs e) => await LoadRules();
 
-        private async void DirectionChanged(object sender, RoutedEventArgs e) => await LoadRules();
+        private async void FilterChanged(object sender, RoutedEventArgs e) => await LoadRules();
 
         private async Task LoadRules()
         {
             int direction = InboundRadio.IsChecked == true ? 1 : 2;
             _currentRules = await FirewallService.Instance.LoadRulesAsync(direction);
 
-            // Sort by group then name
-            _currentRules = _currentRules
-                .OrderBy(r => r.DisplayGroup)
-                .ThenBy(r => r.DisplayName)
-                .ToList();
+            var view = System.Windows.Data.CollectionViewSource.GetDefaultView(_currentRules);
+            view.GroupDescriptions.Clear();
+            view.GroupDescriptions.Add(new System.Windows.Data.PropertyGroupDescription("DisplayName"));
 
-            RulesGrid.ItemsSource = _currentRules;
+            RulesGrid.ItemsSource = view;
 
             int enabled = _currentRules.Count(r => r.Enabled);
             string dir = direction == 1 ? "Inbound" : "Outbound";
@@ -76,40 +74,21 @@ namespace AutoCommand.Views
                 "Config Saved", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
-        private async void ProfileCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private async void ProfileStrict_Click(object sender, RoutedEventArgs e)
         {
-            if (ProfileCombo.SelectedIndex <= 0) return; // Custom = no action
+            if (MessageBox.Show("Apply 'Strict Public' profile? This will modify firewall rules.",
+                "Confirm", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes) return;
 
-            var profile = ProfileCombo.SelectedIndex switch
-            {
-                1 => FirewallProfileService.ProfileType.StrictPublic,
-                2 => FirewallProfileService.ProfileType.HomeTrusted,
-                3 => FirewallProfileService.ProfileType.GamingMedia,
-                4 => FirewallProfileService.ProfileType.ShieldUp,
-                _ => FirewallProfileService.ProfileType.Custom
-            };
-
-            if (profile == FirewallProfileService.ProfileType.Custom) return;
-
-            string name = ((ComboBoxItem)ProfileCombo.SelectedItem).Content.ToString();
-            if (MessageBox.Show($"Apply '{name}' profile? This will modify firewall rules.",
-                "Confirm", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
-            {
-                ProfileCombo.SelectedIndex = 0;
-                return;
-            }
-
-            await FirewallProfileService.Instance.ApplyProfile(profile);
+            await FirewallProfileService.Instance.ApplyProfile(FirewallProfileService.ProfileType.StrictPublic);
             await LoadRules();
-            ProfileCombo.SelectedIndex = 0;
         }
 
-        private async void ResetBtn_Click(object sender, RoutedEventArgs e)
+        private async void ProfileDefault_Click(object sender, RoutedEventArgs e)
         {
-            if (MessageBox.Show("Reset Windows Firewall to factory defaults?",
-                "Confirm Reset", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes) return;
+            if (MessageBox.Show("Apply 'Home Trusted' profile? This will modify firewall rules.",
+                "Confirm", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes) return;
 
-            await ProcessRunner.RunAsync("netsh", "advfirewall reset");
+            await FirewallProfileService.Instance.ApplyProfile(FirewallProfileService.ProfileType.HomeTrusted);
             await LoadRules();
         }
     }

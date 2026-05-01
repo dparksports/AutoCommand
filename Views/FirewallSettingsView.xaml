@@ -4,8 +4,9 @@
              xmlns:converters="clr-namespace:AutoCommand.Converters"
              Loaded="UserControl_Loaded">
     <UserControl.Resources>
-        <converters:EnabledToColorConverter x:Key="EnabledColor"/>
-        <converters:ActionToColorConverter x:Key="ActionColor"/>
+        <converters:EnabledToColorConverter x:Key="EnabledToColor"/>
+        <converters:ActionToColorConverter x:Key="ActionToColor"/>
+        <converters:GroupSizeExpanderConverter x:Key="GroupSizeExpander"/>
     </UserControl.Resources>
 
     <Grid Margin="20">
@@ -22,40 +23,64 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
-            <TextBlock Text="Firewall Settings" Style="{StaticResource PageHeader}"/>
+            <StackPanel>
+                <TextBlock Text="Advanced Firewall Settings" Style="{StaticResource PageHeader}"/>
+                <TextBlock Text="Manage Windows Defender Firewall profiles and port rules via native COM APIs." 
+                           Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" Margin="0,-12,0,0"/>
+            </StackPanel>
 
-            <StackPanel Grid.Column="2" Orientation="Horizontal">
-                <ComboBox x:Name="ProfileCombo" Width="140" Margin="0,0,8,0" SelectionChanged="ProfileCombo_SelectionChanged">
-                    <ComboBoxItem Content="Custom" IsSelected="True"/>
-                    <ComboBoxItem Content="Strict Public"/>
-                    <ComboBoxItem Content="Home Trusted"/>
-                    <ComboBoxItem Content="Gaming / Media"/>
-                    <ComboBoxItem Content="Shield Up"/>
-                </ComboBox>
-                <Button Content="↻ Refresh" Style="{StaticResource PrimaryButton}" Click="RefreshBtn_Click" Margin="0,0,8,0"/>
-                <Button Content="Reset Firewall" Style="{StaticResource DangerButton}" Click="ResetBtn_Click"/>
+            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                <Button Content="Quick Profile: Strict" Style="{StaticResource DangerButton}" Margin="0,0,8,0" Click="ProfileStrict_Click"/>
+                <Button Content="Quick Profile: Default" Style="{StaticResource PrimaryButton}" Margin="0,0,8,0" Click="ProfileDefault_Click"/>
+                <Button Content="↻ Refresh" Style="{StaticResource PrimaryButton}" Click="RefreshBtn_Click"/>
             </StackPanel>
         </Grid>
 
-        <!-- Direction Toggle -->
+        <!-- View Filter -->
         <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,12">
             <RadioButton x:Name="InboundRadio" Content="Inbound Rules" IsChecked="True" 
-                         Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,20,0"
-                         Checked="DirectionChanged"/>
+                         Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,16,0"
+                         Checked="FilterChanged"/>
             <RadioButton x:Name="OutboundRadio" Content="Outbound Rules" 
-                         Foreground="{StaticResource TextPrimaryBrush}"
-                         Checked="DirectionChanged"/>
+                         Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,16,0"
+                         Checked="FilterChanged"/>
             <TextBlock x:Name="RuleCountText" Text="" Foreground="{StaticResource TextSecondaryBrush}" 
                        Margin="20,0,0,0" VerticalAlignment="Center" FontSize="11"/>
         </StackPanel>
 
         <!-- Rules Grid -->
-        <DataGrid Grid.Row="2" x:Name="RulesGrid" SelectionMode="Single">
+        <DataGrid Grid.Row="2" x:Name="RulesGrid" VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling">
+            <DataGrid.GroupStyle>
+                <GroupStyle>
+                    <GroupStyle.ContainerStyle>
+                        <Style TargetType="{x:Type GroupItem}">
+                            <Setter Property="Margin" Value="0,0,0,4"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="{x:Type GroupItem}">
+                                        <Expander IsExpanded="{Binding Converter={StaticResource GroupSizeExpander}, Mode=OneWay}"
+                                                  Background="{StaticResource SurfaceAltBrush}"
+                                                  BorderBrush="{StaticResource BorderBrush}"
+                                                  BorderThickness="1"
+                                                  Foreground="{StaticResource TextPrimaryBrush}">
+                                            <Expander.Header>
+                                                <TextBlock FontWeight="SemiBold" FontSize="12" Padding="4"
+                                                           Text="{Binding Name, StringFormat='{} {0}'}"/>
+                                            </Expander.Header>
+                                            <ItemsPresenter />
+                                        </Expander>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </GroupStyle.ContainerStyle>
+                </GroupStyle>
+            </DataGrid.GroupStyle>
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Enabled" Binding="{Binding EnabledDisplay}" Width="60">
                     <DataGridTextColumn.ElementStyle>
                         <Style TargetType="TextBlock">
-                            <Setter Property="Foreground" Value="{Binding Enabled, Converter={StaticResource EnabledColor}}"/>
+                            <Setter Property="Foreground" Value="{Binding Enabled, Converter={StaticResource EnabledToColor}}"/>
                         </Style>
                     </DataGridTextColumn.ElementStyle>
                 </DataGridTextColumn>
@@ -64,7 +89,7 @@
                 <DataGridTextColumn Header="Action" Binding="{Binding Action}" Width="60">
                     <DataGridTextColumn.ElementStyle>
                         <Style TargetType="TextBlock">
-                            <Setter Property="Foreground" Value="{Binding Action, Converter={StaticResource ActionColor}}"/>
+                            <Setter Property="Foreground" Value="{Binding Action, Converter={StaticResource ActionToColor}}"/>
                         </Style>
                     </DataGridTextColumn.ElementStyle>
                 </DataGridTextColumn>
