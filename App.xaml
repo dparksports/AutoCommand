@@ -9,15 +9,15 @@
         <!-- ══════════════════════════════════════════════ -->
 
         <!-- Base Colors -->
-        <Color x:Key="BackgroundColor">#0D0D12</Color>
-        <Color x:Key="SurfaceColor">#1E1E24</Color>
-        <Color x:Key="SurfaceAltColor">#2A2A35</Color>
-        <Color x:Key="BorderColor">#4A4A5A</Color>
+        <Color x:Key="BackgroundColor">#0B101E</Color>
+        <Color x:Key="SurfaceColor">#121929</Color>
+        <Color x:Key="SurfaceAltColor">#1A243B</Color>
+        <Color x:Key="BorderColor">#2A3655</Color>
         <Color x:Key="TextPrimaryColor">#FFFFFF</Color>
-        <Color x:Key="TextSecondaryColor">#B0B0C0</Color>
+        <Color x:Key="TextSecondaryColor">#A0ABC0</Color>
 
         <!-- Accent Colors -->
-        <Color x:Key="AccentBlueColor">#4C9EEB</Color>
+        <Color x:Key="AccentBlueColor">#00E5FF</Color>
         <Color x:Key="AccentGreenColor">#4EC96F</Color>
         <Color x:Key="AccentAmberColor">#E5A631</Color>
         <Color x:Key="AccentRedColor">#E5534B</Color>

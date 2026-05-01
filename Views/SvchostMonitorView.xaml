@@ -18,7 +18,7 @@
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             <StackPanel>
-                <TextBlock Text="Ultimate Svchost Monitor" Style="{StaticResource PageHeader}"/>
+                <TextBlock Text="Process Monitor" Style="{StaticResource PageHeader}"/>
                 <TextBlock Text="Native Sysmon Event ID 3 tracing + Raw Socket Packet Sniffer" 
                            Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" Margin="0,-12,0,0"/>
             </StackPanel>
@@ -30,9 +30,18 @@
 
         <!-- Status -->
         <Border Grid.Row="1" Background="{StaticResource SurfaceAltBrush}" CornerRadius="4" Padding="12,8" Margin="0,0,0,12">
-            <StackPanel Orientation="Horizontal">
-                <TextBlock x:Name="MonitorStatusText" Text="Monitor is stopped." Foreground="{StaticResource TextSecondaryBrush}"/>
-            </StackPanel>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock x:Name="MonitorStatusText" Text="Monitor is stopped." Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center"/>
+                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <TextBlock Text="Add Process:" VerticalAlignment="Center" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,8,0"/>
+                    <TextBox x:Name="NewProcessBox" Width="150" Padding="4" Background="{StaticResource SurfaceBrush}" Foreground="{StaticResource TextPrimaryBrush}" BorderBrush="{StaticResource BorderBrush}"/>
+                    <Button Content="Add" Click="AddProcessBtn_Click" Margin="8,0,0,0" Padding="12,2" Style="{StaticResource PrimaryButton}"/>
+                </StackPanel>
+            </Grid>
         </Border>
 
         <!-- Connections Grid -->

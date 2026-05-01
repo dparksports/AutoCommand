@@ -42,6 +42,9 @@ namespace AutoCommand.Views
             // Setup auto-save every 1 hour
             _saveTimer = new DispatcherTimer { Interval = TimeSpan.FromHours(1) };
             _saveTimer.Tick += (s, args) => SaveToCsv();
+
+            // Auto-start monitor on load
+            ToggleMonitorBtn_Click(null, null);
         }
 
         private void ShowError(string msg)
@@ -80,6 +83,22 @@ namespace AutoCommand.Views
                 MonitorStatusText.Text = "Monitor is stopped.";
                 _isMonitoring = false;
             }
+        }
+
+        private void AddProcessBtn_Click(object sender, RoutedEventArgs e)
+        {
+            string procName = NewProcessBox.Text.Trim();
+            if (string.IsNullOrEmpty(procName)) return;
+
+            // Ensure it ends with .exe for the internal filter
+            if (!procName.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+            {
+                procName += ".exe";
+            }
+
+            _sysmonService.AddTargetProcess(procName);
+            NewProcessBox.Clear();
+            MessageBox.Show($"Added {procName} to tracking list.", "Process Added", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         private void SaveCsvBtn_Click(object sender, RoutedEventArgs e)

@@ -21,9 +21,19 @@ namespace AutoCommand.Services
         public event Action<string> OnError;
         public event Action<SvchostMonitorItem> OnNewConnectionTracked;
 
+        private readonly ConcurrentBag<string> _targetProcesses = new ConcurrentBag<string> { "svchost.exe" };
+
         public SysmonWatcherService(ConcurrentDictionary<string, SvchostMonitorItem> trackedIps)
         {
             _trackedIps = trackedIps;
+        }
+
+        public void AddTargetProcess(string processName)
+        {
+            if (!_targetProcesses.Contains(processName, StringComparer.OrdinalIgnoreCase))
+            {
+                _targetProcesses.Add(processName);
+            }
         }
 
         public void Start()
@@ -82,8 +92,18 @@ namespace AutoCommand.Services
                     else if (name == "DestinationHostname") destHost = data.Value;
                 }
 
-                // Only monitor svchost.exe
-                if (!image.EndsWith("svchost.exe", StringComparison.OrdinalIgnoreCase)) return;
+                // Monitor target processes
+                bool isTarget = false;
+                foreach (var target in _targetProcesses)
+                {
+                    if (image.EndsWith(target, StringComparison.OrdinalIgnoreCase))
+                    {
+                        isTarget = true;
+                        break;
+                    }
+                }
+                
+                if (!isTarget) return;
 
                 if (string.IsNullOrEmpty(destIp) || IsPrivateIp(destIp) || IsKnownCloudIp(destIp)) return;
 

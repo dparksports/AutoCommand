@@ -14,41 +14,121 @@
         </Grid.RowDefinitions>
 
         <!-- Main Content -->
-        <TabControl Grid.Row="0">
-            <TabItem Header="Command Panel">
+        <TabControl Grid.Row="0" TabStripPlacement="Left">
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Width="160" Margin="0,10">
+                        <TextBlock Text="🏠" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                        <TextBlock Text="Dashboard" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </TabItem.Header>
                 <views:CommandPanelView x:Name="CommandPanelTab"/>
             </TabItem>
-            <TabItem Header="Firewall">
+            
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Width="160" Margin="0,10">
+                        <TextBlock Text="🛡" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                        <TextBlock Text="Security" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <!-- Grouping multiple security views into one layout would be complex, keeping them separate but reordered for now -->
                 <views:FirewallSettingsView x:Name="FirewallTab"/>
             </TabItem>
-            <TabItem Header="Tasks">
-                <views:TasksView x:Name="TasksTab"/>
-            </TabItem>
-            <TabItem Header="Privacy">
+
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Width="160" Margin="0,10">
+                        <TextBlock Text="👁" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                        <TextBlock Text="Privacy" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </TabItem.Header>
                 <views:PrivacyView x:Name="PrivacyTab"/>
             </TabItem>
-            <TabItem Header="Hibernation">
-                <views:HibernationView x:Name="HibernationTab"/>
-            </TabItem>
-            <TabItem Header="DBX Safety">
-                <views:DbxSafetyView x:Name="DbxTab"/>
-            </TabItem>
-            <TabItem Header="Connections">
-                <views:ConnectionsView x:Name="ConnectionsTab"/>
-            </TabItem>
-            <TabItem Header="Startup">
-                <views:StartupView x:Name="StartupTab"/>
-            </TabItem>
-            <TabItem Header="OS Hardening">
+            
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Width="160" Margin="0,10">
+                        <TextBlock Text="🔒" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                        <TextBlock Text="OS Hardening" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </TabItem.Header>
                 <views:HardeningView x:Name="HardeningTab"/>
             </TabItem>
-            <TabItem Header="Svchost Monitor">
+
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Width="160" Margin="0,10">
+                        <TextBlock Text="✅" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                        <TextBlock Text="DBX Safety" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <views:DbxSafetyView x:Name="DbxTab"/>
+            </TabItem>
+
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Width="160" Margin="0,10">
+                        <TextBlock Text="🌐" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                        <TextBlock Text="Connections" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <views:ConnectionsView x:Name="ConnectionsTab"/>
+            </TabItem>
+
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Width="160" Margin="0,10">
+                        <TextBlock Text="🔍" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                        <TextBlock Text="Process Monitor" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </TabItem.Header>
                 <views:SvchostMonitorView x:Name="SvchostTab"/>
+            </TabItem>
+
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Width="160" Margin="0,10">
+                        <TextBlock Text="📋" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                        <TextBlock Text="Tasks" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <views:TasksView x:Name="TasksTab"/>
+            </TabItem>
+
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Width="160" Margin="0,10">
+                        <TextBlock Text="🚀" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                        <TextBlock Text="Startup" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <views:StartupView x:Name="StartupTab"/>
+            </TabItem>
+
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Width="160" Margin="0,10">
+                        <TextBlock Text="🌙" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                        <TextBlock Text="Hibernation" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <views:HibernationView x:Name="HibernationTab"/>
+            </TabItem>
+
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Width="160" Margin="0,10">
+                        <TextBlock Text="⚙" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                        <TextBlock Text="Settings" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <views:SettingsView x:Name="SettingsTab"/>
             </TabItem>
         </TabControl>
 
         <!-- Status Bar -->
-        <Border Grid.Row="1" Background="#18181B" BorderBrush="#3F3F46" BorderThickness="0,1,0,0" Padding="12,6">
+        <Border Grid.Row="1" Background="#0B101E" BorderBrush="#1F2937" BorderThickness="0,1,0,0" Padding="12,6">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -58,7 +138,7 @@
 
                 <!-- Enforcer Status -->
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Ellipse x:Name="EnforcerDot" Width="8" Height="8" Fill="#4EC96F" Margin="0,0,8,0"/>
+                    <Ellipse x:Name="EnforcerDot" Width="8" Height="8" Fill="#00E5FF" Margin="0,0,8,0"/>
                     <TextBlock x:Name="EnforcerStatusText" Text="Security Enforcer: Active" 
                                Foreground="#9D9DA5" FontSize="11"/>
                 </StackPanel>
@@ -73,7 +153,7 @@
                 </StackPanel>
 
                 <!-- Version -->
-                <TextBlock Grid.Column="2" Text="AutoCommand v1.0" 
+                <TextBlock Grid.Column="2" Text="AutoCommand v3.2" 
                            Foreground="#5A5A62" FontSize="10" VerticalAlignment="Center"/>
             </Grid>
         </Border>
