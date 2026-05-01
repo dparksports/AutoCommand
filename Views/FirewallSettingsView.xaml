@@ -77,15 +77,14 @@
                 </GroupStyle>
             </DataGrid.GroupStyle>
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Enabled" Binding="{Binding EnabledDisplay}" Width="60">
+                <DataGridTextColumn Header="Enabled" Binding="{Binding EnabledDisplay}" Width="70">
                     <DataGridTextColumn.ElementStyle>
                         <Style TargetType="TextBlock">
                             <Setter Property="Foreground" Value="{Binding Enabled, Converter={StaticResource EnabledToColor}}"/>
+                            <Setter Property="FontWeight" Value="SemiBold"/>
                         </Style>
                     </DataGridTextColumn.ElementStyle>
                 </DataGridTextColumn>
-                <DataGridTextColumn Header="Name" Binding="{Binding DisplayName}" Width="*"/>
-                <DataGridTextColumn Header="Group" Binding="{Binding DisplayGroup}" Width="150"/>
                 <DataGridTextColumn Header="Action" Binding="{Binding Action}" Width="60">
                     <DataGridTextColumn.ElementStyle>
                         <Style TargetType="TextBlock">
@@ -93,6 +92,8 @@
                         </Style>
                     </DataGridTextColumn.ElementStyle>
                 </DataGridTextColumn>
+                <DataGridTextColumn Header="Name" Binding="{Binding DisplayName}" Width="*"/>
+                <DataGridTextColumn Header="Group" Binding="{Binding DisplayGroup}" Width="150"/>
                 <DataGridTextColumn Header="Protocol" Binding="{Binding Protocol}" Width="70"/>
                 <DataGridTextColumn Header="Local Port" Binding="{Binding LocalPort}" Width="80"/>
                 <DataGridTextColumn Header="Remote Address" Binding="{Binding RemoteAddress}" Width="120"/>
