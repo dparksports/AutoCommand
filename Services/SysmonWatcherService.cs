@@ -12,6 +12,7 @@ namespace AutoCommand.Services
     {
         private EventLogWatcher _watcher;
         private readonly ConcurrentDictionary<string, SvchostMonitorItem> _trackedIps;
+        private readonly ConcurrentDictionary<string, string> _dnsCache = new ConcurrentDictionary<string, string>();
         
         // Same regex from monitor_ultimate.py
         private static readonly Regex KnownDomainsRegex = new Regex(
@@ -105,16 +106,21 @@ namespace AutoCommand.Services
                 
                 if (!isTarget) return;
 
-                if (string.IsNullOrEmpty(destIp) || IsPrivateIp(destIp) || IsKnownCloudIp(destIp)) return;
+                if (string.IsNullOrEmpty(destIp) || IsIgnoredIp(destIp) || IsKnownCloudIp(destIp)) return;
 
                 if (string.IsNullOrEmpty(destHost) || destHost == "-")
                 {
-                    try
+                    if (!_dnsCache.TryGetValue(destIp, out destHost))
                     {
-                        var entry = Dns.GetHostEntry(destIp);
-                        destHost = entry.HostName;
+                        try
+                        {
+                            var entry = Dns.GetHostEntry(destIp);
+                            destHost = entry.HostName;
+                        }
+                        catch { destHost = "UNKNOWN"; }
+                        
+                        _dnsCache[destIp] = destHost;
                     }
-                    catch { destHost = "UNKNOWN"; }
                 }
 
                 if (!KnownDomainsRegex.IsMatch(destHost))
@@ -139,14 +145,22 @@ namespace AutoCommand.Services
             catch { }
         }
 
-        private static bool IsPrivateIp(string ipStr)
+        private static bool IsIgnoredIp(string ipStr)
         {
             if (ipStr.StartsWith("127.") || ipStr == "::1") return true;
             if (ipStr.StartsWith("192.168.") || ipStr.StartsWith("10.")) return true;
+            if (ipStr == "255.255.255.255") return true;
             
             var parts = ipStr.Split('.');
-            if (parts.Length == 4 && parts[0] == "172" && int.TryParse(parts[1], out int p2) && p2 >= 16 && p2 <= 31)
-                return true;
+            if (parts.Length == 4)
+            {
+                if (parts[0] == "172" && int.TryParse(parts[1], out int p2) && p2 >= 16 && p2 <= 31)
+                    return true;
+                
+                // Multicast 224.0.0.0 - 239.255.255.255
+                if (int.TryParse(parts[0], out int p1) && p1 >= 224 && p1 <= 239)
+                    return true;
+            }
             
             return false;
         }
