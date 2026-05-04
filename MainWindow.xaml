@@ -19,7 +19,7 @@
                 <TabItem.Header>
                     <StackPanel Width="160" Margin="0,10">
                         <TextBlock Text="🏠" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,4"/>
-                        <TextBlock Text="Dashboard" HorizontalAlignment="Center"/>
+                        <TextBlock Text="Command Panel" HorizontalAlignment="Center"/>
                     </StackPanel>
                 </TabItem.Header>
                 <views:CommandPanelView x:Name="CommandPanelTab"/>

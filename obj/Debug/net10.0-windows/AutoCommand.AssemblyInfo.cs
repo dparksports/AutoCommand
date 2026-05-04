@@ -12,11 +12,11 @@ using System.Reflection;
 
 [assembly: System.Reflection.AssemblyCompanyAttribute("AutoCommand")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
-[assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+569d16fa21e0ea4278a85bc642eb898b4410702c")]
+[assembly: System.Reflection.AssemblyFileVersionAttribute("3.3.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("3.3.0+548c9ed0517c33ea6eb971a504a67d3295c8d322")]
 [assembly: System.Reflection.AssemblyProductAttribute("AutoCommand")]
 [assembly: System.Reflection.AssemblyTitleAttribute("AutoCommand")]
-[assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
+[assembly: System.Reflection.AssemblyVersionAttribute("3.3.0.0")]
 [assembly: System.Runtime.Versioning.TargetPlatformAttribute("Windows7.0")]
 [assembly: System.Runtime.Versioning.SupportedOSPlatformAttribute("Windows7.0")]
 

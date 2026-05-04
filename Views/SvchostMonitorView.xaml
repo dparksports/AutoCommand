@@ -47,13 +47,14 @@
         <!-- Connections Grid -->
         <DataGrid Grid.Row="2" x:Name="SvchostGrid" SelectionMode="Single">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="PID" Binding="{Binding ProcessId}" Width="60"/>
+                <DataGridTextColumn Header="Process" Binding="{Binding ProcessDisplay}" Width="160"/>
                 <DataGridTextColumn Header="Remote IP" Binding="{Binding RemoteIp}" Width="120"/>
                 <DataGridTextColumn Header="Host" Binding="{Binding Hostname}" Width="200"/>
                 <DataGridTextColumn Header="Rx Pkts" Binding="{Binding RxPackets}" Width="80"/>
                 <DataGridTextColumn Header="Tx Pkts" Binding="{Binding TxPackets}" Width="80"/>
                 <DataGridTextColumn Header="Rx Bytes" Binding="{Binding RxBytesDisplay}" Width="90"/>
                 <DataGridTextColumn Header="Tx Bytes" Binding="{Binding TxBytesDisplay}" Width="90"/>
+                <DataGridTextColumn Header="Last Packet" Binding="{Binding LastSeenDisplay}" Width="100"/>
             </DataGrid.Columns>
         </DataGrid>
     </Grid>

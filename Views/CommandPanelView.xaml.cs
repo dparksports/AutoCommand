@@ -39,6 +39,26 @@ namespace AutoCommand.Views
                 LoadWifiDirectAdapters(),
                 LoadKdnetAdapters()
             );
+
+            // Sync button label to actual service state after any refresh
+            UpdateSstpButtonLabel();
+        }
+
+        private void UpdateSstpButtonLabel()
+        {
+            try
+            {
+                using var sc = new ServiceController("SstpSvc");
+                bool active = sc.Status == ServiceControllerStatus.Running
+                           || sc.Status == ServiceControllerStatus.StartPending;
+                SstpToggleBtn.Content = active
+                    ? "Disable + Neuter Miniports"
+                    : "Re-enable Service & Miniports";
+            }
+            catch
+            {
+                SstpToggleBtn.Content = "Toggle SSTP";
+            }
         }
 
         // ── SSTP ──
@@ -64,25 +84,51 @@ namespace AutoCommand.Views
 
         private async void SstpToggleBtn_Click(object sender, RoutedEventArgs e)
         {
+            SstpToggleBtn.IsEnabled = false;
             try
             {
+                bool isRunning;
                 using (var sc = new ServiceController("SstpSvc"))
+                    isRunning = sc.Status == ServiceControllerStatus.Running
+                             || sc.Status == ServiceControllerStatus.StartPending;
+
+                if (isRunning)
                 {
-                    if (sc.Status == ServiceControllerStatus.Running)
+                    // ── DISABLE path ──
+                    if (MessageBox.Show(
+                        "This will stop the SSTP service and disable all VPN miniport adapters (SSTP, IKEv2, L2TP, PPTP, AgileVPN, NDISWAN).\n\nYou can re-enable them at any time with the same button.",
+                        "Disable SSTP & Miniports", MessageBoxButton.OKCancel, MessageBoxImage.Warning) != MessageBoxResult.OK)
+                        return;
+
+                    await Task.Run(() =>
                     {
-                        await Task.Run(() => ServiceHelper.StopAndDisable("SstpSvc"));
-                    }
-                    else
+                        ServiceHelper.StopAndDisable("SstpSvc");
+                        WanMiniportRemover.SetSstpMiniportsEnabled(false);
+                    });
+
+                    SstpToggleBtn.Content = "Re-enable Service & Miniports";
+                }
+                else
+                {
+                    // ── ENABLE path ──
+                    await Task.Run(() =>
                     {
-                        await Task.Run(() => ServiceHelper.EnableAndStart("SstpSvc"));
-                    }
+                        WanMiniportRemover.SetSstpMiniportsEnabled(true);
+                        ServiceHelper.EnableAndStart("SstpSvc");
+                    });
+
+                    SstpToggleBtn.Content = "Disable + Neuter Miniports";
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error toggling SSTP: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show($"Error: {ex.Message}", "SSTP Toggle", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
-            await LoadSstpStatus();
+            finally
+            {
+                SstpToggleBtn.IsEnabled = true;
+                await Task.WhenAll(LoadSstpStatus(), LoadWanMiniports());
+            }
         }
 
         // ── WiFi Direct ──

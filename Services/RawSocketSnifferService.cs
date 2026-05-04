@@ -104,6 +104,7 @@ namespace AutoCommand.Services
                 {
                     dstItem.TxPackets++;
                     dstItem.TxBytes += length;
+                    dstItem.LastSeen = DateTime.UtcNow; // track when we last sent a packet
                 }
             }
             catch { }

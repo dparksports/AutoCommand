@@ -53,7 +53,7 @@
                                 <TextBlock x:Name="SstpStatusText" Text="Loading..." 
                                            Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" Margin="0,2,0,0"/>
                             </StackPanel>
-                            <Button x:Name="SstpToggleBtn" Grid.Column="1" Content="Toggle" 
+                            <Button x:Name="SstpToggleBtn" Grid.Column="1" Content="Disable + Neuter Miniports" 
                                     Style="{StaticResource PrimaryButton}" Click="SstpToggleBtn_Click"/>
                         </Grid>
                     </Border>

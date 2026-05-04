@@ -6,7 +6,7 @@
   "compilationOptions": {},
   "targets": {
     ".NETCoreApp,Version=v10.0": {
-      "AutoCommand/1.0.0": {
+      "AutoCommand/3.3.0": {
         "dependencies": {
           "System.Management": "10.0.0-preview.4.25258.110",
           "System.ServiceProcess.ServiceController": "10.0.0-preview.4.25258.110"
@@ -50,7 +50,7 @@
     }
   },
   "libraries": {
-    "AutoCommand/1.0.0": {
+    "AutoCommand/3.3.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

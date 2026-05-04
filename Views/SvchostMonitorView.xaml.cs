@@ -21,6 +21,7 @@ namespace AutoCommand.Views
         private RawSocketSnifferService _snifferService;
         private bool _isMonitoring = false;
         private DispatcherTimer _saveTimer;
+        private DispatcherTimer _lastSeenRefreshTimer;
         private readonly string _csvPath = "ultimate_autopilot_stats.csv";
 
         public SvchostMonitorView()
@@ -29,8 +30,13 @@ namespace AutoCommand.Views
             SvchostGrid.ItemsSource = _uiCollection;
         }
 
+        private bool _isInitialized = false;
+
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
+            if (_isInitialized) return;
+            _isInitialized = true;
+
             _sysmonService = new SysmonWatcherService(_trackedIps);
             _snifferService = new RawSocketSnifferService(_trackedIps);
 
@@ -42,6 +48,15 @@ namespace AutoCommand.Views
             // Setup auto-save every 1 hour
             _saveTimer = new DispatcherTimer { Interval = TimeSpan.FromHours(1) };
             _saveTimer.Tick += (s, args) => SaveToCsv();
+
+            // Refresh relative "Last Packet" column every 10 seconds
+            _lastSeenRefreshTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(10) };
+            _lastSeenRefreshTimer.Tick += (s, args) =>
+            {
+                foreach (var item in _uiCollection)
+                    item.RefreshLastSeenDisplay();
+            };
+            _lastSeenRefreshTimer.Start();
 
             // Auto-start monitor on load
             ToggleMonitorBtn_Click(null, null);
@@ -116,7 +131,7 @@ namespace AutoCommand.Views
                 
                 if (writeHeader)
                 {
-                    writer.WriteLine("Timestamp,PID,RemoteIP,Host,RxPackets,TxPackets,RxBytes,TxBytes");
+                    writer.WriteLine("Timestamp,PID,ProcessName,RemoteIP,Host,RxPackets,TxPackets,RxBytes,TxBytes,LastSeen");
                 }
 
                 string ts = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
@@ -124,7 +139,7 @@ namespace AutoCommand.Views
                 
                 foreach (var item in snap)
                 {
-                    writer.WriteLine($"{ts},{item.ProcessId},{item.RemoteIp},{item.Hostname},{item.RxPackets},{item.TxPackets},{item.RxBytes},{item.TxBytes}");
+                    writer.WriteLine($"{ts},{item.ProcessId},{item.ProcessName},{item.RemoteIp},{item.Hostname},{item.RxPackets},{item.TxPackets},{item.RxBytes},{item.TxBytes},{item.LastSeen:u}");
                 }
             }
             catch (Exception ex)

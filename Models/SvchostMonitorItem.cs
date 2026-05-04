@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
@@ -9,10 +10,44 @@ namespace AutoCommand.Models
         private long _txPackets;
         private long _rxBytes;
         private long _txBytes;
+        private DateTime _lastSeen;
+        private string _processName;
 
         public int ProcessId { get; set; }
         public string RemoteIp { get; set; }
         public string Hostname { get; set; }
+
+        public string ProcessName
+        {
+            get => _processName;
+            set { _processName = value; OnPropertyChanged(); OnPropertyChanged(nameof(ProcessDisplay)); }
+        }
+
+        /// <summary>Last time a Tx packet was seen for this remote IP.</summary>
+        public DateTime LastSeen
+        {
+            get => _lastSeen;
+            set { _lastSeen = value; OnPropertyChanged(); OnPropertyChanged(nameof(LastSeenDisplay)); }
+        }
+
+        /// <summary>Friendly display: "PID (name)" or just "PID" if name is unknown.</summary>
+        public string ProcessDisplay => string.IsNullOrEmpty(ProcessName)
+            ? ProcessId.ToString()
+            : $"{ProcessId} ({ProcessName})";
+
+        /// <summary>Human-readable last-seen time.</summary>
+        public string LastSeenDisplay
+        {
+            get
+            {
+                if (_lastSeen == default) return "—";
+                var age = DateTime.UtcNow - _lastSeen;
+                if (age.TotalSeconds < 5)  return "just now";
+                if (age.TotalSeconds < 60) return $"{(int)age.TotalSeconds}s ago";
+                if (age.TotalMinutes < 60) return $"{(int)age.TotalMinutes}m ago";
+                return _lastSeen.ToLocalTime().ToString("HH:mm:ss");
+            }
+        }
 
         public long RxPackets
         {
@@ -42,6 +77,13 @@ namespace AutoCommand.Models
         public string TxBytesDisplay => FormatBytes(TxBytes);
 
         public event PropertyChangedEventHandler PropertyChanged;
+
+        /// <summary>
+        /// Called by the UI refresh timer to re-evaluate the relative "Xs ago" text
+        /// without needing to mutate LastSeen itself.
+        /// </summary>
+        public void RefreshLastSeenDisplay() =>
+            OnPropertyChanged(nameof(LastSeenDisplay));
 
         protected void OnPropertyChanged([CallerMemberName] string name = null)
         {

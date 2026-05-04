@@ -129,13 +129,13 @@
     "C:\\Users\\honey\\.nuget\\packages\\": {}
   },
   "project": {
-    "version": "1.0.0",
+    "version": "3.3.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\honey\\AutoCommand\\AutoCommand.csproj",
+      "projectUniqueName": "c:\\Users\\honey\\AutoCommand\\AutoCommand.csproj",
       "projectName": "AutoCommand",
-      "projectPath": "C:\\Users\\honey\\AutoCommand\\AutoCommand.csproj",
+      "projectPath": "c:\\Users\\honey\\AutoCommand\\AutoCommand.csproj",
       "packagesPath": "C:\\Users\\honey\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\honey\\AutoCommand\\obj\\",
+      "outputPath": "c:\\Users\\honey\\AutoCommand\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\honey\\AppData\\Roaming\\NuGet\\NuGet.Config"

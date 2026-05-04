@@ -1,8 +1,12 @@
 using System;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Diagnostics.Eventing.Reader;
 using System.Net;
+using System.Net.Http;
+using System.Text.Json;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 using AutoCommand.Models;
 
@@ -12,8 +16,21 @@ namespace AutoCommand.Services
     {
         private EventLogWatcher _watcher;
         private readonly ConcurrentDictionary<string, SvchostMonitorItem> _trackedIps;
-        private readonly ConcurrentDictionary<string, string> _dnsCache = new ConcurrentDictionary<string, string>();
-        
+
+        // DNS cache entry: hostname + the time it was resolved
+        private readonly ConcurrentDictionary<string, (string Host, DateTime ResolvedAt)> _dnsCache
+            = new ConcurrentDictionary<string, (string, DateTime)>();
+
+        // Geo-IP cache: friendly org/country label per IP
+        private readonly ConcurrentDictionary<string, (string Label, DateTime ResolvedAt)> _geoCache
+            = new ConcurrentDictionary<string, (string, DateTime)>();
+
+        // Shared HttpClient — never dispose; one instance for the lifetime of the service
+        private static readonly HttpClient _http = new HttpClient { Timeout = TimeSpan.FromSeconds(4) };
+
+        // How long we trust a cached DNS or geo result
+        private static readonly TimeSpan DnsCacheTtl = TimeSpan.FromMinutes(30);
+
         // Same regex from monitor_ultimate.py
         private static readonly Regex KnownDomainsRegex = new Regex(
             @"(?i)(microsoft|windows|azure|msedge|trafficmanager|google|1e100|googleapis|bing|live|office|skype|msn|azureedge)",
@@ -103,65 +120,192 @@ namespace AutoCommand.Services
                         break;
                     }
                 }
-                
-                if (!isTarget) return;
 
+                if (!isTarget) return;
                 if (string.IsNullOrEmpty(destIp) || IsIgnoredIp(destIp) || IsKnownCloudIp(destIp)) return;
 
-                if (string.IsNullOrEmpty(destHost) || destHost == "-")
-                {
-                    if (!_dnsCache.TryGetValue(destIp, out destHost))
-                    {
-                        try
-                        {
-                            var entry = Dns.GetHostEntry(destIp);
-                            destHost = entry.HostName;
-                        }
-                        catch { destHost = "UNKNOWN"; }
-                        
-                        _dnsCache[destIp] = destHost;
-                    }
-                }
+                // Resolve process name from PID
+                int pid = int.TryParse(processId, out int p) ? p : 0;
+                string processName = ResolveProcessName(pid);
 
-                if (!KnownDomainsRegex.IsMatch(destHost))
-                {
-                    if (!_trackedIps.ContainsKey(destIp))
-                    {
-                        var item = new SvchostMonitorItem
-                        {
-                            ProcessId = int.TryParse(processId, out int pid) ? pid : 0,
-                            RemoteIp = destIp,
-                            Hostname = destHost,
-                            RxBytes = 0, TxBytes = 0, RxPackets = 0, TxPackets = 0
-                        };
+                if (_trackedIps.ContainsKey(destIp)) return; // Already tracked — DNS will update async
 
-                        if (_trackedIps.TryAdd(destIp, item))
-                        {
-                            OnNewConnectionTracked?.Invoke(item);
-                        }
+                // Fire async DNS resolution so we don't block the Sysmon event thread
+                _ = Task.Run(async () =>
+                {
+                    string resolvedHost = await ResolveDnsAsync(destIp, destHost);
+
+                    if (KnownDomainsRegex.IsMatch(resolvedHost)) return; // Filtered after resolution
+
+                    var item = new SvchostMonitorItem
+                    {
+                        ProcessId = pid,
+                        ProcessName = processName,
+                        RemoteIp = destIp,
+                        Hostname = resolvedHost,
+                        RxBytes = 0, TxBytes = 0, RxPackets = 0, TxPackets = 0
+                    };
+
+                    if (_trackedIps.TryAdd(destIp, item))
+                    {
+                        OnNewConnectionTracked?.Invoke(item);
                     }
-                }
+                });
             }
             catch { }
         }
+
+        // -----------------------------------------------------------------------
+        // Process name resolution
+        // -----------------------------------------------------------------------
+
+        /// <summary>
+        /// Looks up the process name for a given PID.
+        /// Returns empty string if the process has already exited or access is denied.
+        /// </summary>
+        private static string ResolveProcessName(int pid)
+        {
+            if (pid <= 0) return string.Empty;
+            try
+            {
+                return Process.GetProcessById(pid).ProcessName;
+            }
+            catch
+            {
+                // Process has already exited, or we don't have access (e.g. System/Idle)
+                return string.Empty;
+            }
+        }
+
+        // -----------------------------------------------------------------------
+        // Async DNS resolution with TTL-based caching
+        // -----------------------------------------------------------------------
+
+        /// <summary>
+        /// Returns a hostname for <paramref name="destIp"/>.
+        /// Priority: Sysmon-provided host → cache (if fresh) → reverse DNS lookup.
+        /// "UNKNOWN" results are cached but expire after <see cref="DnsCacheTtl"/> so
+        /// transient failures are automatically retried.
+        /// </summary>
+        private async Task<string> ResolveDnsAsync(string destIp, string sysmonHost)
+        {
+            // Sysmon already gave us a real hostname — cache it and return
+            if (!string.IsNullOrEmpty(sysmonHost) && sysmonHost != "-")
+            {
+                _dnsCache[destIp] = (sysmonHost, DateTime.UtcNow);
+                return sysmonHost;
+            }
+
+            // Check cache — return if the entry is still fresh
+            if (_dnsCache.TryGetValue(destIp, out var cached))
+            {
+                bool stale = (DateTime.UtcNow - cached.ResolvedAt) > DnsCacheTtl;
+                if (!stale)
+                    return cached.Host;
+                // Stale → fall through to a fresh lookup below
+            }
+
+            // Perform async reverse DNS lookup
+            string resolved;
+            try
+            {
+                var entry = await Dns.GetHostEntryAsync(destIp);
+                resolved = string.IsNullOrEmpty(entry.HostName) ? destIp : entry.HostName;
+            }
+            catch
+            {
+                resolved = destIp; // DNS failed — will try geo-IP below
+            }
+
+            // If DNS only gave us the raw IP back, enrich with geo-IP org + country
+            // so non-technical users see e.g. "Comcast Cable · US" instead of "203.45.67.89"
+            if (resolved == destIp)
+            {
+                string geoLabel = await GeoIpLookupAsync(destIp);
+                if (!string.IsNullOrEmpty(geoLabel))
+                    resolved = geoLabel;
+            }
+
+            _dnsCache[destIp] = (resolved, DateTime.UtcNow);
+            return resolved;
+        }
+
+        // -----------------------------------------------------------------------
+        // Geo-IP lookup (ip-api.com — free, no key, 1 000 req/min)
+        // -----------------------------------------------------------------------
+
+        /// <summary>
+        /// Calls ip-api.com to get the ISP/org and country for an IP address.
+        /// Returns a friendly label like "Comcast Cable Communications · US",
+        /// or an empty string if the lookup fails.
+        /// Results are cached for <see cref="DnsCacheTtl"/> to avoid hammering the API.
+        /// </summary>
+        private async Task<string> GeoIpLookupAsync(string ip)
+        {
+            // Check geo cache first
+            if (_geoCache.TryGetValue(ip, out var geo))
+            {
+                if ((DateTime.UtcNow - geo.ResolvedAt) < DnsCacheTtl)
+                    return geo.Label;
+            }
+
+            try
+            {
+                // Fields: org (includes AS + ISP name) and country code
+                string url = $"http://ip-api.com/json/{Uri.EscapeDataString(ip)}?fields=status,org,country,countryCode";
+                string json = await _http.GetStringAsync(url);
+
+                using var doc = JsonDocument.Parse(json);
+                var root = doc.RootElement;
+
+                if (root.TryGetProperty("status", out var status) && status.GetString() == "success")
+                {
+                    string org         = root.TryGetProperty("org",         out var o) ? o.GetString() ?? string.Empty : string.Empty;
+                    string countryCode = root.TryGetProperty("countryCode", out var c) ? c.GetString() ?? string.Empty : string.Empty;
+
+                    // Strip leading "AS12345 " from the org name if present
+                    if (org.Length > 0 && org[0] == 'A' && org[1] == 'S')
+                    {
+                        int space = org.IndexOf(' ');
+                        if (space > 0) org = org[(space + 1)..];
+                    }
+
+                    string label = string.IsNullOrEmpty(countryCode)
+                        ? org
+                        : $"{org} · {countryCode}";
+
+                    _geoCache[ip] = (label, DateTime.UtcNow);
+                    return label;
+                }
+            }
+            catch { /* network unavailable, API down, etc. — silently skip */ }
+
+            // Cache an empty result so we don't hammer the API on every packet
+            _geoCache[ip] = (string.Empty, DateTime.UtcNow);
+            return string.Empty;
+        }
+
+        // -----------------------------------------------------------------------
+        // IP filtering helpers
+        // -----------------------------------------------------------------------
 
         private static bool IsIgnoredIp(string ipStr)
         {
             if (ipStr.StartsWith("127.") || ipStr == "::1") return true;
             if (ipStr.StartsWith("192.168.") || ipStr.StartsWith("10.")) return true;
             if (ipStr == "255.255.255.255") return true;
-            
+
             var parts = ipStr.Split('.');
             if (parts.Length == 4)
             {
                 if (parts[0] == "172" && int.TryParse(parts[1], out int p2) && p2 >= 16 && p2 <= 31)
                     return true;
-                
+
                 // Multicast 224.0.0.0 - 239.255.255.255
                 if (int.TryParse(parts[0], out int p1) && p1 >= 224 && p1 <= 239)
                     return true;
             }
-            
+
             return false;
         }
 

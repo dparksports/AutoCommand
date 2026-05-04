@@ -48,3 +48,4 @@ C:\Users\honey\AutoCommand\obj\Debug\net10.0-windows\AutoCommand.genruntimeconfi
 C:\Users\honey\AutoCommand\obj\Debug\net10.0-windows\ref\AutoCommand.dll
 C:\Users\honey\AutoCommand\obj\Debug\net10.0-windows\Views\SettingsView.baml
 C:\Users\honey\AutoCommand\obj\Debug\net10.0-windows\Views\SettingsView.g.cs
+c:\Users\honey\AutoCommand\obj\Debug\net10.0-windows\AutoCommand.sourcelink.json
