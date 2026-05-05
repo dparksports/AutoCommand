@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 
 namespace AutoCommand.Models
 {
-    public class SvchostMonitorItem : INotifyPropertyChanged
+    public class SvchostMonitorItem : INotifyPropertyChanged, IResolvableHost
     {
         private long _rxPackets;
         private long _txPackets;

@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "SBYB2Uw4U2U=",
+  "dgSpecHash": "qANS/b68LSU=",
   "success": true,
   "projectFilePath": "C:\\Users\\honey\\AutoCommand\\AutoCommand.csproj",
   "expectedPackageFiles": [
@@ -18,6 +18,7 @@
     "C:\\Users\\honey\\.nuget\\packages\\microsoft.extensions.ai.abstractions\\10.4.1\\microsoft.extensions.ai.abstractions.10.4.1.nupkg.sha512",
     "C:\\Users\\honey\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\10.0.5\\microsoft.extensions.dependencyinjection.abstractions.10.0.5.nupkg.sha512",
     "C:\\Users\\honey\\.nuget\\packages\\microsoft.extensions.logging.abstractions\\10.0.5\\microsoft.extensions.logging.abstractions.10.0.5.nupkg.sha512",
+    "C:\\Users\\honey\\.nuget\\packages\\microsoft.web.webview2\\1.0.3912.50\\microsoft.web.webview2.1.0.3912.50.nupkg.sha512",
     "C:\\Users\\honey\\.nuget\\packages\\system.interactive.async\\7.0.0\\system.interactive.async.7.0.0.nupkg.sha512",
     "C:\\Users\\honey\\.nuget\\packages\\system.linq.async\\7.0.0\\system.linq.async.7.0.0.nupkg.sha512",
     "C:\\Users\\honey\\.nuget\\packages\\system.management\\10.0.0-preview.4.25258.110\\system.management.10.0.0-preview.4.25258.110.nupkg.sha512",

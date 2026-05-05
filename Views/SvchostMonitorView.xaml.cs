@@ -96,8 +96,8 @@ namespace AutoCommand.Views
             SetupSysmonBtn.IsEnabled = false;
             MonitorStatusText.Text = "Downloading and configuring Sysmon... please wait.";
             
-            bool success = await _installerService.InstallAndConfigureAsync();
-            if (success)
+            var result = await _installerService.InstallAndConfigureAsync();
+            if (result.Success)
             {
                 MessageBox.Show("Sysmon has been successfully installed and configured for network tracking.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
                 CheckSysmonStatus();
@@ -105,8 +105,9 @@ namespace AutoCommand.Views
             }
             else
             {
-                MessageBox.Show("Failed to install Sysmon. Ensure you are running as Administrator and have an internet connection.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Failed to install Sysmon.\n\nDetails: {result.ErrorMessage}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 SetupSysmonBtn.IsEnabled = true;
+                MonitorStatusText.Text = "Sysmon is not installed. Network tracking will not work.";
             }
         }
 

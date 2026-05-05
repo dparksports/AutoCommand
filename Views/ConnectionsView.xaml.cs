@@ -186,30 +186,13 @@ namespace AutoCommand.Views
                 else
                 {
                     conn.RemoteHost = conn.RemoteAddress; // Default to raw IP while resolving
-                    // We adapt DnsResolutionService which expects SvchostMonitorItem.
-                    // Instead of altering the core service to use an interface right now, 
-                    // we'll just fire a background task for connections missing from cache.
-                    _ = ResolveConnectionDnsAsync(conn);
+                    _dnsService.EnqueueForResolution(conn);
                 }
             }
 
             ApplyFilter();
         }
 
-        private async Task ResolveConnectionDnsAsync(NetworkConnectionItem conn)
-        {
-            try
-            {
-                // We do a quick manual reverse DNS so we don't refactor the whole DnsResolutionService
-                // which is currently heavily tied to SvchostMonitorItem and rate-limited GeoIP.
-                var entry = await System.Net.Dns.GetHostEntryAsync(conn.RemoteAddress);
-                if (!string.IsNullOrEmpty(entry.HostName))
-                {
-                    Dispatcher.Invoke(() => conn.RemoteHost = entry.HostName);
-                }
-            }
-            catch { }
-        }
 
         private void ApplyFilter()
         {

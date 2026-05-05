@@ -31,7 +31,6 @@ namespace AutoCommand.Services
         };
 
         private readonly string _cloudApiBaseUrl = "https://generativelanguage.googleapis.com/v1beta/models";
-        private readonly string _localApiBaseUrl = "http://localhost:11434/v1";
         private readonly string _systemInstruction;
 
         public GeminiAssistantService()

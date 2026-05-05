@@ -64,7 +64,7 @@ namespace AutoCommand.Models
         public System.Windows.Media.Brush StatusColor { get; set; }
     }
 
-    public class NetworkConnectionItem : System.ComponentModel.INotifyPropertyChanged
+    public class NetworkConnectionItem : System.ComponentModel.INotifyPropertyChanged, IResolvableHost
     {
         public string Protocol { get; set; }
         public string LocalAddress { get; set; }
@@ -72,6 +72,14 @@ namespace AutoCommand.Models
         public string State { get; set; }
         public int ProcessId { get; set; }
         public string ProcessName { get; set; }
+
+        public string RemoteIp => RemoteAddress;
+
+        public string Hostname
+        {
+            get => RemoteHost;
+            set => RemoteHost = value;
+        }
 
         private string _remoteHost;
         public string RemoteHost

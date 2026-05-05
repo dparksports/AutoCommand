@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Telemetry</title>
+</head>
+<body>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAnalytics, logEvent, setUserId, setUserProperties } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyC-Z1bHQchqfSzviB4LZJs0gGiIUtMNyx8",
+            authDomain: "claw-b9a22.firebaseapp.com",
+            projectId: "claw-b9a22",
+            storageBucket: "claw-b9a22.firebasestorage.app",
+            messagingSenderId: "341010732581",
+            appId: "1:341010732581:web:b6cf0375592cbe8f5e11cc",
+            measurementId: "G-XMKKD3JQGH"
+        };
+
+        try {
+            // Initialize Firebase
+            const app = initializeApp(firebaseConfig);
+            const analytics = getAnalytics(app);
+
+            // Expose globally so C# can invoke them
+            window.logTelemetryEvent = (eventName, params) => {
+                logEvent(analytics, eventName, params);
+            };
+
+            window.setTelemetryUserId = (uid) => {
+                setUserId(analytics, uid);
+            };
+
+            window.setTelemetryUserProperties = (props) => {
+                setUserProperties(analytics, props);
+            };
+
+            // Notify C# host that we are ready
+            if (window.chrome && window.chrome.webview) {
+                window.chrome.webview.postMessage({ type: 'ready' });
+            }
+        } catch (error) {
+            if (window.chrome && window.chrome.webview) {
+                window.chrome.webview.postMessage({ type: 'error', message: error.toString() });
+            }
+        }
+    </script>
+</body>
+</html>

@@ -40,7 +40,7 @@ namespace AutoCommand.Services
                             {
                                 try
                                 {
-                                    var cert = new X509Certificate2(p7xPath);
+                                    var cert = X509CertificateLoader.LoadCertificateFromFile(p7xPath);
                                     signerSubject = cert.Subject;
                                     // If we can read the cert, it's validly structured
                                     signatureStatus = "Valid"; 

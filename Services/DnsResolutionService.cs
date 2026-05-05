@@ -42,8 +42,8 @@ namespace AutoCommand.Services
         private readonly ConcurrentDictionary<string, CacheEntry> _cache = new();
 
         // Queue of items waiting for resolution; bounded to avoid runaway growth
-        private readonly Channel<SvchostMonitorItem> _queue =
-            Channel.CreateBounded<SvchostMonitorItem>(new BoundedChannelOptions(512)
+        private readonly Channel<IResolvableHost> _queue =
+            Channel.CreateBounded<IResolvableHost>(new BoundedChannelOptions(512)
             {
                 FullMode    = BoundedChannelFullMode.DropOldest,
                 SingleReader = true
@@ -88,7 +88,7 @@ namespace AutoCommand.Services
         /// calling thread; otherwise it is queued for background resolution and
         /// the DataGrid row will update itself via INotifyPropertyChanged.
         /// </summary>
-        public void EnqueueForResolution(SvchostMonitorItem item)
+        public void EnqueueForResolution(IResolvableHost item)
         {
             if (item == null || string.IsNullOrEmpty(item.RemoteIp)) return;
 

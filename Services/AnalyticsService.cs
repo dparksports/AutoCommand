@@ -14,9 +14,9 @@ namespace AutoCommand.Services
         public static AnalyticsService Instance => _instance ??= new AnalyticsService();
 
         // TODO: Replace with actual GA4/Firebase Measurement ID and API Secret
-        private const string MeasurementId = "G-XXXXXXXXXX";
-        private const string ApiSecret = "YOUR_API_SECRET_HERE";
-        private const string Endpoint = $"https://www.google-analytics.com/mp/collect?measurement_id={MeasurementId}&api_secret={ApiSecret}";
+        private readonly string MeasurementId = "G-XXXXXXXXXX";
+        private readonly string ApiSecret = "YOUR_API_SECRET_HERE";
+        private readonly string Endpoint;
 
         private const string RegKeyPath = @"Software\AutoCommand";
         private readonly HttpClient _httpClient;
@@ -24,6 +24,7 @@ namespace AutoCommand.Services
 
         public AnalyticsService()
         {
+            Endpoint = $"https://www.google-analytics.com/mp/collect?measurement_id={MeasurementId}&api_secret={ApiSecret}";
             _httpClient = new HttpClient();
             EnsureClientId();
         }
