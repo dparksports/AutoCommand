@@ -44,6 +44,24 @@ namespace AutoCommand.Helpers
             Registry.SetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System", "ConsentPromptBehaviorAdmin", strict ? 2 : 5, RegistryValueKind.DWord);
         }
 
+        // ── IPv6 Hardening ──
+        public static bool GetIpv6DisabledStatus()
+        {
+            try
+            {
+                object value = Registry.GetValue(@"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Tcpip6\Parameters", "DisabledComponents", 0);
+                // 0xFF (255) means disabled all IPv6 components
+                return value != null && Convert.ToInt32(value) == 255;
+            }
+            catch { return false; }
+        }
+
+        public static void SetIpv6DisabledStatus(bool disable)
+        {
+            // 0xFF to disable, 0 to re-enable default behavior
+            Registry.SetValue(@"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\Tcpip6\Parameters", "DisabledComponents", disable ? 0xFF : 0x00, RegistryValueKind.DWord);
+        }
+
         // ── Startup Persistence ──
 
         public static List<StartupItem> GetStartupItems()

@@ -11,10 +11,12 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <!-- Main Content -->
-        <TabControl Grid.Row="0" TabStripPlacement="Left">
+        <TabControl x:Name="MainTabControl" Grid.Row="0" TabStripPlacement="Left"
+                    SelectionChanged="MainTabControl_SelectionChanged">
             <TabItem>
                 <TabItem.Header>
                     <StackPanel Width="160" Margin="0,10">
@@ -29,7 +31,7 @@
                 <TabItem.Header>
                     <StackPanel Width="160" Margin="0,10">
                         <TextBlock Text="🛡" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,4"/>
-                        <TextBlock Text="Security" HorizontalAlignment="Center"/>
+                        <TextBlock Text="Firewall" HorizontalAlignment="Center"/>
                     </StackPanel>
                 </TabItem.Header>
                 <!-- Grouping multiple security views into one layout would be complex, keeping them separate but reordered for now -->
@@ -119,16 +121,102 @@
             <TabItem>
                 <TabItem.Header>
                     <StackPanel Width="160" Margin="0,10">
+                        <TextBlock Text="📦" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                        <TextBlock Text="Default Apps" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <views:DefaultAppsView x:Name="DefaultAppsTab"/>
+            </TabItem>
+
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Width="160" Margin="0,10">
+                        <TextBlock Text="🧩" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                        <TextBlock Text="Plugins" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <views:PluginsView x:Name="PluginsTab"/>
+            </TabItem>
+
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Width="160" Margin="0,10">
                         <TextBlock Text="⚙" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,4"/>
                         <TextBlock Text="Settings" HorizontalAlignment="Center"/>
                     </StackPanel>
                 </TabItem.Header>
                 <views:SettingsView x:Name="SettingsTab"/>
             </TabItem>
+
+            <TabItem x:Name="AiSetupTabItem">
+                <TabItem.Header>
+                    <StackPanel Width="160" Margin="0,10">
+                        <TextBlock Text="✨" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                        <TextBlock Text="AI Setup" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <views:AiSetupView x:Name="AiSetupTab"/>
+            </TabItem>
         </TabControl>
 
+        <!-- AI Insight Panel: shown automatically after tab switch -->
+        <Border x:Name="AiInsightPanel" Grid.Row="1"
+                Background="#080E1C" BorderBrush="#1E3A5F" BorderThickness="0,1,0,0"
+                Padding="14,5" Visibility="Collapsed">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>  <!-- dot -->
+                    <ColumnDefinition Width="Auto"/>  <!-- "AI:" label -->
+                    <ColumnDefinition Width="*"/>     <!-- summary text -->
+                    <ColumnDefinition Width="Auto"/>  <!-- 🚀 Start Engine (server-down state) -->
+                    <ColumnDefinition Width="Auto"/>  <!-- See full report (result state) -->
+                    <ColumnDefinition Width="Auto"/>  <!-- ✕ dismiss -->
+                </Grid.ColumnDefinitions>
+
+                <Ellipse x:Name="AiInsightDot" Grid.Column="0"
+                         Width="7" Height="7" Fill="#475569"
+                         VerticalAlignment="Center" Margin="0,0,7,0"/>
+                <TextBlock Grid.Column="1" Text="AI:" Foreground="#4ADE80"
+                           FontSize="10" FontWeight="SemiBold"
+                           VerticalAlignment="Center" Margin="0,0,7,0"/>
+                <TextBlock x:Name="AiInsightText" Grid.Column="2"
+                           Foreground="#94A3B8" FontSize="11"
+                           VerticalAlignment="Center"
+                           TextTrimming="CharacterEllipsis"
+                           Text="Analyzing…"/>
+
+                <!-- Shown when local server is offline -->
+                <Button x:Name="AiInsightStartBtn" Grid.Column="3"
+                        Content="🚀 Start Engine"
+                        Background="#92400E" Foreground="#FDE68A"
+                        BorderThickness="0" FontSize="10"
+                        Padding="10,2" Cursor="Hand"
+                        Visibility="Collapsed"
+                        Click="AiInsightStartBtn_Click">
+                    <Button.Resources>
+                        <Style TargetType="Border"><Setter Property="CornerRadius" Value="3"/></Style>
+                    </Button.Resources>
+                </Button>
+
+                <!-- Shown when a result is cached -->
+                <Button x:Name="AiInsightDetailBtn" Grid.Column="4"
+                        Content="See full report →"
+                        Background="Transparent" Foreground="#60A5FA"
+                        BorderThickness="0" FontSize="10"
+                        Padding="10,0" Cursor="Hand"
+                        Visibility="Collapsed"
+                        Click="AiInsightDetailBtn_Click"/>
+
+                <Button Grid.Column="5" Content="✕"
+                        Background="Transparent" Foreground="#334155"
+                        BorderThickness="0" FontSize="9"
+                        Padding="6,0" Cursor="Hand"
+                        Click="AiInsightDismissBtn_Click"/>
+            </Grid>
+        </Border>
+
         <!-- Status Bar -->
-        <Border Grid.Row="1" Background="#0B101E" BorderBrush="#1F2937" BorderThickness="0,1,0,0" Padding="12,6">
+        <Border Grid.Row="2" Background="#0B101E" BorderBrush="#1F2937" BorderThickness="0,1,0,0" Padding="12,6">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -143,17 +231,24 @@
                                Foreground="#9D9DA5" FontSize="11"/>
                 </StackPanel>
 
-                <!-- Threat Alert -->
+                <!-- Threat Alert & AI Buttons -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="20,0">
+                    <Button x:Name="AiAuditBtn" Content="✨ AI Security Audit" 
+                            Background="#1E293B" Foreground="#4ADE80" BorderBrush="#334155" BorderThickness="1" 
+                            Padding="8,2" FontSize="11" Margin="0,0,5,0" Cursor="Hand" Click="AiAuditBtn_Click"/>
+                    <Button x:Name="AiSettingsBtn" Content="⚙️" 
+                            Background="Transparent" Foreground="#94A3B8" BorderThickness="0" 
+                            Padding="4,2" FontSize="11" Margin="0,0,15,0" Cursor="Hand" Click="AiSettingsBtn_Click"/>
+                            
                     <TextBlock x:Name="ThreatAlertText" Text="" 
-                               Foreground="#E5A631" FontSize="11" TextTrimming="CharacterEllipsis"/>
+                               Foreground="#E5A631" FontSize="11" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
                     <Button x:Name="ReviewAlertBtn" Content="Review" 
                             Style="{StaticResource PrimaryButton}" Padding="8,2" FontSize="10" Margin="8,0,0,0"
                             Visibility="Collapsed" Click="ReviewAlertBtn_Click"/>
                 </StackPanel>
 
                 <!-- Version -->
-                <TextBlock Grid.Column="2" Text="AutoCommand v3.2" 
+                <TextBlock Grid.Column="2" Text="AutoCommand v3.4" 
                            Foreground="#5A5A62" FontSize="10" VerticalAlignment="Center"/>
             </Grid>
         </Border>

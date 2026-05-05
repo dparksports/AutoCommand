@@ -1,0 +1,65 @@
+<UserControl x:Class="AutoCommand.Views.DefaultAppsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" 
+             Loaded="UserControl_Loaded">
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Grid Grid.Row="0" Margin="0,0,0,16">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Default Apps &amp; Bloatware" Style="{StaticResource PageHeader}"/>
+                <Button Content="↻ Refresh List" Margin="20,0,0,0" 
+                        Style="{StaticResource PrimaryButton}" Click="RefreshBtn_Click"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- Apps List -->
+        <DataGrid x:Name="AppsDataGrid" Grid.Row="1">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="App Name" Binding="{Binding Name}" Width="2*"/>
+                <DataGridTextColumn Header="Version" Binding="{Binding Version}" Width="*"/>
+                <DataGridTextColumn Header="Signature Status" Binding="{Binding SignatureStatus}" Width="*">
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="TextBlock">
+                            <Style.Triggers>
+                                <Trigger Property="Text" Value="Valid">
+                                    <Setter Property="Foreground" Value="{StaticResource AccentGreenBrush}"/>
+                                </Trigger>
+                                <Trigger Property="Text" Value="Inaccessible">
+                                    <Setter Property="Foreground" Value="{StaticResource AccentAmberBrush}"/>
+                                </Trigger>
+                                <Trigger Property="Text" Value="NotSigned">
+                                    <Setter Property="Foreground" Value="{StaticResource AccentRedBrush}"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+                <DataGridTextColumn Header="Signer / Publisher" Binding="{Binding SignerCertificate}" Width="2*"/>
+                <DataGridTemplateColumn Header="Action" Width="100">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Button Content="Uninstall" Style="{StaticResource DangerButton}" 
+                                    Padding="8,2" FontSize="10" Click="UninstallBtn_Click"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <!-- Footer Info -->
+        <Border Grid.Row="2" Margin="0,16,0,0" Style="{StaticResource CardPanel}" Padding="12">
+            <TextBlock Text="Note: Removing system-critical apps may cause instability. Use with caution. Signature details are verified against the AppxManifest.xml." 
+                       Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" TextWrapping="Wrap"/>
+        </Border>
+    </Grid>
+</UserControl>

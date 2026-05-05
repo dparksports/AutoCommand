@@ -30,6 +30,13 @@
 
         <!-- Filter -->
         <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,12">
+            <TextBlock Text="Source:" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+            <ComboBox x:Name="SourceCombo" Width="140" Margin="0,0,16,0" SelectionChanged="SourceChanged">
+                <ComboBoxItem Content="Polling (Live)" IsSelected="True"/>
+                <ComboBoxItem Content="Sysmon (Events)"/>
+                <ComboBoxItem Content="Raw Socket (Packets)"/>
+            </ComboBox>
+
             <RadioButton x:Name="AllRadio" Content="All" IsChecked="True" 
                          Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,16,0"
                          Checked="FilterChanged"/>
@@ -39,7 +46,7 @@
             <RadioButton x:Name="UdpRadio" Content="UDP Only" 
                          Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,16,0"
                          Checked="FilterChanged"/>
-            <CheckBox x:Name="LiveViewCheck" Content="Live View (2s)" 
+            <CheckBox x:Name="LiveViewCheck" Content="Auto-Refresh" 
                       Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,16,0"
                       Checked="LiveViewChanged" Unchecked="LiveViewChanged"/>
             <TextBlock x:Name="ConnectionCountText" Text="" Foreground="{StaticResource TextSecondaryBrush}" 
@@ -77,14 +84,35 @@
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Protocol" Binding="{Binding Protocol}" Width="80"/>
                 <DataGridTextColumn Header="Local Address" Binding="{Binding LocalAddress}" Width="160"/>
-                <DataGridTextColumn Header="Remote Address" Binding="{Binding RemoteAddress}" Width="160"/>
-                <DataGridTextColumn Header="State" Binding="{Binding State}" Width="120"/>
+                <DataGridTextColumn Header="Remote IP" Binding="{Binding RemoteAddress}" Width="120"/>
+                <DataGridTemplateColumn Header="Remote Host" Width="200">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding RemoteHost}">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+                                        <Setter Property="FontStyle"  Value="Normal"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsResolved}" Value="False">
+                                                <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+                                                <Setter Property="FontStyle"  Value="Italic"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTextColumn Header="State" Binding="{Binding State}" Width="100"/>
                 <DataGridTextColumn Header="PID" Binding="{Binding ProcessId}" Width="80"/>
                 <DataGridTextColumn Header="Process Name" Binding="{Binding ProcessName}" Width="*"/>
             </DataGrid.Columns>
             <DataGrid.ContextMenu>
                 <ContextMenu>
                     <MenuItem Header="Kill Process" Click="KillProcess_Click"/>
+                    <MenuItem Header="Block Process in Firewall" Click="BlockProcess_Click"/>
                 </ContextMenu>
             </DataGrid.ContextMenu>
         </DataGrid>

@@ -12,11 +12,12 @@ using AutoCommand.Services;
 
 namespace AutoCommand.Views
 {
-    public partial class SvchostMonitorView : UserControl
+    public partial class SvchostMonitorView : UserControl, IAiAuditable
     {
         private readonly ConcurrentDictionary<string, SvchostMonitorItem> _trackedIps = new();
         private readonly ObservableCollection<SvchostMonitorItem> _uiCollection = new();
         
+        private DnsResolutionService _dnsService;
         private SysmonWatcherService _sysmonService;
         private RawSocketSnifferService _snifferService;
         private bool _isMonitoring = false;
@@ -37,7 +38,10 @@ namespace AutoCommand.Views
             if (_isInitialized) return;
             _isInitialized = true;
 
-            _sysmonService = new SysmonWatcherService(_trackedIps);
+            _dnsService   = new DnsResolutionService();
+            _sysmonService = new SysmonWatcherService(_trackedIps, _dnsService);
+            _sysmonService.MonitorAllProcesses = true;
+            _sysmonService.FilterKnownCloudIps = HideCloudCheck.IsChecked == true;
             _snifferService = new RawSocketSnifferService(_trackedIps);
 
             _sysmonService.OnError += ShowError;
@@ -49,17 +53,32 @@ namespace AutoCommand.Views
             _saveTimer = new DispatcherTimer { Interval = TimeSpan.FromHours(1) };
             _saveTimer.Tick += (s, args) => SaveToCsv();
 
-            // Refresh relative "Last Packet" column every 10 seconds
+            // Refresh relative "Last Packet" column + DNS cache chip every 10 seconds
             _lastSeenRefreshTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(10) };
             _lastSeenRefreshTimer.Tick += (s, args) =>
             {
                 foreach (var item in _uiCollection)
                     item.RefreshLastSeenDisplay();
+
+                // Re-enqueue any rows still showing raw IPs (handles items loaded from CSV etc.)
+                foreach (var item in _uiCollection)
+                    _dnsService.EnqueueForResolution(item);
+
+                DnsCacheChip.Text = $"DNS cache: {_dnsService.CacheCount} entries";
             };
             _lastSeenRefreshTimer.Start();
 
+            // Start DNS service before Sysmon so first events can hit the cache
+            _dnsService.Start();
+
             // Auto-start monitor on load
             ToggleMonitorBtn_Click(null, null);
+        }
+
+        private void Filter_Changed(object sender, RoutedEventArgs e)
+        {
+            if (_sysmonService != null)
+                _sysmonService.FilterKnownCloudIps = HideCloudCheck.IsChecked == true;
         }
 
         private void ShowError(string msg)
@@ -146,6 +165,20 @@ namespace AutoCommand.Views
             {
                 Dispatcher.Invoke(() => MessageBox.Show($"Failed to save CSV: {ex.Message}"));
             }
+        }
+
+        public string GetAuditContext()
+        {
+            var items = _uiCollection.ToList();
+            if (items.Count == 0) return "Process Monitor is currently empty. No active connections tracked.";
+
+            var sb = new System.Text.StringBuilder();
+            sb.AppendLine("Currently Tracked Processes and Connections:");
+            foreach (var item in items)
+            {
+                sb.AppendLine($"- Process: {item.ProcessName} (PID: {item.ProcessId}) | Remote IP: {item.RemoteIp} ({item.Hostname}) | Packets: {item.TxPackets} sent, {item.RxPackets} received | Last Seen: {item.LastSeen:u}");
+            }
+            return sb.ToString();
         }
     }
 }

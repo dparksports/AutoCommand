@@ -5,10 +5,11 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using AutoCommand.Helpers;
+using AutoCommand.Models;
 
 namespace AutoCommand.Views
 {
-    public partial class HardeningView : UserControl
+    public partial class HardeningView : UserControl, IAiAuditable
     {
         private const string HostsFilePath = @"C:\Windows\System32\drivers\etc\hosts";
         
@@ -29,8 +30,39 @@ namespace AutoCommand.Views
             await Task.WhenAll(
                 CheckLsaStatus(),
                 CheckUacStatus(),
-                CheckHostsFile()
+                CheckHostsFile(),
+                CheckIpv6Status()
             );
+        }
+
+        // ── IPv6 Hardening ──
+        private Task CheckIpv6Status()
+        {
+            return Task.Run(() =>
+            {
+                bool isDisabled = RegistryHelper.GetIpv6DisabledStatus();
+                Dispatcher.Invoke(() =>
+                {
+                    Ipv6StatusText.Text = isDisabled ? "✓ IPv6 is DISABLED globally" : "⚠ IPv6 is currently ENABLED";
+                    Ipv6StatusText.Foreground = isDisabled
+                        ? new SolidColorBrush(Color.FromRgb(0x4E, 0xC9, 0x6F))
+                        : new SolidColorBrush(Color.FromRgb(0xE5, 0xA6, 0x31));
+                });
+            });
+        }
+
+        private async void Ipv6DisableBtn_Click(object sender, RoutedEventArgs e)
+        {
+            await Task.Run(() => RegistryHelper.SetIpv6DisabledStatus(true));
+            await CheckIpv6Status();
+            MessageBox.Show("IPv6 has been disabled via registry (DisabledComponents=0xFF). A reboot is required.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        private async void Ipv6EnableBtn_Click(object sender, RoutedEventArgs e)
+        {
+            await Task.Run(() => RegistryHelper.SetIpv6DisabledStatus(false));
+            await CheckIpv6Status();
+            MessageBox.Show("IPv6 has been enabled. A reboot is required.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         // ── LSA Protection ──
@@ -151,6 +183,22 @@ namespace AutoCommand.Views
                     Dispatcher.Invoke(() => HostsStatusText.Text = $"Error reading hosts: {ex.Message}");
                 }
             });
+        }
+
+        public string GetAuditContext()
+        {
+            var sb = new System.Text.StringBuilder();
+            sb.AppendLine("OS Hardening Status (AutoCommand Hardening Tab):");
+            sb.AppendLine($"- LSA Protection: {LsaStatusText?.Text ?? "Unknown"}");
+            sb.AppendLine($"- UAC Level: {UacStatusText?.Text ?? "Unknown"}");
+            sb.AppendLine($"- IPv6 Status: {Ipv6StatusText?.Text ?? "Unknown"}");
+            sb.AppendLine($"- Hosts File: {HostsStatusText?.Text ?? "Unknown"}");
+            if (HostsContentBox?.Text?.Length > 0 && HostsContentBox.Text != "(File not found)")
+            {
+                sb.AppendLine("\nHosts File Contents:");
+                sb.AppendLine(HostsContentBox.Text);
+            }
+            return sb.ToString();
         }
 
         private async void HostsResetBtn_Click(object sender, RoutedEventArgs e)

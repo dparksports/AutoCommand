@@ -30,8 +30,15 @@
             </StackPanel>
 
             <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                <Button Content="Quick Profile: Strict" Style="{StaticResource DangerButton}" Margin="0,0,8,0" Click="ProfileStrict_Click"/>
-                <Button Content="Quick Profile: Default" Style="{StaticResource PrimaryButton}" Margin="0,0,8,0" Click="ProfileDefault_Click"/>
+                <TextBlock Text="Quick Profile:" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                <ComboBox x:Name="ProfileCombo" Width="120" Margin="0,0,8,0" SelectionChanged="ProfileCombo_SelectionChanged">
+                    <ComboBoxItem Content="Custom (Current)" IsSelected="True"/>
+                    <ComboBoxItem Content="Shield Up"/>
+                    <ComboBoxItem Content="Gaming"/>
+                    <ComboBoxItem Content="Office"/>
+                    <ComboBoxItem Content="Home"/>
+                    <ComboBoxItem Content="Public Strict"/>
+                </ComboBox>
                 <Button Content="↻ Refresh" Style="{StaticResource PrimaryButton}" Click="RefreshBtn_Click"/>
             </StackPanel>
         </Grid>

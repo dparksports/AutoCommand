@@ -19,7 +19,8 @@ namespace AutoCommand.Services
             StrictPublic,
             HomeTrusted,
             GamingMedia,
-            ShieldUp
+            ShieldUp,
+            Office
         }
 
         public async Task ApplyProfile(ProfileType profile)
@@ -41,6 +42,11 @@ namespace AutoCommand.Services
                     break;
                 case ProfileType.ShieldUp:
                     await ApplyShieldUp();
+                    break;
+                case ProfileType.Office:
+                    await EnableGroup("File and Printer Sharing");
+                    await EnableGroup("Network Discovery");
+                    await EnableGroup("Remote Desktop");
                     break;
             }
         }

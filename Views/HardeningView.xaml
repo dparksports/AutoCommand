@@ -97,6 +97,29 @@
                     </Grid>
                 </Border>
 
+                <!-- Disable IPv6 -->
+                <Border Style="{StaticResource CardPanel}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock Text="Disable IPv6 System-Wide" FontSize="14" FontWeight="SemiBold"/>
+                            <TextBlock Text="Disables IPv6 on all network adapters to reduce attack surface (requires reboot)." 
+                                       Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" Margin="0,4,0,0"/>
+                            <TextBlock x:Name="Ipv6StatusText" Text="Checking..." 
+                                       Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" Margin="0,8,0,0"/>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal">
+                            <Button Content="Enable IPv6" Margin="0,0,8,0"
+                                    Style="{StaticResource DangerButton}" Click="Ipv6EnableBtn_Click"/>
+                            <Button Content="Disable IPv6"
+                                    Style="{StaticResource PrimaryButton}" Click="Ipv6DisableBtn_Click"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
             </StackPanel>
         </ScrollViewer>
     </Grid>

@@ -12,10 +12,35 @@ namespace AutoCommand.Models
         private long _txBytes;
         private DateTime _lastSeen;
         private string _processName;
+        private string _hostname;
 
         public int ProcessId { get; set; }
         public string RemoteIp { get; set; }
-        public string Hostname { get; set; }
+        public string Protocol { get; set; }
+
+        public string Hostname
+        {
+            get => _hostname;
+            set
+            {
+                if (_hostname == value) return;
+                _hostname = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(IsResolved));
+                OnPropertyChanged(nameof(HostnameDisplay));
+            }
+        }
+
+        /// <summary>True when the hostname has been resolved to a real name (not raw IP / empty).</summary>
+        public bool IsResolved =>
+            !string.IsNullOrEmpty(_hostname) &&
+            _hostname != "Unknown" &&
+            _hostname != "-" &&
+            !System.Net.IPAddress.TryParse(_hostname, out _);
+
+        /// <summary>Friendly display — shows italic '(resolving…)' when not yet resolved.</summary>
+        public string HostnameDisplay =>
+            IsResolved ? _hostname : string.IsNullOrEmpty(_hostname) ? "resolving…" : _hostname;
 
         public string ProcessName
         {

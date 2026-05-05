@@ -34,9 +34,16 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <TextBlock x:Name="MonitorStatusText" Text="Monitor is stopped." Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center"/>
-                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                <!-- DNS cache counter chip -->
+                <Border Grid.Column="1" Background="#1A4A8A" CornerRadius="10" Padding="10,3" Margin="0,0,12,0" VerticalAlignment="Center">
+                    <TextBlock x:Name="DnsCacheChip" Text="DNS cache: 0 entries"
+                               Foreground="#7EB8F7" FontSize="11" FontFamily="Consolas"/>
+                </Border>
+                <StackPanel Grid.Column="2" Orientation="Horizontal">
+                    <CheckBox x:Name="HideCloudCheck" Content="Hide Known/Cloud IPs" IsChecked="False" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center" Margin="0,0,12,0" Checked="Filter_Changed" Unchecked="Filter_Changed"/>
                     <TextBlock Text="Add Process:" VerticalAlignment="Center" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,8,0"/>
                     <TextBox x:Name="NewProcessBox" Width="150" Padding="4" Background="{StaticResource SurfaceBrush}" Foreground="{StaticResource TextPrimaryBrush}" BorderBrush="{StaticResource BorderBrush}"/>
                     <Button Content="Add" Click="AddProcessBtn_Click" Margin="8,0,0,0" Padding="12,2" Style="{StaticResource PrimaryButton}"/>
@@ -47,13 +54,33 @@
         <!-- Connections Grid -->
         <DataGrid Grid.Row="2" x:Name="SvchostGrid" SelectionMode="Single">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Process" Binding="{Binding ProcessDisplay}" Width="160"/>
-                <DataGridTextColumn Header="Remote IP" Binding="{Binding RemoteIp}" Width="120"/>
-                <DataGridTextColumn Header="Host" Binding="{Binding Hostname}" Width="200"/>
-                <DataGridTextColumn Header="Rx Pkts" Binding="{Binding RxPackets}" Width="80"/>
-                <DataGridTextColumn Header="Tx Pkts" Binding="{Binding TxPackets}" Width="80"/>
-                <DataGridTextColumn Header="Rx Bytes" Binding="{Binding RxBytesDisplay}" Width="90"/>
-                <DataGridTextColumn Header="Tx Bytes" Binding="{Binding TxBytesDisplay}" Width="90"/>
+                <DataGridTextColumn Header="Process"     Binding="{Binding ProcessDisplay}"  Width="160"/>
+                <DataGridTextColumn Header="Remote IP"   Binding="{Binding RemoteIp}"        Width="120"/>
+                <!-- Host column: dims + italicises cells that are still resolving -->
+                <DataGridTemplateColumn Header="Host" Width="220">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding HostnameDisplay}">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+                                        <Setter Property="FontStyle"  Value="Normal"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsResolved}" Value="False">
+                                                <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+                                                <Setter Property="FontStyle"  Value="Italic"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTextColumn Header="Rx Pkts"    Binding="{Binding RxPackets}"      Width="80"/>
+                <DataGridTextColumn Header="Tx Pkts"    Binding="{Binding TxPackets}"      Width="80"/>
+                <DataGridTextColumn Header="Rx Bytes"   Binding="{Binding RxBytesDisplay}" Width="90"/>
+                <DataGridTextColumn Header="Tx Bytes"   Binding="{Binding TxBytesDisplay}" Width="90"/>
                 <DataGridTextColumn Header="Last Packet" Binding="{Binding LastSeenDisplay}" Width="100"/>
             </DataGrid.Columns>
         </DataGrid>

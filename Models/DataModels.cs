@@ -64,7 +64,7 @@ namespace AutoCommand.Models
         public System.Windows.Media.Brush StatusColor { get; set; }
     }
 
-    public class NetworkConnectionItem
+    public class NetworkConnectionItem : System.ComponentModel.INotifyPropertyChanged
     {
         public string Protocol { get; set; }
         public string LocalAddress { get; set; }
@@ -72,6 +72,29 @@ namespace AutoCommand.Models
         public string State { get; set; }
         public int ProcessId { get; set; }
         public string ProcessName { get; set; }
+
+        private string _remoteHost;
+        public string RemoteHost
+        {
+            get => _remoteHost;
+            set
+            {
+                if (_remoteHost != value)
+                {
+                    _remoteHost = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(IsResolved));
+                }
+            }
+        }
+
+        public bool IsResolved => !string.IsNullOrEmpty(_remoteHost) && _remoteHost != RemoteAddress && _remoteHost != "0.0.0.0" && _remoteHost != "::";
+
+        public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
+        protected void OnPropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string name = null)
+        {
+            PropertyChanged?.Invoke(this, new System.ComponentModel.PropertyChangedEventArgs(name));
+        }
     }
 
     public class StartupItem
@@ -80,6 +103,18 @@ namespace AutoCommand.Models
         public string Value { get; set; }
         public string Location { get; set; }
         public string TargetPath { get; set; }
+    }
+
+    public class AppPackageItem
+    {
+        public string Name { get; set; }
+        public string FullName { get; set; }
+        public string Version { get; set; }
+        public string Publisher { get; set; }
+        public string InstallLocation { get; set; }
+        public string SignatureStatus { get; set; }
+        public string SignerCertificate { get; set; }
+        public bool IsSystem { get; set; }
     }
 }
 

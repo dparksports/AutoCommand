@@ -6,11 +6,12 @@ using System.Windows;
 using System.Windows.Controls;
 using AutoCommand.Helpers;
 using AutoCommand.Models;
+using System.Text;
 using AutoCommand.Services;
 
 namespace AutoCommand.Views
 {
-    public partial class FirewallSettingsView : UserControl
+    public partial class FirewallSettingsView : UserControl, IAiAuditable
     {
         private List<FirewallRuleItem> _currentRules = new();
 
@@ -74,22 +75,67 @@ namespace AutoCommand.Views
                 "Config Saved", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
-        private async void ProfileStrict_Click(object sender, RoutedEventArgs e)
+        private async void ProfileCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (MessageBox.Show("Apply 'Strict Public' profile? This will modify firewall rules.",
-                "Confirm", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes) return;
+            if (ProfileCombo == null || ProfileCombo.SelectedIndex <= 0) return;
 
-            await FirewallProfileService.Instance.ApplyProfile(FirewallProfileService.ProfileType.StrictPublic);
-            await LoadRules();
+            string profileName = ((ComboBoxItem)ProfileCombo.SelectedItem).Content.ToString();
+            
+            if (MessageBox.Show($"Apply '{profileName}' profile?\n\nThis will modify your Windows Defender Firewall rules.",
+                "Confirm Firewall Profile", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes) 
+            {
+                ProfileCombo.SelectedIndex = 0; // Reset to Custom
+                return;
+            }
+
+            try
+            {
+                switch (profileName)
+                {
+                    case "Shield Up":
+                        await FirewallProfileService.Instance.ApplyProfile(FirewallProfileService.ProfileType.ShieldUp);
+                        break;
+                    case "Gaming":
+                        await FirewallProfileService.Instance.ApplyProfile(FirewallProfileService.ProfileType.GamingMedia);
+                        break;
+                    case "Office":
+                        await FirewallProfileService.Instance.ApplyProfile(FirewallProfileService.ProfileType.Office);
+                        break;
+                    case "Home":
+                        await FirewallProfileService.Instance.ApplyProfile(FirewallProfileService.ProfileType.HomeTrusted);
+                        break;
+                    case "Public Strict":
+                        await FirewallProfileService.Instance.ApplyProfile(FirewallProfileService.ProfileType.StrictPublic);
+                        break;
+                }
+                await LoadRules();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to apply profile: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                // Reset combobox back to custom to allow re-selection later
+                ProfileCombo.SelectedIndex = 0;
+            }
         }
 
-        private async void ProfileDefault_Click(object sender, RoutedEventArgs e)
+        public string GetAuditContext()
         {
-            if (MessageBox.Show("Apply 'Home Trusted' profile? This will modify firewall rules.",
-                "Confirm", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes) return;
-
-            await FirewallProfileService.Instance.ApplyProfile(FirewallProfileService.ProfileType.HomeTrusted);
-            await LoadRules();
+            if (_currentRules.Count == 0) return "No firewall rules loaded. Click Refresh first.";
+            var sb = new StringBuilder();
+            string dir = InboundRadio.IsChecked == true ? "Inbound" : "Outbound";
+            sb.AppendLine($"Firewall Rules ({dir}) — {_currentRules.Count} total:");
+            int shown = 0;
+            foreach (var rule in _currentRules.Where(r => r.Enabled).Take(80))
+            {
+                sb.AppendLine($"- [{(rule.Enabled ? "ENABLED" : "disabled")}] {rule.DisplayName} | Group: {rule.DisplayGroup} | Action: {rule.Action}");
+                shown++;
+            }
+            if (_currentRules.Count(r => !r.Enabled) > 0)
+                sb.AppendLine($"... plus {_currentRules.Count(r => !r.Enabled)} disabled rules omitted.");
+            return sb.ToString();
         }
     }
 }

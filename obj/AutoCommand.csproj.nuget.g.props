@@ -12,4 +12,14 @@
   <ItemGroup Condition=" '$(ExcludeRestorePackageImports)' != 'true' ">
     <SourceRoot Include="C:\Users\honey\.nuget\packages\" />
   </ItemGroup>
+  <ImportGroup Condition=" '$(ExcludeRestorePackageImports)' != 'true' ">
+    <Import Project="$(NuGetPackageRoot)microsoft.codeanalysis.analyzers\5.3.0-2.25625.1\buildTransitive\Microsoft.CodeAnalysis.Analyzers.props" Condition="Exists('$(NuGetPackageRoot)microsoft.codeanalysis.analyzers\5.3.0-2.25625.1\buildTransitive\Microsoft.CodeAnalysis.Analyzers.props')" />
+    <Import Project="$(NuGetPackageRoot)llamasharp.backend.cpu\0.27.0\build\netstandard2.0\LLamaSharp.Backend.Cpu.props" Condition="Exists('$(NuGetPackageRoot)llamasharp.backend.cpu\0.27.0\build\netstandard2.0\LLamaSharp.Backend.Cpu.props')" />
+    <Import Project="$(NuGetPackageRoot)llamasharp.backend.cuda12.windows\0.27.0\build\netstandard2.0\LLamaSharp.Backend.Cuda12.Windows.props" Condition="Exists('$(NuGetPackageRoot)llamasharp.backend.cuda12.windows\0.27.0\build\netstandard2.0\LLamaSharp.Backend.Cuda12.Windows.props')" />
+    <Import Project="$(NuGetPackageRoot)llamasharp.backend.cuda12.linux\0.27.0\build\netstandard2.0\LLamaSharp.Backend.Cuda12.Linux.props" Condition="Exists('$(NuGetPackageRoot)llamasharp.backend.cuda12.linux\0.27.0\build\netstandard2.0\LLamaSharp.Backend.Cuda12.Linux.props')" />
+    <Import Project="$(NuGetPackageRoot)llamasharp.backend.cuda12\0.27.0\build\netstandard2.0\LLamaSharp.Backend.Cuda12.props" Condition="Exists('$(NuGetPackageRoot)llamasharp.backend.cuda12\0.27.0\build\netstandard2.0\LLamaSharp.Backend.Cuda12.props')" />
+  </ImportGroup>
+  <PropertyGroup Condition=" '$(ExcludeRestorePackageImports)' != 'true' ">
+    <PkgMicrosoft_CodeAnalysis_Analyzers Condition=" '$(PkgMicrosoft_CodeAnalysis_Analyzers)' == '' ">C:\Users\honey\.nuget\packages\microsoft.codeanalysis.analyzers\5.3.0-2.25625.1</PkgMicrosoft_CodeAnalysis_Analyzers>
+  </PropertyGroup>
 </Project>

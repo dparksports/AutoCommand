@@ -7,8 +7,9 @@ using AutoCommand.Models;
 
 namespace AutoCommand.Views
 {
-    public partial class StartupView : UserControl
+    public partial class StartupView : UserControl, IAiAuditable
     {
+        private System.Collections.Generic.List<StartupItem> _items = new();
         public StartupView()
         {
             InitializeComponent();
@@ -23,8 +24,18 @@ namespace AutoCommand.Views
 
         private async Task LoadItems()
         {
-            var items = await Task.Run(() => RegistryHelper.GetStartupItems());
-            Dispatcher.Invoke(() => StartupGrid.ItemsSource = items);
+            _items = await Task.Run(() => RegistryHelper.GetStartupItems());
+            Dispatcher.Invoke(() => StartupGrid.ItemsSource = _items);
+        }
+
+        public string GetAuditContext()
+        {
+            if (_items.Count == 0) return "No startup entries found.";
+            var sb = new System.Text.StringBuilder();
+            sb.AppendLine($"Startup Registry Entries ({_items.Count} total):");
+            foreach (var item in _items)
+                sb.AppendLine($"- [{item.Location}] {item.Name} → {item.Value}");
+            return sb.ToString();
         }
 
         private async void DeleteEntry_Click(object sender, RoutedEventArgs e)

@@ -9,11 +9,12 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using Microsoft.Win32;
 using AutoCommand.Helpers;
+using AutoCommand.Models;
 using AutoCommand.Services;
 
 namespace AutoCommand.Views
 {
-    public partial class PrivacyView : UserControl
+    public partial class PrivacyView : UserControl, IAiAuditable
     {
         private static readonly string[] VpnServices = { "RasMan", "IKEEXT", "PolicyAgent", "RemoteAccess" };
         private const string UsageDataTaskPath = @"\Microsoft\Windows\Flighting\FeatureConfig\UsageDataReceiver";
@@ -286,6 +287,18 @@ namespace AutoCommand.Views
             {
                 MessageBox.Show($"Could not open Windows Security: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+        }
+
+        public string GetAuditContext()
+        {
+            var sb = new System.Text.StringBuilder();
+            sb.AppendLine("Privacy & Security Status (AutoCommand Privacy Tab):");
+            sb.AppendLine($"- VPN Services: {VpnStatusText?.Text ?? "Unknown"}");
+            sb.AppendLine($"- WiFi Direct: {WifiDirectStatusText?.Text ?? "Unknown"}");
+            sb.AppendLine($"- Kernel Debug (KDNET): {KdnetStatusText?.Text ?? "Unknown"}");
+            sb.AppendLine($"- Telemetry Task: {UsageDataStatusText?.Text ?? "Unknown"}");
+            sb.AppendLine($"- Tamper Protection: {TamperStatusText?.Text ?? "Unknown"}");
+            return sb.ToString();
         }
     }
 }

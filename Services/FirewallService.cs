@@ -202,6 +202,48 @@ namespace AutoCommand.Services
             });
         }
 
+        /// <summary>
+        /// Adds inbound and outbound block rules for a specific application path.
+        /// </summary>
+        public Task AddBlockRuleForAppAsync(string appPath, string ruleName)
+        {
+            return Task.Run(() =>
+            {
+                try
+                {
+                    Type ruleType = Type.GetTypeFromProgID("HNetCfg.FWRule");
+                    
+                    // Outbound block
+                    dynamic ruleOut = Activator.CreateInstance(ruleType);
+                    ruleOut.Action = 0; // NET_FW_ACTION_BLOCK
+                    ruleOut.Description = "AutoCommand User Block";
+                    ruleOut.Direction = 2; // NET_FW_RULE_DIR_OUT
+                    ruleOut.Enabled = true;
+                    ruleOut.InterfaceTypes = "All";
+                    ruleOut.Name = $"{ruleName} (Outbound Block)";
+                    ruleOut.ApplicationName = appPath;
+
+                    // Inbound block
+                    dynamic ruleIn = Activator.CreateInstance(ruleType);
+                    ruleIn.Action = 0; // NET_FW_ACTION_BLOCK
+                    ruleIn.Description = "AutoCommand User Block";
+                    ruleIn.Direction = 1; // NET_FW_RULE_DIR_IN
+                    ruleIn.Enabled = true;
+                    ruleIn.InterfaceTypes = "All";
+                    ruleIn.Name = $"{ruleName} (Inbound Block)";
+                    ruleIn.ApplicationName = appPath;
+
+                    dynamic fwPolicy = GetPolicy();
+                    fwPolicy.Rules.Add(ruleOut);
+                    fwPolicy.Rules.Add(ruleIn);
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception($"Failed to add firewall rule: {ex.Message}", ex);
+                }
+            });
+        }
+
         private static string DecodeProfile(int profiles)
         {
             var parts = new List<string>();

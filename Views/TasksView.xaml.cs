@@ -5,11 +5,12 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using AutoCommand.Models;
+using System.Text;
 using AutoCommand.Services;
 
 namespace AutoCommand.Views
 {
-    public partial class TasksView : UserControl
+    public partial class TasksView : UserControl, IAiAuditable
     {
         private List<ScheduledTaskItem> _allTasks = new();
 
@@ -142,6 +143,25 @@ namespace AutoCommand.Views
             {
                 MessageBox.Show($"Failed to delete: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
+        }
+
+        public string GetAuditContext()
+        {
+            if (_allTasks.Count == 0) return "No scheduled tasks loaded.";
+            var sb = new StringBuilder();
+            var running = _allTasks.Where(t => t.State == "Running").ToList();
+            var ready   = _allTasks.Where(t => t.State == "Ready").Take(50).ToList();
+            sb.AppendLine($"Scheduled Tasks Summary: {_allTasks.Count} total, {running.Count} running, {_allTasks.Count(t => t.State == "Ready")} ready, {_allTasks.Count(t => t.State == "Disabled")} disabled.");
+            if (running.Count > 0)
+            {
+                sb.AppendLine("\nCurrently Running Tasks:");
+                foreach (var t in running)
+                    sb.AppendLine($"- {t.TaskName} | Path: {t.TaskPath} | Action: {t.Action} | User: {t.User}");
+            }
+            sb.AppendLine("\nReady Tasks (up to 50):");
+            foreach (var t in ready)
+                sb.AppendLine($"- {t.TaskName} | Path: {t.TaskPath} | Action: {t.Action} | User: {t.User}");
+            return sb.ToString();
         }
     }
 }

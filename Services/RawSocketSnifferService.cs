@@ -46,20 +46,31 @@ namespace AutoCommand.Services
                     _mainSocket.IOControl(IOControlCode.ReceiveAll, inValue, outValue);
 
                     byte[] buffer = new byte[65535];
+                    // Using a reasonable timeout so we can still check for cancellation periodically
+                    _mainSocket.ReceiveTimeout = 2000;
 
                     while (!_cts.Token.IsCancellationRequested)
                     {
-                        if (_mainSocket.Available > 0)
+                        try
                         {
+                            // Blocking call to prevent CPU spinning.
+                            // ReceiveTimeout ensures it unblocks occasionally to check _cts.
                             int bytesRead = _mainSocket.Receive(buffer);
                             if (bytesRead >= 20) // Minimum IPv4 header length
                             {
                                 ProcessPacket(buffer, bytesRead);
                             }
                         }
-                        else
+                        catch (SocketException ex)
                         {
-                            Thread.Sleep(1); // Prevent 100% CPU loop
+                            // SocketError.TimedOut is expected and normal due to ReceiveTimeout
+                            if (ex.SocketErrorCode != SocketError.TimedOut && 
+                                ex.SocketErrorCode != SocketError.Interrupted &&
+                                ex.SocketErrorCode != SocketError.WouldBlock)
+                            {
+                                // Log unexpected socket errors if necessary, but keep the loop running
+                                // unless it's a critical error (like socket closed)
+                            }
                         }
                     }
                 }

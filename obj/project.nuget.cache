@@ -1,11 +1,29 @@
 {
   "version": 2,
-  "dgSpecHash": "YmQugFx1CX4=",
+  "dgSpecHash": "SBYB2Uw4U2U=",
   "success": true,
   "projectFilePath": "C:\\Users\\honey\\AutoCommand\\AutoCommand.csproj",
   "expectedPackageFiles": [
+    "C:\\Users\\honey\\.nuget\\packages\\communitytoolkit.highperformance\\8.4.2\\communitytoolkit.highperformance.8.4.2.nupkg.sha512",
+    "C:\\Users\\honey\\.nuget\\packages\\llamasharp\\0.27.0\\llamasharp.0.27.0.nupkg.sha512",
+    "C:\\Users\\honey\\.nuget\\packages\\llamasharp.backend.cpu\\0.27.0\\llamasharp.backend.cpu.0.27.0.nupkg.sha512",
+    "C:\\Users\\honey\\.nuget\\packages\\llamasharp.backend.cuda12\\0.27.0\\llamasharp.backend.cuda12.0.27.0.nupkg.sha512",
+    "C:\\Users\\honey\\.nuget\\packages\\llamasharp.backend.cuda12.linux\\0.27.0\\llamasharp.backend.cuda12.linux.0.27.0.nupkg.sha512",
+    "C:\\Users\\honey\\.nuget\\packages\\llamasharp.backend.cuda12.windows\\0.27.0\\llamasharp.backend.cuda12.windows.0.27.0.nupkg.sha512",
+    "C:\\Users\\honey\\.nuget\\packages\\microsoft.bcl.asyncinterfaces\\10.0.5\\microsoft.bcl.asyncinterfaces.10.0.5.nupkg.sha512",
+    "C:\\Users\\honey\\.nuget\\packages\\microsoft.bcl.memory\\10.0.5\\microsoft.bcl.memory.10.0.5.nupkg.sha512",
+    "C:\\Users\\honey\\.nuget\\packages\\microsoft.codeanalysis.analyzers\\5.3.0-2.25625.1\\microsoft.codeanalysis.analyzers.5.3.0-2.25625.1.nupkg.sha512",
+    "C:\\Users\\honey\\.nuget\\packages\\microsoft.codeanalysis.common\\5.3.0\\microsoft.codeanalysis.common.5.3.0.nupkg.sha512",
+    "C:\\Users\\honey\\.nuget\\packages\\microsoft.codeanalysis.csharp\\5.3.0\\microsoft.codeanalysis.csharp.5.3.0.nupkg.sha512",
+    "C:\\Users\\honey\\.nuget\\packages\\microsoft.extensions.ai.abstractions\\10.4.1\\microsoft.extensions.ai.abstractions.10.4.1.nupkg.sha512",
+    "C:\\Users\\honey\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\10.0.5\\microsoft.extensions.dependencyinjection.abstractions.10.0.5.nupkg.sha512",
+    "C:\\Users\\honey\\.nuget\\packages\\microsoft.extensions.logging.abstractions\\10.0.5\\microsoft.extensions.logging.abstractions.10.0.5.nupkg.sha512",
+    "C:\\Users\\honey\\.nuget\\packages\\system.interactive.async\\7.0.0\\system.interactive.async.7.0.0.nupkg.sha512",
+    "C:\\Users\\honey\\.nuget\\packages\\system.linq.async\\7.0.0\\system.linq.async.7.0.0.nupkg.sha512",
     "C:\\Users\\honey\\.nuget\\packages\\system.management\\10.0.0-preview.4.25258.110\\system.management.10.0.0-preview.4.25258.110.nupkg.sha512",
-    "C:\\Users\\honey\\.nuget\\packages\\system.serviceprocess.servicecontroller\\10.0.0-preview.4.25258.110\\system.serviceprocess.servicecontroller.10.0.0-preview.4.25258.110.nupkg.sha512"
+    "C:\\Users\\honey\\.nuget\\packages\\system.numerics.tensors\\10.0.5\\system.numerics.tensors.10.0.5.nupkg.sha512",
+    "C:\\Users\\honey\\.nuget\\packages\\system.serviceprocess.servicecontroller\\10.0.0-preview.4.25258.110\\system.serviceprocess.servicecontroller.10.0.0-preview.4.25258.110.nupkg.sha512",
+    "C:\\Users\\honey\\.nuget\\packages\\microsoft.windows.sdk.net.ref\\10.0.19041.57\\microsoft.windows.sdk.net.ref.10.0.19041.57.nupkg.sha512"
   ],
   "logs": []
 }

@@ -22,145 +22,199 @@
             </StackPanel>
         </Grid>
 
-        <!-- 2x2 Grid -->
+        <!-- 2x2 Grid + AI Assistant Split -->
         <Grid Grid.Row="1">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="1.5*"/>
             </Grid.ColumnDefinitions>
 
-            <!-- Q1: SSTP / WAN Miniports -->
-            <GroupBox Grid.Row="0" Grid.Column="0" Header="System VPN Backdoors" Margin="0,0,8,8"
-                      ToolTip="WAN Miniport SSTP — remote access attack surface">
-                <Grid>
+            <!-- Original Predefined Commands -->
+            <Grid Grid.Column="0" Margin="0,0,10,0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Q1: SSTP / WAN Miniports -->
+                <GroupBox Grid.Row="0" Grid.Column="0" Header="System VPN Backdoors" Margin="0,0,8,8"
+                          ToolTip="WAN Miniport SSTP — remote access attack surface">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <Border Grid.Row="0" Style="{StaticResource CardPanel}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel>
+                                    <TextBlock Text="SSTP Service (sstpsvc)" FontWeight="SemiBold"/>
+                                    <TextBlock x:Name="SstpStatusText" Text="Loading..." 
+                                               Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" Margin="0,2,0,0"/>
+                                </StackPanel>
+                                <Button x:Name="SstpToggleBtn" Grid.Column="1" Content="Disable + Neuter" 
+                                        Style="{StaticResource PrimaryButton}" Click="SstpToggleBtn_Click"/>
+                            </Grid>
+                        </Border>
+
+                        <DockPanel Grid.Row="1" Margin="0,8,0,0">
+                            <TextBlock DockPanel.Dock="Top" Text="WAN MINIPORTS" Style="{StaticResource SectionHeader}"/>
+                            <DataGrid x:Name="WanMiniportGrid">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*"/>
+                                    <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="80"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </DockPanel>
+                    </Grid>
+                </GroupBox>
+
+                <!-- Q2: WiFi Direct -->
+                <GroupBox Grid.Row="0" Grid.Column="1" Header="Ghost Hotspots" Margin="8,0,0,8"
+                          ToolTip="WiFi Direct Hosted Network — hidden hotspot attack surface">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <Border Grid.Row="0" Style="{StaticResource CardPanel}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel>
+                                    <TextBlock Text="Hosted Network (WiFi)" FontWeight="SemiBold"/>
+                                    <TextBlock x:Name="WifiDirectStatusText" Text="Loading..."
+                                               Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" Margin="0,2,0,0"/>
+                                </StackPanel>
+                                <Button x:Name="WifiDirectToggleBtn" Grid.Column="1" Content="Toggle"
+                                        Style="{StaticResource PrimaryButton}" Click="WifiDirectToggleBtn_Click"/>
+                            </Grid>
+                        </Border>
+
+                        <Button x:Name="UninstallWifiBtn" Grid.Row="1" Content="Uninstall Adapter" 
+                                Margin="0,4,0,0" Style="{StaticResource DangerButton}" Click="UninstallWifiBtn_Click"/>
+
+                        <DockPanel Grid.Row="2" Margin="0,8,0,0">
+                            <TextBlock DockPanel.Dock="Top" Text="WIFI DIRECT ADAPTERS" Style="{StaticResource SectionHeader}"/>
+                            <DataGrid x:Name="WifiDirectGrid">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*"/>
+                                    <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="80"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </DockPanel>
+                    </Grid>
+                </GroupBox>
+
+                <!-- Q3: KDNET -->
+                <GroupBox Grid.Row="1" Grid.Column="0" Header="Hacker Access Mode" Margin="0,8,8,0"
+                          ToolTip="Kernel Debug Network Adapter (KDNET) — kernel-level access">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <Border Grid.Row="0" Style="{StaticResource CardPanel}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel>
+                                    <TextBlock Text="KDNET Adapter" FontWeight="SemiBold"/>
+                                    <TextBlock x:Name="KdnetStatusText" Text="Loading..."
+                                               Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" Margin="0,2,0,0"/>
+                                </StackPanel>
+                                <Button x:Name="KdnetToggleBtn" Grid.Column="1" Content="Toggle"
+                                        Style="{StaticResource PrimaryButton}" Click="KdnetToggleBtn_Click"/>
+                            </Grid>
+                        </Border>
+
+                        <DockPanel Grid.Row="1" Margin="0,8,0,0">
+                            <TextBlock DockPanel.Dock="Top" Text="DEBUG ADAPTERS" Style="{StaticResource SectionHeader}"/>
+                            <DataGrid x:Name="KdnetGrid">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*"/>
+                                    <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="80"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </DockPanel>
+                    </Grid>
+                </GroupBox>
+
+                <!-- Q4: WAN Miniport Removal -->
+                <GroupBox Grid.Row="1" Grid.Column="1" Header="WAN Miniport Cleanup" Margin="8,8,0,0"
+                          ToolTip="Remove all WAN Miniport phantom devices">
+                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <TextBlock Text="Remove all WAN Miniports." 
+                                   Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap"
+                                   TextAlignment="Center" Margin="0,0,0,16"/>
+                        <Button x:Name="RemoveAllMiniportsBtn" Content="Remove All Miniports"
+                                Style="{StaticResource DangerButton}" Click="RemoveAllMiniportsBtn_Click"
+                                HorizontalAlignment="Center"/>
+                        <TextBlock x:Name="RemovalResultText" Text="" Foreground="{StaticResource TextSecondaryBrush}" 
+                                   FontSize="11" Margin="0,12,0,0" TextWrapping="Wrap" TextAlignment="Center"/>
+                    </StackPanel>
+                </GroupBox>
+            </Grid>
+
+            <!-- New AI Command Assistant -->
+            <GroupBox Grid.Column="1" Header="✨ Gemini Command Assistant" Margin="10,0,0,0"
+                      ToolTip="Ask Gemini to generate and run PowerShell commands to manage your system.">
+                <Grid Margin="5">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
-                    </Grid.RowDefinitions>
-
-                    <Border Grid.Row="0" Style="{StaticResource CardPanel}">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <StackPanel>
-                                <TextBlock Text="SSTP Service (sstpsvc)" FontWeight="SemiBold"/>
-                                <TextBlock x:Name="SstpStatusText" Text="Loading..." 
-                                           Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" Margin="0,2,0,0"/>
-                            </StackPanel>
-                            <Button x:Name="SstpToggleBtn" Grid.Column="1" Content="Disable + Neuter Miniports" 
-                                    Style="{StaticResource PrimaryButton}" Click="SstpToggleBtn_Click"/>
-                        </Grid>
-                    </Border>
-
-                    <DockPanel Grid.Row="1" Margin="0,8,0,0">
-                        <TextBlock DockPanel.Dock="Top" Text="WAN MINIPORTS" Style="{StaticResource SectionHeader}"/>
-                        <DataGrid x:Name="WanMiniportGrid">
-                            <DataGrid.Columns>
-                                <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*"/>
-                                <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="80"/>
-                            </DataGrid.Columns>
-                        </DataGrid>
-                    </DockPanel>
-                </Grid>
-            </GroupBox>
-
-            <!-- Q2: WiFi Direct -->
-            <GroupBox Grid.Row="0" Grid.Column="1" Header="Ghost Hotspots" Margin="8,0,0,8"
-                      ToolTip="WiFi Direct Hosted Network — hidden hotspot attack surface">
-                <Grid>
-                    <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
-                    <Border Grid.Row="0" Style="{StaticResource CardPanel}">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <StackPanel>
-                                <TextBlock Text="Hosted Network (WiFi Direct)" FontWeight="SemiBold"/>
-                                <TextBlock x:Name="WifiDirectStatusText" Text="Loading..."
-                                           Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" Margin="0,2,0,0"/>
-                            </StackPanel>
-                            <Button x:Name="WifiDirectToggleBtn" Grid.Column="1" Content="Toggle"
-                                    Style="{StaticResource PrimaryButton}" Click="WifiDirectToggleBtn_Click"/>
-                        </Grid>
-                    </Border>
+                    <TextBlock Grid.Row="0" Text="Tell Gemini what you want to do (e.g., 'Disable the Windows Search service' or 'List all scheduled tasks in a folder'). It will generate the script for you to review." 
+                               Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" TextWrapping="Wrap" Margin="0,0,0,8"/>
 
-                    <Button x:Name="UninstallWifiBtn" Grid.Row="1" Content="Uninstall WiFi Direct Adapter" 
-                            Margin="0,4,0,0" Style="{StaticResource DangerButton}" Click="UninstallWifiBtn_Click"/>
+                    <TextBox Grid.Row="1" x:Name="AiChatLog" IsReadOnly="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"
+                             Background="{StaticResource SurfaceAltBrush}" Foreground="{StaticResource TextPrimaryBrush}"
+                             BorderThickness="1" BorderBrush="{StaticResource BorderBrush}" Padding="8" FontFamily="Consolas" FontSize="11"/>
 
-                    <DockPanel Grid.Row="2" Margin="0,8,0,0">
-                        <TextBlock DockPanel.Dock="Top" Text="WIFI DIRECT VIRTUAL ADAPTERS" Style="{StaticResource SectionHeader}"/>
-                        <DataGrid x:Name="WifiDirectGrid">
-                            <DataGrid.Columns>
-                                <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*"/>
-                                <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="80"/>
-                            </DataGrid.Columns>
-                        </DataGrid>
-                    </DockPanel>
+                    <!-- Loading / Run State -->
+                    <StackPanel Grid.Row="2" x:Name="AiReviewPanel" Visibility="Collapsed" Margin="0,8,0,0">
+                        <TextBlock Text="Suggested Command:" FontWeight="SemiBold" FontSize="11" Margin="0,0,0,4"/>
+                        <TextBox x:Name="AiSuggestedCommand" Background="#1E293B" Foreground="#4ADE80" FontFamily="Consolas"
+                                 BorderThickness="1" BorderBrush="#334155" Padding="4" IsReadOnly="True" TextWrapping="Wrap"/>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,8,0,0">
+                            <Button Content="Cancel" Style="{StaticResource DangerButton}" Margin="0,0,8,0" Click="AiCancelCommandBtn_Click"/>
+                            <Button Content="Run Command" Style="{StaticResource PrimaryButton}" Click="AiRunCommandBtn_Click"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- Input Box -->
+                    <Grid Grid.Row="3" Margin="0,8,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBox x:Name="AiPromptInput" Grid.Column="0" Padding="6" 
+                                 Background="{StaticResource SurfaceBrush}" Foreground="{StaticResource TextPrimaryBrush}"
+                                 BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
+                                 KeyUp="AiPromptInput_KeyUp"
+                                 ToolTip="Type your request here and press Enter."/>
+                        <Button x:Name="AiSendBtn" Grid.Column="1" Content="Ask" Margin="8,0,0,0"
+                                Style="{StaticResource PrimaryButton}" Click="AiSendBtn_Click"/>
+                    </Grid>
                 </Grid>
-            </GroupBox>
-
-            <!-- Q3: KDNET -->
-            <GroupBox Grid.Row="1" Grid.Column="0" Header="Hacker Access Mode" Margin="0,8,8,0"
-                      ToolTip="Kernel Debug Network Adapter (KDNET) — kernel-level access">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
-                    </Grid.RowDefinitions>
-
-                    <Border Grid.Row="0" Style="{StaticResource CardPanel}">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <StackPanel>
-                                <TextBlock Text="Kernel Debug Adapter (KDNET)" FontWeight="SemiBold"/>
-                                <TextBlock x:Name="KdnetStatusText" Text="Loading..."
-                                           Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" Margin="0,2,0,0"/>
-                            </StackPanel>
-                            <Button x:Name="KdnetToggleBtn" Grid.Column="1" Content="Toggle"
-                                    Style="{StaticResource PrimaryButton}" Click="KdnetToggleBtn_Click"/>
-                        </Grid>
-                    </Border>
-
-                    <DockPanel Grid.Row="1" Margin="0,8,0,0">
-                        <TextBlock DockPanel.Dock="Top" Text="DEBUG NETWORK ADAPTERS" Style="{StaticResource SectionHeader}"/>
-                        <DataGrid x:Name="KdnetGrid">
-                            <DataGrid.Columns>
-                                <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*"/>
-                                <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="80"/>
-                            </DataGrid.Columns>
-                        </DataGrid>
-                    </DockPanel>
-                </Grid>
-            </GroupBox>
-
-            <!-- Q4: WAN Miniport Removal -->
-            <GroupBox Grid.Row="1" Grid.Column="1" Header="WAN Miniport Cleanup" Margin="8,8,0,0"
-                      ToolTip="Remove all WAN Miniport phantom devices">
-                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                    <TextBlock Text="Remove all WAN Miniport adapters from the system." 
-                               Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap"
-                               TextAlignment="Center" Margin="0,0,0,16"/>
-                    <Button x:Name="RemoveAllMiniportsBtn" Content="Remove All WAN Miniports"
-                            Style="{StaticResource DangerButton}" Click="RemoveAllMiniportsBtn_Click"
-                            HorizontalAlignment="Center"/>
-                    <TextBlock x:Name="RemovalResultText" Text="" Foreground="{StaticResource TextSecondaryBrush}" 
-                               FontSize="11" Margin="0,12,0,0" TextWrapping="Wrap" TextAlignment="Center"/>
-                </StackPanel>
             </GroupBox>
         </Grid>
     </Grid>
