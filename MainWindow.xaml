@@ -248,7 +248,7 @@
                 </StackPanel>
 
                 <!-- Version -->
-                <TextBlock Grid.Column="2" Text="AutoCommand v3.4" 
+                <TextBlock Grid.Column="2" Text="AutoCommand v3.4.0" 
                            Foreground="#5A5A62" FontSize="10" VerticalAlignment="Center"/>
             </Grid>
         </Border>

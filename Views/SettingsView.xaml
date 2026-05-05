@@ -30,7 +30,7 @@
                         
                         <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,8,0,0">
                             <TextBlock Text="Version:" Foreground="{StaticResource TextSecondaryBrush}" Width="150" VerticalAlignment="Center"/>
-                            <TextBlock Text="3.2" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                            <TextBlock Text="3.4.0" FontWeight="SemiBold" VerticalAlignment="Center"/>
                         </StackPanel>
                         
                         <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,16,0,0">
