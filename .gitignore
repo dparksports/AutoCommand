@@ -1,6 +1,12 @@
 bin/
 obj/
+Sdk/bin/
+Sdk/obj/
+ScratchTest/bin/
+ScratchTest/obj/
 *.zip
 *.csv
 .vs/
 .idea/
+Plugins/
+*.user
