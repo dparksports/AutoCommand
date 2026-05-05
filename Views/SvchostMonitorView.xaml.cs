@@ -20,6 +20,7 @@ namespace AutoCommand.Views
         private DnsResolutionService _dnsService;
         private SysmonWatcherService _sysmonService;
         private RawSocketSnifferService _snifferService;
+        private readonly SysmonInstallerService _installerService = new();
         private bool _isMonitoring = false;
         private DispatcherTimer _saveTimer;
         private DispatcherTimer _lastSeenRefreshTimer;
@@ -37,6 +38,8 @@ namespace AutoCommand.Views
         {
             if (_isInitialized) return;
             _isInitialized = true;
+
+            CheckSysmonStatus();
 
             _dnsService   = new DnsResolutionService();
             _sysmonService = new SysmonWatcherService(_trackedIps, _dnsService);
@@ -73,6 +76,38 @@ namespace AutoCommand.Views
 
             // Auto-start monitor on load
             ToggleMonitorBtn_Click(null, null);
+        }
+
+        private void CheckSysmonStatus()
+        {
+            if (!_installerService.IsSysmonInstalled())
+            {
+                SetupSysmonBtn.Visibility = Visibility.Visible;
+                MonitorStatusText.Text = "Sysmon is not installed. Network tracking will not work.";
+            }
+            else
+            {
+                SetupSysmonBtn.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        private async void SetupSysmonBtn_Click(object sender, RoutedEventArgs e)
+        {
+            SetupSysmonBtn.IsEnabled = false;
+            MonitorStatusText.Text = "Downloading and configuring Sysmon... please wait.";
+            
+            bool success = await _installerService.InstallAndConfigureAsync();
+            if (success)
+            {
+                MessageBox.Show("Sysmon has been successfully installed and configured for network tracking.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                CheckSysmonStatus();
+                MonitorStatusText.Text = "Sysmon ready. Click 'Start Monitor' to begin tracking.";
+            }
+            else
+            {
+                MessageBox.Show("Failed to install Sysmon. Ensure you are running as Administrator and have an internet connection.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                SetupSysmonBtn.IsEnabled = true;
+            }
         }
 
         private void Filter_Changed(object sender, RoutedEventArgs e)

@@ -23,6 +23,7 @@
                            Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" Margin="0,-12,0,0"/>
             </StackPanel>
             <StackPanel Grid.Column="2" Orientation="Horizontal">
+                <Button x:Name="SetupSysmonBtn" Content="🛠 Setup Sysmon" Style="{StaticResource PrimaryButton}" Click="SetupSysmonBtn_Click" Margin="0,0,8,0" Visibility="Collapsed"/>
                 <Button x:Name="ToggleMonitorBtn" Content="Start Monitor" Style="{StaticResource PrimaryButton}" Click="ToggleMonitorBtn_Click" Margin="0,0,8,0"/>
                 <Button x:Name="SaveCsvBtn" Content="Force Save CSV" Style="{StaticResource PrimaryButton}" Click="SaveCsvBtn_Click"/>
             </StackPanel>
