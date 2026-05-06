@@ -1,6 +1,8 @@
-# AutoCommand v3.4
+# AutoCommand v3.4 🛡️
 
 AutoCommand is an enterprise-grade C# WPF security toolkit designed to provide non-technical users with granular control over Windows OS security features. It emphasizes native performance, zero-dependency deployment, and conversational AI assistance.
+
+![AutoCommand Architecture](Assets/architecture.png)
 
 ## What's New in v3.4
 
@@ -10,10 +12,14 @@ AutoCommand is an enterprise-grade C# WPF security toolkit designed to provide n
 *   **🌐 DNS Resolution & Connections UI**: The active network connections tab now resolves and displays remote domains and geographic data dynamically, utilizing a fast, rate-limited caching service.
 *   **🛡️ Active Process Blocking**: Right-click any active network connection to instantly generate native COM (`INetFwPolicy2`) Windows Firewall block rules (Inbound and Outbound) for the underlying executable.
 *   **Advanced Firewall Profiles**: The Firewall tab now includes a 1-click Quick Profile selector (Shield Up, Gaming, Office, Home, Public Strict).
+*   **📡 Firebase Telemetry**: Telemetry system with offline queueing, privacy controls, and DebugView verification capabilities.
+
+![AI Security Assistant Features](Assets/ai_features.png)
 
 ## Core Features
 
 *   **Zero-PowerShell Architecture**: Core monitoring and enforcement functionality uses native C# logic, WMI, COM (`INetFwPolicy2`, `Schedule.Service`), WinRT, and P/Invoke (`iphlpapi.dll`, `setupapi.dll`), maximizing speed and stability.
+*   **AI Security Co-Pilot**: Audits system states and processes using either the cloud-based Gemini API or a locally hosted Unsloth GGUF model via LLamaSharp to ensure zero-config, self-contained AI discovery and analysis. 
 *   **Security Enforcer**: A persistent background loop that automatically monitors the system for configuration drift, unauthorized VPN interfaces, hidden hotspots, high-privilege tasks, and malicious Hosts file redirects.
 *   **Process & Network Monitor**: Integrates natively with `Microsoft-Windows-Sysmon/Operational` via `EventLogWatcher` and raw sockets to track application network activity (packets and bytes) in real-time.
 *   **OS Hardening & Privacy**: Toggles for LSA Protection, UAC strictness, Windows Telemetry, Kernel Debugging (KDNET), and WiFi Direct hotspots, including IPv6 deactivation.
