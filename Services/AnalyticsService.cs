@@ -13,8 +13,8 @@ namespace AutoCommand.Services
         private static AnalyticsService _instance;
         public static AnalyticsService Instance => _instance ??= new AnalyticsService();
 
-        // TODO: Replace with actual GA4/Firebase Measurement ID and API Secret
-        private readonly string MeasurementId = "G-XXXXXXXXXX";
+        // GA4 / Firebase Measurement ID
+        private readonly string MeasurementId = "G-3Y256NPRT9";
         private readonly string ApiSecret = "YOUR_API_SECRET_HERE";
         private readonly string Endpoint;
 

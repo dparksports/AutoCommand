@@ -10,3 +10,4 @@ ScratchTest/obj/
 .idea/
 Plugins/
 *.user
+publish_out/

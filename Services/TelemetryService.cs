@@ -42,11 +42,18 @@ namespace AutoCommand.Services
                 // Listen for messages from our HTML script
                 _webView.CoreWebView2.WebMessageReceived += CoreWebView2_WebMessageReceived;
 
-                // Load the HTML file from the local file system
-                string htmlPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Web", "telemetry.html");
+                // Map local Web assets folder to a virtual host to avoid file:// origin CORS restrictions in Firebase Analytics
+                string webDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Web");
+                string htmlPath = Path.Combine(webDir, "telemetry.html");
+
                 if (File.Exists(htmlPath))
                 {
-                    _webView.CoreWebView2.Navigate(new Uri(htmlPath).AbsoluteUri);
+                    _webView.CoreWebView2.SetVirtualHostNameToFolderMapping(
+                        "telemetry.local",
+                        webDir,
+                        CoreWebView2HostResourceAccessKind.Allow
+                    );
+                    _webView.CoreWebView2.Navigate("https://telemetry.local/telemetry.html");
                 }
                 else
                 {

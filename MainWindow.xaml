@@ -253,7 +253,7 @@
                 </StackPanel>
 
                 <!-- Version -->
-                <TextBlock Grid.Column="2" Text="AutoCommand v3.5.0" 
+                <TextBlock Grid.Column="2" Text="AutoCommand v3.5.1" 
                            Foreground="#5A5A62" FontSize="10" VerticalAlignment="Center"/>
             </Grid>
         </Border>
