@@ -22,10 +22,12 @@ namespace AutoCommand.Views
         {
             await CheckStartupTask();
             
-            // Load Analytics preference
+            // Load Analytics preference and sync both telemetry services
             AnalyticsCheck.Checked -= AnalyticsCheck_Checked;
             AnalyticsCheck.Unchecked -= AnalyticsCheck_Unchecked;
-            AnalyticsCheck.IsChecked = AnalyticsService.Instance.IsAnalyticsEnabled;
+            bool analyticsEnabled = AnalyticsService.Instance.IsAnalyticsEnabled;
+            AnalyticsCheck.IsChecked = analyticsEnabled;
+            TelemetryService.Instance.ConsentGranted = analyticsEnabled;
             AnalyticsCheck.Checked += AnalyticsCheck_Checked;
             AnalyticsCheck.Unchecked += AnalyticsCheck_Unchecked;
 
@@ -40,11 +42,13 @@ namespace AutoCommand.Views
         private void AnalyticsCheck_Checked(object sender, RoutedEventArgs e)
         {
             AnalyticsService.Instance.IsAnalyticsEnabled = true;
+            TelemetryService.Instance.ConsentGranted = true;
         }
 
         private void AnalyticsCheck_Unchecked(object sender, RoutedEventArgs e)
         {
             AnalyticsService.Instance.IsAnalyticsEnabled = false;
+            TelemetryService.Instance.ConsentGranted = false;
         }
 
         private void AutoMitigateAdaptersCheck_Checked(object sender, RoutedEventArgs e)

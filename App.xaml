@@ -309,7 +309,7 @@
                                    PopupAnimation="Slide"
                                    Placement="Bottom">
                                 <Border x:Name="DropDownBorder"
-                                        Background="{StaticResource SurfaceColor}"
+                                        Background="{StaticResource SurfaceBrush}"
                                         BorderBrush="{StaticResource BorderBrush}"
                                         BorderThickness="1"
                                         CornerRadius="4"

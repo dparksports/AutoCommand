@@ -123,37 +123,47 @@ namespace AutoCommand.Services
         /// <summary>
         /// Logs a telemetry event. It is fire-and-forget.
         /// </summary>
-        public async Task LogEventAsync(string eventName, Dictionary<string, object> parameters = null)
+        public Task LogEventAsync(string eventName, Dictionary<string, object> parameters = null)
         {
-            if (!ConsentGranted || _isFailed) return;
+            if (!ConsentGranted || _isFailed) return Task.CompletedTask;
+            if (string.IsNullOrWhiteSpace(eventName)) return Task.CompletedTask;
 
             // Ensure parameters dictionary exists
             parameters ??= new Dictionary<string, object>();
+
+            // GA4 requires engagement_time_msec > 0 for events to appear in Realtime dashboard
+            parameters.TryAdd("engagement_time_msec", 100);
 
 #if DEBUG
             // Enable Firebase DebugView
             parameters["debug_mode"] = true;
 #endif
 
+            // Sanitize event name to prevent JS injection (GA4 only allows letters, digits, underscores)
+            string safeEventName = System.Text.RegularExpressions.Regex.Replace(eventName, @"[^a-zA-Z0-9_]", "_");
+
             string jsonParams = JsonSerializer.Serialize(parameters);
-            string script = $"window.logTelemetryEvent('{eventName}', {jsonParams});";
+            string script = $"window.logTelemetryEvent('{safeEventName}', {jsonParams});";
 
-            await ExecuteScriptAsync(script);
+            return ExecuteScriptAsync(script);
         }
 
-        public async Task SetUserIdAsync(string userId)
+        public Task SetUserIdAsync(string userId)
         {
-            if (!ConsentGranted || _isFailed) return;
-            string script = $"window.setTelemetryUserId('{userId}');";
-            await ExecuteScriptAsync(script);
+            if (!ConsentGranted || _isFailed) return Task.CompletedTask;
+            if (string.IsNullOrEmpty(userId)) return Task.CompletedTask;
+            // Escape single quotes in userId to prevent JS injection
+            string safeId = userId.Replace("'", "\\'");
+            string script = $"window.setTelemetryUserId('{safeId}');";
+            return ExecuteScriptAsync(script);
         }
 
-        public async Task SetUserPropertiesAsync(Dictionary<string, object> properties)
+        public Task SetUserPropertiesAsync(Dictionary<string, object> properties)
         {
-            if (!ConsentGranted || _isFailed) return;
+            if (!ConsentGranted || _isFailed) return Task.CompletedTask;
             string jsonProps = properties != null ? JsonSerializer.Serialize(properties) : "{}";
             string script = $"window.setTelemetryUserProperties({jsonProps});";
-            await ExecuteScriptAsync(script);
+            return ExecuteScriptAsync(script);
         }
 
         private Task ExecuteScriptAsync(string script)
