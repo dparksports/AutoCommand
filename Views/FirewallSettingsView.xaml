@@ -24,14 +24,14 @@
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             <StackPanel>
-                <TextBlock Text="Advanced Firewall Settings" Style="{StaticResource PageHeader}"/>
+                <TextBlock Text="Advanced Firewall Settings" Style="{StaticResource PageHeader}" Margin="0,0,0,4"/>
                 <TextBlock Text="Manage Windows Defender Firewall profiles and port rules via native COM APIs." 
-                           Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" Margin="0,-12,0,0"/>
+                           Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" Margin="0,0,0,0"/>
             </StackPanel>
 
             <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                <TextBlock Text="Quick Profile:" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                <ComboBox x:Name="ProfileCombo" Width="120" Margin="0,0,8,0" SelectionChanged="ProfileCombo_SelectionChanged">
+                <TextBlock Text="Quick Profile:" Foreground="{StaticResource TextPrimaryBrush}" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                <ComboBox x:Name="ProfileCombo" Width="140" Margin="0,0,8,0" SelectionChanged="ProfileCombo_SelectionChanged">
                     <ComboBoxItem Content="Custom (Current)" IsSelected="True"/>
                     <ComboBoxItem Content="Shield Up"/>
                     <ComboBoxItem Content="Gaming"/>
