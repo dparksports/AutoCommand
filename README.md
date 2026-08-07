@@ -1,44 +1,84 @@
-# AutoCommand v3.4 🛡️
+# AutoCommand v3.5 🛡️
 
-AutoCommand is an enterprise-grade C# WPF security toolkit designed to provide non-technical users with granular control over Windows OS security features. It emphasizes native performance, zero-dependency deployment, and conversational AI assistance.
+![AutoCommand Infographic Header](Assets/autocommand_infographic.png)
 
-![AutoCommand Architecture](Assets/architecture.png)
+**AutoCommand** is an enterprise-grade C# WPF security and OS hardening suite designed for Windows 10 and 11. It delivers zero-dependency threat monitoring, native SetupAPI/COM device management, event-driven network adapter protection, and an integrated conversational AI co-pilot.
 
-## What's New in v3.4
+---
 
-*   **✨ Gemini Command Assistant**: A new natural-language chat interface in the Command Panel. Users can ask the AI to perform system tasks, and Gemini will generate and safely execute the required PowerShell scripts.
-*   **📦 Default Apps Uninstaller**: Easily view and remove pre-installed Windows bloatware. Includes live Authenticode signature validation for Appx packages using native WinRT APIs.
-*   **🧩 Plugin & Extensibility System**: Developers can now add features without modifying the core app. Drop `.dll` or raw `.cs` files into the `Plugins/` folder, and the new Roslyn-powered loader will compile and integrate them at runtime.
-*   **🌐 DNS Resolution & Connections UI**: The active network connections tab now resolves and displays remote domains and geographic data dynamically, utilizing a fast, rate-limited caching service.
-*   **🛡️ Active Process Blocking**: Right-click any active network connection to instantly generate native COM (`INetFwPolicy2`) Windows Firewall block rules (Inbound and Outbound) for the underlying executable.
-*   **Advanced Firewall Profiles**: The Firewall tab now includes a 1-click Quick Profile selector (Shield Up, Gaming, Office, Home, Public Strict).
-*   **📡 Firebase Telemetry**: Telemetry system with offline queueing, privacy controls, and DebugView verification capabilities.
+## 🚀 What's New in v3.5
 
-![AI Security Assistant Features](Assets/ai_features.png)
+* **📡 Event-Driven Network Adapter Defense**: Replaced periodic polling with native WMI event subscriptions (`__InstanceCreationEvent` / `__InstanceDeletionEvent`). Fired instantly when unauthorized SSTP or Kernel Debug adapters appear with zero idle CPU cost.
+* **🔔 Windows Action Center Toast Notifications**: System security alerts now trigger native Windows 10/11 Toast Notifications (`Windows.UI.Notifications`). Click any alert to bring AutoCommand directly to the foreground, even when minimized.
+* **⚙️ User-Controlled Auto-Mitigation Toggle**: Added a dedicated **Auto-Mitigate** setting. Choose between automatic background takedowns or interactive review prompts (Block, Whitelist, or Ignore).
+* **⚡ Native SetupAPI Device Takedown**: Device removal upgraded from `pnputil` CLI calls to direct P/Invoke `SetupAPI` routines (`WanMiniportRemover.cs`) for clean, reliable kernel-mode adapter uninstallation.
+* **💾 Persistent Preference Memory**: SSTP and Kernel Debug adapter whitelists and auto-mitigate preferences automatically persist across system reboots.
 
-## Core Features
+---
 
-*   **Zero-PowerShell Architecture**: Core monitoring and enforcement functionality uses native C# logic, WMI, COM (`INetFwPolicy2`, `Schedule.Service`), WinRT, and P/Invoke (`iphlpapi.dll`, `setupapi.dll`), maximizing speed and stability.
-*   **AI Security Co-Pilot**: Audits system states and processes using either the cloud-based Gemini API or a locally hosted Unsloth GGUF model via LLamaSharp to ensure zero-config, self-contained AI discovery and analysis. 
-*   **Security Enforcer**: A persistent background loop that automatically monitors the system for configuration drift, unauthorized VPN interfaces, hidden hotspots, high-privilege tasks, and malicious Hosts file redirects.
-*   **Process & Network Monitor**: Integrates natively with `Microsoft-Windows-Sysmon/Operational` via `EventLogWatcher` and raw sockets to track application network activity (packets and bytes) in real-time.
-*   **OS Hardening & Privacy**: Toggles for LSA Protection, UAC strictness, Windows Telemetry, Kernel Debugging (KDNET), and WiFi Direct hotspots, including IPv6 deactivation.
-*   **DBX Firmware Safety Check**: Authenticode and DBX revocation checks on the UEFI bootloader, ensuring firmware integrity against bootkits.
-*   **Startup Persistence Scanner**: Enumerates all `HKCU`/`HKLM` Run keys and Startup directories to hunt and squish persistent malware binaries.
+## 🛡️ Core Capabilities
 
-## Requirements
-*   Windows 10/11
-*   .NET 10 SDK (or a self-contained build)
-*   Administrative Privileges (required for raw sockets, Sysmon integration, and COM API management)
+### ⚡ Event-Driven Security Enforcer
+* **SSTP & WAN Miniport Guard**: Detects unauthorized Remote Access Service (RAS) tunneling interfaces instantly.
+* **Kernel Debug Adapter Block**: Intercepts active `KDNIC` / Kernel Debug Network Adapters used for remote OS debugging.
+* **Privileged Task Scanner**: Enumerate non-Microsoft scheduled tasks running with `TASK_RUNLEVEL_HIGHEST` privileges.
+* **Hosts File Guard**: Real-time detection of malicious DNS redirects outside `localhost` / `127.0.0.1`.
 
-## Build Instructions
-1. Clone the repository.
-2. Ensure you have the .NET 10 SDK installed.
-3. Build and run as Administrator:
-   ```powershell
-   dotnet build
-   Start-Process -FilePath "dotnet" -ArgumentList "run --project AutoCommand.csproj" -Verb RunAs
-   ```
+### 🧠 AI Security Co-Pilot
+* **Gemini Cloud Assistant**: Natural-language chat interface in the Command Panel to audit configurations and safely execute system tasks.
+* **Local Offline LLM**: Integrated `LLamaSharp` runtime capable of running GGUF models directly on CPU or CUDA without cloud connectivity.
 
-## License
+### 🌐 System & Process Analytics
+* **Sysmon & Sockets Monitor**: Native integration with `Microsoft-Windows-Sysmon/Operational` via `EventLogWatcher` and raw sockets.
+* **Active Connections & Geo-DNS**: Live display of remote IP connections, process bindings, and reverse-resolved domain names.
+* **1-Click Firewall Rules**: Instantly block inbound and outbound executable traffic via native `INetFwPolicy2` COM interfaces.
+
+### 🔒 OS Hardening & UEFI Integrity
+* **DBX Firmware Safety Check**: Authenticode validation and UEFI DBX revocation checks on system bootloaders.
+* **System Hardening Toggles**: Quick controls for LSA Protection, UAC enforcement, Telemetry, and WiFi Direct.
+
+---
+
+## 🏗️ Architecture
+
+```mermaid
+graph TD
+    UI[WPF UI & System Toast Notifications] <--> Enforcer[SecurityEnforcer Engine]
+    Enforcer -->|WMI Event Watcher| AdapterEvents[__InstanceCreationEvent]
+    Enforcer -->|SetupAPI P/Invoke| NativeDevice[WanMiniportRemover]
+    Enforcer -->|COM HNetCfg| Firewall[INetFwPolicy2 COM API]
+    Enforcer -->|Schedule.Service| TaskSched[Windows Task Scheduler COM]
+    UI <--> AI[Gemini & LLamaSharp AI Co-Pilot]
+```
+
+AutoCommand uses a **Zero-PowerShell Core** architecture. All monitoring and mitigation features interact directly with Windows C/C++ subsystem APIs, WMI COM interfaces, and P/Invoke DLLs (`iphlpapi.dll`, `setupapi.dll`), eliminating overhead and avoiding script execution policies.
+
+---
+
+## 📋 System Requirements
+
+* **OS**: Windows 10 (v2004+) or Windows 11
+* **Runtime**: .NET 10 SDK (or self-contained deployment)
+* **Privileges**: Administrator Rights (required for WMI events, SetupAPI device removal, and COM firewall configuration)
+
+---
+
+## 🔧 Build & Run
+
+```powershell
+# Clone repository
+git clone https://github.com/dparksports/AutoCommand.git
+cd AutoCommand
+
+# Build project
+dotnet build --configuration Release
+
+# Launch with Administrator privileges
+Start-Process -FilePath "bin\Release\net10.0-windows10.0.19041.0\AutoCommand.exe" -Verb RunAs
+```
+
+---
+
+## 📄 License
+
 Licensed under the [Apache License, Version 2.0](LICENSE).

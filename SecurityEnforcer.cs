@@ -11,12 +11,18 @@ namespace AutoCommand
     /// <summary>
     /// Background security enforcement loop.
     /// Ported from DeviceMonitorCS — all PowerShell replaced with native APIs.
+    /// Adapter detection is event-driven via AdapterEventWatcher (zero polling overhead).
     /// </summary>
     public class SecurityEnforcer
     {
         private bool _isRunning;
         private readonly Action<string, string> _onThreatDetected;
         public event Action<string, string> StatusChanged;
+
+        /// <summary>Optional extra callback to trigger system-level notifications (e.g. tray balloon).</summary>
+        public Action<string, string> OnAdapterAlert;
+
+        private Helpers.AdapterEventWatcher _adapterWatcher;
 
         public SecurityEnforcer(Action<string, string> onThreatDetected)
         {
@@ -27,7 +33,49 @@ namespace AutoCommand
         public static bool IsSstpAllowed
         {
             get => _isSstpAllowed;
-            set => _isSstpAllowed = value;
+            set
+            {
+                _isSstpAllowed = value;
+                try { System.IO.File.WriteAllText("allowed_sstp.txt", value.ToString()); } catch { }
+            }
+        }
+
+        private static volatile bool _isKernelDebugAllowed = false;
+        public static bool IsKernelDebugAllowed
+        {
+            get => _isKernelDebugAllowed;
+            set
+            {
+                _isKernelDebugAllowed = value;
+                try { System.IO.File.WriteAllText("allowed_kerneldebug.txt", value.ToString()); } catch { }
+            }
+        }
+
+        // AutoMitigateAdapters: cached in-memory; persisted to disk via setter only.
+        private static volatile bool _autoMitigateAdapters = false;
+        public static bool AutoMitigateAdapters
+        {
+            get => _autoMitigateAdapters;
+            set
+            {
+                _autoMitigateAdapters = value;
+                try { System.IO.File.WriteAllText("auto_mitigate_adapters.txt", value.ToString()); } catch { }
+            }
+        }
+
+        // Load all persisted preferences from disk — called once at Start().
+        private static void LoadPersistedPreferences()
+        {
+            try
+            {
+                if (System.IO.File.Exists("allowed_sstp.txt"))
+                    _isSstpAllowed = System.IO.File.ReadAllText("allowed_sstp.txt").Trim() == "True";
+                if (System.IO.File.Exists("allowed_kerneldebug.txt"))
+                    _isKernelDebugAllowed = System.IO.File.ReadAllText("allowed_kerneldebug.txt").Trim() == "True";
+                if (System.IO.File.Exists("auto_mitigate_adapters.txt"))
+                    _autoMitigateAdapters = System.IO.File.ReadAllText("auto_mitigate_adapters.txt").Trim() == "True";
+            }
+            catch { }
         }
 
         private static HashSet<string> _whitelistedTasks = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -43,17 +91,34 @@ namespace AutoCommand
         public void Start()
         {
             if (_isRunning) return;
+            LoadPersistedPreferences();
             _isRunning = true;
+
+            // Start the event-driven adapter watcher (replaces 2s WMI polling)
+            _adapterWatcher = new Helpers.AdapterEventWatcher();
+            _adapterWatcher.AdapterAppeared += OnAdapterAppeared;
+            _adapterWatcher.Start();
+
             Task.Run(RunLoop);
         }
 
         public void Stop()
         {
             _isRunning = false;
+            _adapterWatcher?.Dispose();
+            _adapterWatcher = null;
         }
 
-        public int CheckInterval { get; set; } = 2000;
+        public int CheckInterval { get; set; } = 5000;
         private int _loopCount = 0;
+
+        // Interval multipliers (based on CheckInterval = 5000ms)
+        // 5s  * 6  = 30s for hosts file
+        // 5s  * 12 = 60s for privileged task scan
+        // 5s  * 12 = 60s for firewall drift (was every 30s at 2s interval, now same cadence)
+        private const int HostsFileEveryN       = 6;   // every ~30s
+        private const int PrivTasksEveryN        = 12;  // every ~60s
+        private const int FirewallDriftEveryN    = 12;  // every ~60s
 
         public event Action<List<string>> ConfigurationDriftDetected;
 
@@ -63,15 +128,21 @@ namespace AutoCommand
             {
                 try
                 {
+                    // Hosted network is lightweight — run every tick
                     CheckHostedNetwork();
-                    CheckWanMiniports();
-                    CheckPrivilegedTasks();
-                    CheckHostsFile();
 
-                    if (_loopCount % 15 == 0) // Every 30 seconds
-                    {
+                    // Hosts file — run every 30s
+                    if (_loopCount % HostsFileEveryN == 0)
+                        CheckHostsFile();
+
+                    // Task scheduler scan — heavy, run every 60s
+                    if (_loopCount % PrivTasksEveryN == 0)
+                        CheckPrivilegedTasks();
+
+                    // Firewall drift — run every 60s
+                    if (_loopCount % FirewallDriftEveryN == 0)
                         await MonitorFirewallDrift();
-                    }
+
                     _loopCount++;
                 }
                 catch (Exception ex)
@@ -149,60 +220,79 @@ namespace AutoCommand
             catch { }
         }
 
-        private void CheckWanMiniports()
+        /// <summary>
+        /// Called by AdapterEventWatcher when a monitored adapter appears.
+        /// This fires once per adapter appearance — no spam, no polling cost.
+        /// </summary>
+        private void OnAdapterAppeared(string adapterName)
         {
-            try
+            bool isSstp        = adapterName.IndexOf("SSTP", StringComparison.OrdinalIgnoreCase) >= 0;
+            bool isKernelDebug = adapterName.IndexOf("Kernel Debug", StringComparison.OrdinalIgnoreCase) >= 0
+                              || adapterName.IndexOf("KDNIC",       StringComparison.OrdinalIgnoreCase) >= 0;
+
+            if (isSstp && IsSstpAllowed) return;
+            if (isKernelDebug && IsKernelDebugAllowed) return;
+
+            string threatType    = isSstp ? "WAN Miniport (SSTP)" : "Kernel Debug Adapter";
+            string displayName   = isSstp ? "WAN Miniport (SSTP)" : "Kernel Debug Network Adapter";
+            string statusColor   = "Amber";
+
+            if (AutoMitigateAdapters)
             {
-                bool exists = false;
+                MitigateAdapter(displayName);
+                _onThreatDetected?.Invoke(threatType, $"Active adapter detected and auto-mitigated: {adapterName}");
+                StatusChanged?.Invoke($"Threat Blocked: {threatType}", "Red");
+                // Also fire the tray notification for auto-mitigated events
+                OnAdapterAlert?.Invoke(
+                    $"🔴 AutoCommand blocked: {threatType}",
+                    $"The {adapterName} adapter was detected and automatically removed.");
+            }
+            else
+            {
+                _onThreatDetected?.Invoke("Network Adapter", displayName);
+                StatusChanged?.Invoke($"Threat Detected: {threatType}", statusColor);
+                // Fire the tray balloon notification so user sees it even if app is minimized
+                OnAdapterAlert?.Invoke(
+                    $"⚠ Security Alert: {threatType} Detected",
+                    $"The {adapterName} adapter has become active. Click to review and block it.");
+            }
+        }
+
+        /// <summary>
+        /// Mitigates an adapter by its friendly name using SetupAPI (native, no pnputil shell).
+        /// For SSTP, also stops and disables the SstpSvc service.
+        /// </summary>
+        public void MitigateAdapter(string adapterFriendlyName)
+        {
+            Task.Run(() =>
+            {
                 try
                 {
-                    var searcher = new ManagementObjectSearcher(
-                        "SELECT * FROM Win32_NetworkAdapter WHERE Name LIKE '%WAN Miniport (SSTP)%'");
-                    exists = searcher.Get().Count > 0;
-                }
-                catch { }
+                    bool isSstp = adapterFriendlyName.IndexOf("SSTP", StringComparison.OrdinalIgnoreCase) >= 0;
+                    bool isKdnic = adapterFriendlyName.IndexOf("Kernel Debug", StringComparison.OrdinalIgnoreCase) >= 0
+                                || adapterFriendlyName.IndexOf("KDNIC", StringComparison.OrdinalIgnoreCase) >= 0;
 
-                if (exists)
+                    if (isSstp)
+                    {
+                        // Stop the RAS/SSTP service first
+                        Helpers.ServiceHelper.StopAndDisable("SstpSvc");
+                        // Use native SetupAPI via WanMiniportRemover (more reliable than pnputil)
+                        var results = Helpers.WanMiniportRemover.RemoveSstpMiniports();
+                        foreach (var r in results)
+                            Debug.WriteLine($"MitigateAdapter (SSTP): {r}");
+                    }
+                    else if (isKdnic)
+                    {
+                        var results = Helpers.WanMiniportRemover.RemoveKdnet();
+                        foreach (var r in results)
+                            Debug.WriteLine($"MitigateAdapter (KDNET): {r}");
+                    }
+                }
+                catch (Exception ex)
                 {
-                    if (IsSstpAllowed)
-                    {
-                        Debug.WriteLine("SecurityEnforcer: SSTP DETECTED (USER WHITELISTED). TAKEDOWN BYPASSED.");
-                        return;
-                    }
-
-                    Debug.WriteLine("SecurityEnforcer: WAN Miniport (SSTP) detected. Initiating takedown...");
-
-                    // 1. Stop SstpSvc using ServiceController
-                    Helpers.ServiceHelper.StopAndDisable("SstpSvc");
-
-                    // 3. Disable Adapter via WMI
-                    try
-                    {
-                        var searcher = new ManagementObjectSearcher(
-                            "SELECT PNPDeviceID FROM Win32_NetworkAdapter WHERE Name LIKE '%WAN Miniport (SSTP)%'");
-                        foreach (ManagementObject obj in searcher.Get())
-                        {
-                            string deviceId = obj["PNPDeviceID"]?.ToString();
-                            if (!string.IsNullOrEmpty(deviceId))
-                            {
-                                // Use pnputil directly (not PowerShell)
-                                Helpers.ProcessRunner.RunDetached("pnputil.exe", $"/remove-device \"{deviceId}\"");
-                                Debug.WriteLine($"SecurityEnforcer: Removed device {deviceId}");
-                                break;
-                            }
-                        }
-                    }
-                    catch { }
-
-                    _onThreatDetected?.Invoke("WAN Miniport (SSTP)",
-                        "Active SSTP Adapter detected. Service stopped, disabled, and device uninstalled.");
-                    StatusChanged?.Invoke("Threat Blocked: SSTP", "Red");
+                    Debug.WriteLine($"MitigateAdapter Error: {ex.Message}");
                 }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"CheckWanMiniports Error: {ex.Message}");
-            }
+            });
         }
 
         private void CheckPrivilegedTasks()

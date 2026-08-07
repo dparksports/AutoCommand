@@ -30,7 +30,7 @@
                         
                         <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,8,0,0">
                             <TextBlock Text="Version:" Foreground="{StaticResource TextSecondaryBrush}" Width="150" VerticalAlignment="Center"/>
-                            <TextBlock Text="3.4.0" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                            <TextBlock Text="3.5.0" FontWeight="SemiBold" VerticalAlignment="Center"/>
                         </StackPanel>
                         
                         <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,16,0,0">
@@ -63,7 +63,31 @@
                     </Grid>
                 </Border>
 
+                <!-- Network Adapter Security -->
+                <Border Style="{StaticResource CardPanel}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Text="Network Adapter Security" Style="{StaticResource SectionHeader}"/>
+
+                        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,8,0,8">
+                            <CheckBox x:Name="AutoMitigateAdaptersCheck" 
+                                      Content="Automatically delete active SSTP and Kernel Debug adapters" 
+                                      Checked="AutoMitigateAdaptersCheck_Checked"
+                                      Unchecked="AutoMitigateAdaptersCheck_Unchecked"/>
+                        </StackPanel>
+                        
+                        <TextBlock Grid.Row="2" Text="If disabled, you will be notified when an unauthorized adapter becomes active and given the option to block it."
+                                   Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" TextWrapping="Wrap"/>
+                    </Grid>
+                </Border>
+
                 <!-- Privacy & Analytics -->
+
                 <Border Style="{StaticResource CardPanel}">
                     <Grid>
                         <Grid.RowDefinitions>

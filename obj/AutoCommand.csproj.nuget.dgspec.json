@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\honey\\AutoCommand\\AutoCommand.csproj": {}
+    "C:\\Users\\j3b650v2\\AutoCommand\\AutoCommand.csproj": {}
   },
   "projects": {
-    "C:\\Users\\honey\\AutoCommand\\AutoCommand.csproj": {
-      "version": "3.4.0",
+    "C:\\Users\\j3b650v2\\AutoCommand\\AutoCommand.csproj": {
+      "version": "3.5.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\honey\\AutoCommand\\AutoCommand.csproj",
+        "projectUniqueName": "C:\\Users\\j3b650v2\\AutoCommand\\AutoCommand.csproj",
         "projectName": "AutoCommand",
-        "projectPath": "C:\\Users\\honey\\AutoCommand\\AutoCommand.csproj",
-        "packagesPath": "C:\\Users\\honey\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\honey\\AutoCommand\\obj\\",
+        "projectPath": "C:\\Users\\j3b650v2\\AutoCommand\\AutoCommand.csproj",
+        "packagesPath": "C:\\Users\\j3b650v2\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\j3b650v2\\AutoCommand\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\honey\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "C:\\Users\\j3b650v2\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net10.0-windows10.0.19041.0"
@@ -23,11 +23,12 @@
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
-          "net10.0-windows10.0.19041": {
+          "net10.0-windows10.0.19041.0": {
+            "framework": "net10.0-windows10.0.19041",
             "targetAlias": "net10.0-windows10.0.19041.0",
             "projectReferences": {
-              "C:\\Users\\honey\\AutoCommand\\Sdk\\AutoCommand.Sdk.csproj": {
-                "projectPath": "C:\\Users\\honey\\AutoCommand\\Sdk\\AutoCommand.Sdk.csproj"
+              "C:\\Users\\j3b650v2\\AutoCommand\\Sdk\\AutoCommand.Sdk.csproj": {
+                "projectPath": "C:\\Users\\j3b650v2\\AutoCommand\\Sdk\\AutoCommand.Sdk.csproj"
               }
             }
           }
@@ -42,10 +43,11 @@
           "auditLevel": "low",
           "auditMode": "all"
         },
-        "SdkAnalysisLevel": "10.0.200"
+        "SdkAnalysisLevel": "10.0.300"
       },
       "frameworks": {
-        "net10.0-windows10.0.19041": {
+        "net10.0-windows10.0.19041.0": {
+          "framework": "net10.0-windows10.0.19041",
           "targetAlias": "net10.0-windows10.0.19041.0",
           "dependencies": {
             "LLamaSharp": {
@@ -105,7 +107,7 @@
               "privateAssets": "none"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.203/PortableRuntimeIdentifierGraph.json",
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.302/PortableRuntimeIdentifierGraph.json",
           "packagesToPrune": {
             "Microsoft.CSharp": "(,4.7.32767]",
             "Microsoft.VisualBasic": "(,10.4.32767]",
@@ -399,17 +401,17 @@
         }
       }
     },
-    "C:\\Users\\honey\\AutoCommand\\Sdk\\AutoCommand.Sdk.csproj": {
+    "C:\\Users\\j3b650v2\\AutoCommand\\Sdk\\AutoCommand.Sdk.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\honey\\AutoCommand\\Sdk\\AutoCommand.Sdk.csproj",
+        "projectUniqueName": "C:\\Users\\j3b650v2\\AutoCommand\\Sdk\\AutoCommand.Sdk.csproj",
         "projectName": "AutoCommand.Sdk",
-        "projectPath": "C:\\Users\\honey\\AutoCommand\\Sdk\\AutoCommand.Sdk.csproj",
-        "packagesPath": "C:\\Users\\honey\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\honey\\AutoCommand\\Sdk\\obj\\",
+        "projectPath": "C:\\Users\\j3b650v2\\AutoCommand\\Sdk\\AutoCommand.Sdk.csproj",
+        "packagesPath": "C:\\Users\\j3b650v2\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\j3b650v2\\AutoCommand\\Sdk\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\honey\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "C:\\Users\\j3b650v2\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net10.0"
@@ -419,6 +421,7 @@
         },
         "frameworks": {
           "net10.0": {
+            "framework": "net10.0",
             "targetAlias": "net10.0",
             "projectReferences": {}
           }
@@ -433,10 +436,11 @@
           "auditLevel": "low",
           "auditMode": "all"
         },
-        "SdkAnalysisLevel": "10.0.200"
+        "SdkAnalysisLevel": "10.0.300"
       },
       "frameworks": {
         "net10.0": {
+          "framework": "net10.0",
           "targetAlias": "net10.0",
           "imports": [
             "net461",
@@ -454,7 +458,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.203/PortableRuntimeIdentifierGraph.json",
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.302/PortableRuntimeIdentifierGraph.json",
           "packagesToPrune": {
             "Microsoft.CSharp": "(,4.7.32767]",
             "Microsoft.VisualBasic": "(,10.4.32767]",

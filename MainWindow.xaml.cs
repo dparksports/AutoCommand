@@ -10,12 +10,14 @@ using System.IO;
 using AutoCommand.Models;
 using AutoCommand.Services;
 using AutoCommand.Views;
+using AutoCommand.Helpers;
 
 namespace AutoCommand
 {
     public partial class MainWindow : Window
     {
         private SecurityEnforcer _enforcer;
+        private TrayNotifier _trayNotifier;
 
         public MainWindow()
         {
@@ -33,7 +35,7 @@ namespace AutoCommand
             // Fire telemetry app_open event (fire-and-forget)
             _ = TelemetryService.Instance.LogEventAsync("app_open", new Dictionary<string, object>
             {
-                { "app_version", "3.4.0" },
+                { "app_version", "3.5.0" },
                 { "os_version", Environment.OSVersion.VersionString }
             });
         }
@@ -49,10 +51,33 @@ namespace AutoCommand
 
         private void InitializeEnforcer()
         {
+            // Initialize system tray notifier first so it's ready for callbacks
+            string iconPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "app_icon.ico");
+            _trayNotifier = new TrayNotifier(iconPath);
+            _trayNotifier.ToastActivated += BringWindowToForeground;
+
             _enforcer = new SecurityEnforcer(OnThreatDetected);
             _enforcer.StatusChanged += OnEnforcerStatusChanged;
             _enforcer.ConfigurationDriftDetected += OnDriftDetected;
+
+            // Wire the tray toast notification for adapter events
+            _enforcer.OnAdapterAlert = (title, message) =>
+                Dispatcher.Invoke(() => _trayNotifier.ShowSecurityAlert(title, message));
+
             _enforcer.Start();
+        }
+
+        private void BringWindowToForeground()
+        {
+            Dispatcher.Invoke(() =>
+            {
+                if (WindowState == WindowState.Minimized)
+                    WindowState = WindowState.Normal;
+                Activate();
+                Topmost = true;
+                Topmost = false;
+                Focus();
+            });
         }
 
         private string _currentThreatType;
@@ -90,12 +115,38 @@ namespace AutoCommand
                     ReviewAlertBtn.Visibility = Visibility.Collapsed;
                 }
             }
+            else if (_currentThreatType == "Network Adapter")
+            {
+                string msg = $"Active Adapter Detected: {_currentThreatDetails}\n\n" +
+                             "This adapter might be used for unauthorized tunneling or kernel debugging.\n\n" +
+                             "Click 'Yes' to Block & Delete (removes device and service).\n" +
+                             "Click 'No' to Whitelist (ignore this adapter permanently).\n" +
+                             "Click 'Cancel' to ignore for now.";
+                             
+                var result = MessageBox.Show(msg, "Review Network Adapter", MessageBoxButton.YesNoCancel, MessageBoxImage.Warning);
+                if (result == MessageBoxResult.Yes)
+                {
+                    _enforcer.MitigateAdapter(_currentThreatDetails);
+                    ThreatAlertText.Text = "✓ Adapter mitigated.";
+                    ThreatAlertText.Foreground = new SolidColorBrush(Color.FromRgb(0x4E, 0xC9, 0x6F));
+                    ReviewAlertBtn.Visibility = Visibility.Collapsed;
+                }
+                else if (result == MessageBoxResult.No)
+                {
+                    if (_currentThreatDetails.Contains("SSTP")) SecurityEnforcer.IsSstpAllowed = true;
+                    if (_currentThreatDetails.Contains("Kernel Debug")) SecurityEnforcer.IsKernelDebugAllowed = true;
+                    ThreatAlertText.Text = "✓ Adapter whitelisted.";
+                    ThreatAlertText.Foreground = new SolidColorBrush(Color.FromRgb(0x4E, 0xC9, 0x6F));
+                    ReviewAlertBtn.Visibility = Visibility.Collapsed;
+                }
+            }
             else
             {
                 MessageBox.Show($"{_currentThreatType}\n\n{_currentThreatDetails}\n\nPlease check the Command Panel for more details.", "Security Alert", MessageBoxButton.OK, MessageBoxImage.Information);
                 ReviewAlertBtn.Visibility = Visibility.Collapsed;
             }
         }
+
 
         private void OnEnforcerStatusChanged(string status, string colorType)
         {
@@ -123,6 +174,7 @@ namespace AutoCommand
         protected override void OnClosed(EventArgs e)
         {
             _enforcer?.Stop();
+            _trayNotifier?.Dispose();
             base.OnClosed(e);
         }
 
