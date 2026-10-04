@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading.Tasks;
 using AutoCommand.Models;
 
@@ -16,6 +18,40 @@ namespace AutoCommand.Services
     {
         private static FirewallService _instance;
         public static FirewallService Instance => _instance ??= new FirewallService();
+
+        [DllImport("shlwapi.dll", CharSet = CharSet.Unicode)]
+        private static extern int SHLoadIndirectString(string pszSource, StringBuilder pszOutBuf, int cchOutBuf, IntPtr ppvReserved);
+
+        private static readonly Dictionary<string, string> GroupNameCache = new Dictionary<string, string>(StringComparer.Ordinal);
+
+        /// <summary>
+        /// COM's INetFwRule.Grouping returns indirect resource strings (e.g. "@FirewallAPI.dll,-32752"),
+        /// not the localized display names ("Network Discovery") that the profile presets use.
+        /// </summary>
+        public static string ResolveGroupName(string grouping)
+        {
+            if (string.IsNullOrEmpty(grouping) || grouping[0] != '@') return grouping;
+            lock (GroupNameCache)
+            {
+                if (GroupNameCache.TryGetValue(grouping, out string cached)) return cached;
+                string resolved = grouping;
+                var sb = new StringBuilder(512);
+                if (SHLoadIndirectString(grouping, sb, sb.Capacity, IntPtr.Zero) == 0 && sb.Length > 0)
+                    resolved = sb.ToString();
+                GroupNameCache[grouping] = resolved;
+                return resolved;
+            }
+        }
+
+        /// <summary>
+        /// Case-insensitive group match against both the raw Grouping string and its resolved display name.
+        /// </summary>
+        private static bool GroupMatches(string ruleGrouping, string targetName)
+        {
+            if (string.IsNullOrEmpty(ruleGrouping) || string.IsNullOrEmpty(targetName)) return false;
+            if (string.Equals(ruleGrouping, targetName, StringComparison.OrdinalIgnoreCase)) return true;
+            return string.Equals(ResolveGroupName(ruleGrouping), targetName, StringComparison.OrdinalIgnoreCase);
+        }
 
         private dynamic GetPolicy()
         {
@@ -44,11 +80,12 @@ namespace AutoCommand.Services
                             int ruleDir = (int)rule.Direction;
                             if (ruleDir != direction) continue;
 
+                            string grouping = ResolveGroupName((string)rule.Grouping) ?? "";
                             results.Add(new FirewallRuleItem
                             {
                                 Name = rule.Name ?? "",
                                 DisplayName = rule.Name ?? "",
-                                DisplayGroup = string.IsNullOrEmpty((string)rule.Grouping) ? "(Ungrouped)" : (string)rule.Grouping,
+                                DisplayGroup = string.IsNullOrEmpty(grouping) ? "(Ungrouped)" : grouping,
                                 Direction = direction == 1 ? "Inbound" : "Outbound",
                                 Enabled = (bool)rule.Enabled,
                                 Action = ((int)rule.Action) == 1 ? "Allow" : "Block",
@@ -104,36 +141,67 @@ namespace AutoCommand.Services
         }
 
         /// <summary>
-        /// Toggle all rules in a group.
+        /// Outcome of a group-wide enable/disable so callers can show what actually happened.
         /// </summary>
-        public Task ToggleGroupAsync(string groupName, bool enabled)
+        public class GroupToggleResult
+        {
+            public string GroupName { get; set; }
+            public int Matched { get; set; }
+            public int Changed { get; set; }
+            public int Failed { get; set; }
+            public string FirstError { get; set; }
+            public bool FailedCompletely { get; set; }
+            public string Notes { get; set; }
+        }
+
+        /// <summary>
+        /// Toggle all rules in a group. Matches the raw Grouping string and its resolved display name.
+        /// </summary>
+        public Task<GroupToggleResult> ToggleGroupAsync(string groupName, bool enabled)
         {
             return Task.Run(() =>
             {
+                var result = new GroupToggleResult { GroupName = groupName };
                 try
                 {
                     dynamic fwPolicy = GetPolicy();
                     foreach (dynamic rule in fwPolicy.Rules)
                     {
+                        string ruleGroup;
+                        bool wasEnabled;
                         try
                         {
-                            string ruleGroup = rule.Grouping ?? "";
-                            if (string.IsNullOrEmpty(ruleGroup) && groupName == "(Ungrouped)")
-                            {
-                                rule.Enabled = enabled;
-                            }
-                            else if (ruleGroup == groupName)
-                            {
-                                rule.Enabled = enabled;
-                            }
+                            ruleGroup = rule.Grouping ?? "";
+                            wasEnabled = (bool)rule.Enabled;
                         }
-                        catch { }
+                        catch
+                        {
+                            continue; // Rule unreadable — skip as before
+                        }
+
+                        bool matches = (string.IsNullOrEmpty(ruleGroup) && groupName == "(Ungrouped)")
+                                       || GroupMatches(ruleGroup, groupName);
+                        if (!matches) continue;
+
+                        result.Matched++;
+                        try
+                        {
+                            rule.Enabled = enabled;
+                            if (wasEnabled != enabled) result.Changed++;
+                        }
+                        catch (Exception ex)
+                        {
+                            result.Failed++;
+                            if (result.FirstError == null) result.FirstError = ex.Message;
+                        }
                     }
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"FirewallService.ToggleGroup Error: {ex.Message}");
+                    result.FailedCompletely = true;
+                    result.FirstError = ex.Message;
                 }
+                return result;
             });
         }
 

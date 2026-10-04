@@ -34,6 +34,11 @@ namespace AutoCommand.Views
             int direction = InboundRadio.IsChecked == true ? 1 : 2;
             _currentRules = await FirewallService.Instance.LoadRulesAsync(direction);
 
+            // Enabled rules first (then alphabetical) so the refreshed list reads top-down
+            _currentRules = _currentRules.OrderByDescending(r => r.Enabled)
+                                         .ThenBy(r => r.DisplayName, StringComparer.OrdinalIgnoreCase)
+                                         .ToList();
+
             var view = System.Windows.Data.CollectionViewSource.GetDefaultView(_currentRules);
             view.GroupDescriptions.Clear();
             view.GroupDescriptions.Add(new System.Windows.Data.PropertyGroupDescription("DisplayName"));
@@ -56,14 +61,20 @@ namespace AutoCommand.Views
         private async void EnableGroup_Click(object sender, RoutedEventArgs e)
         {
             if (RulesGrid.SelectedItem is not FirewallRuleItem rule) return;
-            await FirewallService.Instance.ToggleGroupAsync(rule.DisplayGroup, true);
+            ProfileStatusText.Text = $"Enabling group '{rule.DisplayGroup}'…";
+            var r = await FirewallService.Instance.ToggleGroupAsync(rule.DisplayGroup, true);
+            ProfileStatusText.Text = $"Group '{rule.DisplayGroup}': {r.Matched} matched, {r.Changed} changed, {r.Failed} failed"
+                                     + (r.FirstError != null ? $" — {r.FirstError}" : "");
             await LoadRules();
         }
 
         private async void DisableGroup_Click(object sender, RoutedEventArgs e)
         {
             if (RulesGrid.SelectedItem is not FirewallRuleItem rule) return;
-            await FirewallService.Instance.ToggleGroupAsync(rule.DisplayGroup, false);
+            ProfileStatusText.Text = $"Disabling group '{rule.DisplayGroup}'…";
+            var r = await FirewallService.Instance.ToggleGroupAsync(rule.DisplayGroup, false);
+            ProfileStatusText.Text = $"Group '{rule.DisplayGroup}': {r.Matched} matched, {r.Changed} changed, {r.Failed} failed"
+                                     + (r.FirstError != null ? $" — {r.FirstError}" : "");
             await LoadRules();
         }
 
@@ -80,43 +91,69 @@ namespace AutoCommand.Views
             if (ProfileCombo == null || ProfileCombo.SelectedIndex <= 0) return;
 
             string profileName = ((ComboBoxItem)ProfileCombo.SelectedItem).Content.ToString();
-            
+
             if (MessageBox.Show($"Apply '{profileName}' profile?\n\nThis will modify your Windows Defender Firewall rules.",
-                "Confirm Firewall Profile", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes) 
+                "Confirm Firewall Profile", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
             {
                 ProfileCombo.SelectedIndex = 0; // Reset to Custom
                 return;
             }
 
+            FirewallProfileService.ProfileType type;
+            switch (profileName)
+            {
+                case "Shield Up": type = FirewallProfileService.ProfileType.ShieldUp; break;
+                case "Gaming": type = FirewallProfileService.ProfileType.GamingMedia; break;
+                case "Office": type = FirewallProfileService.ProfileType.Office; break;
+                case "Home": type = FirewallProfileService.ProfileType.HomeTrusted; break;
+                case "Public Strict": type = FirewallProfileService.ProfileType.StrictPublic; break;
+                default:
+                    ProfileCombo.SelectedIndex = 0;
+                    return;
+            }
+
+            ProfileCombo.IsEnabled = false;
+            RefreshBtn.IsEnabled = false;
+            ProfileProgress.Visibility = Visibility.Visible;
+            ProfileStatusText.Text = $"Applying '{profileName}' profile…";
+            var progress = new Progress<string>(msg => ProfileStatusText.Text = msg);
+
             try
             {
-                switch (profileName)
+                ProfileApplyResult result = await FirewallProfileService.Instance.ApplyProfile(type, progress);
+
+                await LoadRules(); // Auto-refresh the grid so the new state is shown immediately
+
+                var sb = new StringBuilder();
+                sb.AppendLine($"Profile '{profileName}' applied.");
+                if (!string.IsNullOrEmpty(result.Notes)) sb.AppendLine(result.Notes);
+                foreach (var g in result.Groups)
                 {
-                    case "Shield Up":
-                        await FirewallProfileService.Instance.ApplyProfile(FirewallProfileService.ProfileType.ShieldUp);
-                        break;
-                    case "Gaming":
-                        await FirewallProfileService.Instance.ApplyProfile(FirewallProfileService.ProfileType.GamingMedia);
-                        break;
-                    case "Office":
-                        await FirewallProfileService.Instance.ApplyProfile(FirewallProfileService.ProfileType.Office);
-                        break;
-                    case "Home":
-                        await FirewallProfileService.Instance.ApplyProfile(FirewallProfileService.ProfileType.HomeTrusted);
-                        break;
-                    case "Public Strict":
-                        await FirewallProfileService.Instance.ApplyProfile(FirewallProfileService.ProfileType.StrictPublic);
-                        break;
+                    if (g.GroupName == "Shield Up (block all)") continue; // Covered by the Notes line
+                    sb.AppendLine($"• {g.GroupName}: {g.Matched} matched, {g.Changed} changed"
+                                  + (g.Failed > 0 ? $", {g.Failed} FAILED" : ""));
                 }
-                await LoadRules();
+                sb.AppendLine($"Total: {result.TotalChanged} rule(s) changed, {result.TotalFailed} failed.");
+                if (result.TotalMatched == 0) sb.AppendLine("No matching rules were found — no changes were made.");
+                if (result.FirstError != null) sb.AppendLine($"First error: {result.FirstError}");
+
+                ProfileStatusText.Text = $"Profile '{profileName}': {result.TotalChanged} rule(s) changed, "
+                                         + $"{result.TotalFailed} failed. Rules list refreshed.";
+
+                MessageBox.Show(sb.ToString(), "Firewall Profile Complete", MessageBoxButton.OK,
+                    result.TotalFailed > 0 ? MessageBoxImage.Warning : MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
+                ProfileStatusText.Text = $"Failed to apply '{profileName}': {ex.Message}";
                 MessageBox.Show($"Failed to apply profile: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally
             {
+                ProfileProgress.Visibility = Visibility.Collapsed;
+                RefreshBtn.IsEnabled = true;
                 // Reset combobox back to custom to allow re-selection later
+                ProfileCombo.IsEnabled = true;
                 ProfileCombo.SelectedIndex = 0;
             }
         }

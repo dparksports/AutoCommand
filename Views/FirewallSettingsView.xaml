@@ -39,7 +39,7 @@
                     <ComboBoxItem Content="Home"/>
                     <ComboBoxItem Content="Public Strict"/>
                 </ComboBox>
-                <Button Content="↻ Refresh" Style="{StaticResource PrimaryButton}" Click="RefreshBtn_Click"/>
+                <Button x:Name="RefreshBtn" Content="↻ Refresh" Style="{StaticResource PrimaryButton}" Click="RefreshBtn_Click"/>
             </StackPanel>
         </Grid>
 
@@ -51,8 +51,13 @@
             <RadioButton x:Name="OutboundRadio" Content="Outbound Rules" 
                          Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,16,0"
                          Checked="FilterChanged"/>
-            <TextBlock x:Name="RuleCountText" Text="" Foreground="{StaticResource TextSecondaryBrush}" 
+            <TextBlock x:Name="RuleCountText" Text="" Foreground="{StaticResource TextSecondaryBrush}"
                        Margin="20,0,0,0" VerticalAlignment="Center" FontSize="11"/>
+            <ProgressBar x:Name="ProfileProgress" Width="120" Height="14" IsIndeterminate="True"
+                         Visibility="Collapsed" Margin="16,0,0,0" VerticalAlignment="Center"/>
+            <TextBlock x:Name="ProfileStatusText" Text="" Foreground="{StaticResource TextSecondaryBrush}"
+                       FontStyle="Italic" FontSize="11" Margin="12,0,0,0" VerticalAlignment="Center"
+                       TextTrimming="CharacterEllipsis"/>
         </StackPanel>
 
         <!-- Rules Grid -->

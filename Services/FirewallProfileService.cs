@@ -1,9 +1,23 @@
 using System;
-using System.Diagnostics;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace AutoCommand.Services
 {
+    /// <summary>
+    /// Aggregated outcome of applying a firewall profile, for UI progress/summary reporting.
+    /// </summary>
+    public class ProfileApplyResult
+    {
+        public string ProfileName { get; set; }
+        public List<FirewallService.GroupToggleResult> Groups { get; } = new List<FirewallService.GroupToggleResult>();
+        public int TotalMatched { get; set; }
+        public int TotalChanged { get; set; }
+        public int TotalFailed { get; set; }
+        public string FirstError { get; set; }
+        public string Notes { get; set; }
+    }
+
     /// <summary>
     /// Firewall profile presets using COM API.
     /// Ported from DeviceMonitorCS — now uses FirewallService instead of PowerShell.
@@ -23,43 +37,70 @@ namespace AutoCommand.Services
             Office
         }
 
-        public async Task ApplyProfile(ProfileType profile)
+        public async Task<ProfileApplyResult> ApplyProfile(ProfileType profile, IProgress<string> progress = null)
         {
+            var result = new ProfileApplyResult { ProfileName = profile.ToString() };
+
             switch (profile)
             {
                 case ProfileType.StrictPublic:
-                    await DisableGroup("File and Printer Sharing");
-                    await DisableGroup("Network Discovery");
-                    await DisableGroup("Remote Desktop");
+                    await Toggle(result, progress, "File and Printer Sharing", false);
+                    await Toggle(result, progress, "Network Discovery", false);
+                    await Toggle(result, progress, "Remote Desktop", false);
                     break;
                 case ProfileType.HomeTrusted:
-                    await EnableGroup("File and Printer Sharing");
-                    await EnableGroup("Network Discovery");
+                    await Toggle(result, progress, "File and Printer Sharing", true);
+                    await Toggle(result, progress, "Network Discovery", true);
                     break;
                 case ProfileType.GamingMedia:
-                    await EnableGroup("Network Discovery");
-                    await EnableGroup("Cast to Device");
+                    await Toggle(result, progress, "Network Discovery", true);
+                    await Toggle(result, progress, "Cast to Device functionality", true);
                     break;
                 case ProfileType.ShieldUp:
-                    await ApplyShieldUp();
+                {
+                    progress?.Report("Shield Up: disabling all grouped rules…");
+                    var shield = await ApplyShieldUp();
+                    result.Groups.Add(shield);
+                    result.TotalMatched += shield.Matched;
+                    result.TotalChanged += shield.Changed;
+                    result.TotalFailed += shield.Failed;
+                    if (shield.FirstError != null && result.FirstError == null) result.FirstError = shield.FirstError;
+                    result.Notes = shield.Notes;
                     break;
+                }
                 case ProfileType.Office:
-                    await EnableGroup("File and Printer Sharing");
-                    await EnableGroup("Network Discovery");
-                    await EnableGroup("Remote Desktop");
+                    await Toggle(result, progress, "File and Printer Sharing", true);
+                    await Toggle(result, progress, "Network Discovery", true);
+                    await Toggle(result, progress, "Remote Desktop", true);
                     break;
             }
+
+            return result;
         }
 
-        private async Task ApplyShieldUp()
+        private async Task Toggle(ProfileApplyResult acc, IProgress<string> progress, string group, bool enable)
+        {
+            progress?.Report($"{(enable ? "Enabling" : "Disabling")} group '{group}'…");
+            FirewallService.GroupToggleResult r = enable ? await EnableGroup(group) : await DisableGroup(group);
+            acc.Groups.Add(r);
+            acc.TotalMatched += r.Matched;
+            acc.TotalChanged += r.Changed;
+            acc.TotalFailed += r.Failed;
+            if (r.FirstError != null && acc.FirstError == null) acc.FirstError = r.FirstError;
+        }
+
+        private Task<FirewallService.GroupToggleResult> ApplyShieldUp()
         {
             // Disable ALL rules, then re-enable whitelisted groups
-            await Task.Run(() =>
+            return Task.Run(() =>
             {
+                var result = new FirewallService.GroupToggleResult { GroupName = "Shield Up (block all)" };
                 try
                 {
                     Type fwPolicyType = Type.GetTypeFromProgID("HNetCfg.FwPolicy2");
                     dynamic fwPolicy = Activator.CreateInstance(fwPolicyType);
+                    int disabledCount = 0;
+                    int whitelistEnabled = 0;
 
                     // Pass 1: Disable everything with a group
                     foreach (dynamic rule in fwPolicy.Rules)
@@ -67,12 +108,22 @@ namespace AutoCommand.Services
                         try
                         {
                             string group = rule.Grouping ?? "";
-                            if (!string.IsNullOrEmpty(group))
+                            if (string.IsNullOrEmpty(group)) continue;
+
+                            bool wasEnabled = (bool)rule.Enabled;
+                            rule.Enabled = false;
+                            result.Matched++;
+                            if (wasEnabled)
                             {
-                                rule.Enabled = false;
+                                result.Changed++;
+                                disabledCount++;
                             }
                         }
-                        catch { }
+                        catch (Exception ex)
+                        {
+                            result.Failed++;
+                            if (result.FirstError == null) result.FirstError = ex.Message;
+                        }
                     }
 
                     // Pass 2: Re-enable whitelisted groups
@@ -82,34 +133,52 @@ namespace AutoCommand.Services
                         try
                         {
                             string group = rule.Grouping ?? "";
+                            if (string.IsNullOrEmpty(group)) continue;
+                            string display = FirewallService.ResolveGroupName(group);
+                            bool whitelisted = false;
                             foreach (var wl in whitelist)
                             {
-                                if (group.Equals(wl, StringComparison.OrdinalIgnoreCase))
+                                if (display.Equals(wl, StringComparison.OrdinalIgnoreCase) ||
+                                    group.Equals(wl, StringComparison.OrdinalIgnoreCase))
                                 {
-                                    rule.Enabled = true;
+                                    whitelisted = true;
                                     break;
                                 }
                             }
+                            if (!whitelisted) continue;
+
+                            bool wasEnabled = (bool)rule.Enabled;
+                            rule.Enabled = true;
+                            result.Matched++;
+                            whitelistEnabled++;
+                            if (!wasEnabled) result.Changed++;
                         }
-                        catch { }
+                        catch (Exception ex)
+                        {
+                            result.Failed++;
+                            if (result.FirstError == null) result.FirstError = ex.Message;
+                        }
                     }
+
+                    result.Notes = $"{disabledCount} grouped rule(s) disabled, {whitelistEnabled} whitelist rule(s) processed for re-enable";
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"ShieldUp Error: {ex.Message}");
+                    result.FailedCompletely = true;
+                    result.FirstError = ex.Message;
                 }
+                return result;
             });
         }
 
-        private Task EnableGroup(string group)
+        private Task<FirewallService.GroupToggleResult> EnableGroup(string group)
         {
             return FirewallService.Instance.ToggleGroupAsync(group, true);
         }
 
-        private Task DisableGroup(string group)
+        private Task<FirewallService.GroupToggleResult> DisableGroup(string group)
         {
             return FirewallService.Instance.ToggleGroupAsync(group, false);
         }
     }
 }
-
