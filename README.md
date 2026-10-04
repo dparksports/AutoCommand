@@ -1,19 +1,28 @@
-# AutoCommand v3.5.1 🛡️
+# AutoCommand v3.6.0 🛡️
 
 ![AutoCommand Infographic Header](Assets/autocommand_infographic.png)
 
 **AutoCommand** is an enterprise-grade C# WPF security and OS hardening suite for Windows 10 and 11. It delivers zero-PowerShell threat monitoring, event-driven network adapter defense, native COM firewall management with one-click profiles, and an integrated conversational AI co-pilot — all from a single administrator dashboard.
 
+> **📥 Download:** grab the latest self-contained build from the [Releases page](https://github.com/dparksports/AutoCommand/releases) — no .NET installation required.
+
 ---
 
-## 🆕 What's New in v3.5.1
+## 🆕 What's New in v3.6.0
 
 * **🎛️ Five One-Click Firewall Profiles** — *Shield Up*, *Public Strict*, *Gaming*, *Office*, and *Home* presets apply curated rule-group changes from the Advanced Firewall Settings page, powered entirely by native `INetFwPolicy2` COM.
 * **🔤 Indirect Group-Name Resolution** — Windows returns firewall groups as indirect resource strings (`@FirewallAPI.dll,-32752`). AutoCommand now resolves them to display names (`Network Discovery`) via `SHLoadIndirectString` and matches case-insensitively, so profile presets hit the rules they claim to hit.
 * **📊 Transparent Profile Application** — applying a profile shows live per-group progress, disables the controls for the duration, then reports a per-group *matched / changed / failed* summary (including the first error on failure) and auto-refreshes the rules grid.
 * **📋 Enabled-First Rules View** — the rules list re-sorts on every load so enabled rules and their groups appear at the top.
-* **📦 64% Smaller Packages** — Windows publish output strips Linux `.so` native libraries, shrinking the release package from 460 MB to 167 MB.
-* **🛠️ Telemetry Fixes** — Firebase telemetry JS-injection sanitization, `engagement_time_msec` handling, consent sync, and SurfaceBrush dropdown fixes.
+* **📚 Documentation Overhaul** — README rewritten from scratch with new infographics and a regenerable asset pipeline.
+
+<details>
+<summary>v3.5.1 highlights</summary>
+
+* **📦 64% smaller packages** — Windows publish output strips Linux `.so` native libraries (460 MB → 167 MB).
+* **🛠️ Telemetry fixes** — Firebase telemetry JS-injection sanitization, `engagement_time_msec` handling, consent sync, and SurfaceBrush dropdown fixes.
+
+</details>
 
 ---
 

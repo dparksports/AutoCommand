@@ -56,7 +56,7 @@ def panel(ax, x, y, w, h, edge=PANEL_EDGE, lw=1.6, face=PANEL, alpha=0.92):
     return p
 
 
-def header(ax, title, subtitle, version_chip="v3.5.1"):
+def header(ax, title, subtitle, version_chip="v3.6.0"):
     panel(ax, 40, 34, W - 80, 108, edge=CYAN_DIM, lw=2.2, alpha=0.95)
     ax.add_patch(FancyBboxPatch((40, 34), 14, 108, boxstyle="round,pad=0,rounding_size=7",
                                 linewidth=0, facecolor=CYAN, zorder=2))

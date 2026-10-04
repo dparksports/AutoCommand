@@ -35,7 +35,7 @@ namespace AutoCommand
             // Fire telemetry app_open event (fire-and-forget)
             _ = TelemetryService.Instance.LogEventAsync("app_open", new Dictionary<string, object>
             {
-                { "app_version", "3.5.1" },
+                { "app_version", "3.6.0" },
                 { "os_version", Environment.OSVersion.VersionString }
             });
         }
