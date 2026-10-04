@@ -153,6 +153,16 @@
                 <views:SettingsView x:Name="SettingsTab"/>
             </TabItem>
 
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Width="160" Margin="0,10">
+                        <TextBlock Text="🤖" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                        <TextBlock Text="AI Assistant" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <views:GeminiAssistantView x:Name="AiAssistantTab"/>
+            </TabItem>
+
             <TabItem x:Name="AiSetupTabItem">
                 <TabItem.Header>
                     <StackPanel Width="160" Margin="0,10">
@@ -253,7 +263,7 @@
                 </StackPanel>
 
                 <!-- Version -->
-                <TextBlock Grid.Column="2" Text="AutoCommand v3.5.1" 
+                <TextBlock x:Name="VersionText" Grid.Column="2" Text="AutoCommand"
                            Foreground="#5A5A62" FontSize="10" VerticalAlignment="Center"/>
             </Grid>
         </Border>

@@ -19,23 +19,29 @@ namespace AutoCommand
         private SecurityEnforcer _enforcer;
         private TrayNotifier _trayNotifier;
 
+        private static string AppVersion =>
+            FileVersionInfo.GetVersionInfo(Environment.ProcessPath).ProductVersion ?? "3.7.0";
+
         public MainWindow()
         {
             InitializeComponent();
-            
+
+            // Live version from the assembly instead of a hardcoded string
+            VersionText.Text = $"AutoCommand v{AppVersion}";
+
             // Set up global exception tracking
             Application.Current.DispatcherUnhandledException += Current_DispatcherUnhandledException;
 
             // Initialize Telemetry
             _ = TelemetryService.Instance.InitializeAsync(HiddenTelemetryWebView);
-            
+
             InitializeEnforcer();
             LoadAiPrefs();
-            
+
             // Fire telemetry app_open event (fire-and-forget)
             _ = TelemetryService.Instance.LogEventAsync("app_open", new Dictionary<string, object>
             {
-                { "app_version", "3.6.0" },
+                { "app_version", AppVersion },
                 { "os_version", Environment.OSVersion.VersionString }
             });
         }
