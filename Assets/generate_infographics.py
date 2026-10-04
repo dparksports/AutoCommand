@@ -56,7 +56,7 @@ def panel(ax, x, y, w, h, edge=PANEL_EDGE, lw=1.6, face=PANEL, alpha=0.92):
     return p
 
 
-def header(ax, title, subtitle, version_chip="v3.6.0"):
+def header(ax, title, subtitle, version_chip="v3.7.0"):
     panel(ax, 40, 34, W - 80, 108, edge=CYAN_DIM, lw=2.2, alpha=0.95)
     ax.add_patch(FancyBboxPatch((40, 34), 14, 108, boxstyle="round,pad=0,rounding_size=7",
                                 linewidth=0, facecolor=CYAN, zorder=2))
@@ -150,23 +150,23 @@ def stack_infographic():
         ("EVENT-DRIVEN ENFORCER", CYAN, [
             "WMI watcher: instant SSTP / kernel-debug",
             "adapter detection (zero idle CPU)",
-            "Privileged scheduled-task scanner",
-            "Hosts-file redirect guard",
+            "State reconciliation sweep: SSTP service",
+            "and BCD kernel-debug state re-asserted",
             "Toast alerts + auto-mitigate toggle",
         ]),
         ("ADVANCED FIREWALL", ORANGE, [
             "5 one-click profiles (Shield Up → Home)",
             "Group enable / disable via native COM",
             "1-click inbound+outbound process block",
+            "Live apply progress + per-group report",
             "Config overrides with drift detection",
-            "AI-auditable rules (GetAuditContext)",
         ]),
         ("AI SECURITY CO-PILOT", PURPLE, [
-            "Gemini cloud assistant in Command Panel",
-            "Local offline GGUF models via LLamaSharp",
-            "CPU or CUDA12 GPU backends",
-            "Natural-language config audits",
-            "Guarded suggested actions",
+            "Dedicated AI Assistant tab",
+            "Gemini cloud assistant",
+            "Local GGUF models via LLamaSharp",
+            "Review-before-run command execution",
+            "AI-auditable pages (GetAuditContext)",
         ]),
         ("NETWORK ANALYTICS", GREEN, [
             "Sysmon operational-log EventLogWatcher",
@@ -176,18 +176,18 @@ def stack_infographic():
             "DNS resolution service",
         ]),
         ("HARDENING & UEFI", BLUE, [
-            "UEFI DBX bootloader revocation checks",
-            "Authenticode validation of bootloaders",
+            "UEFI DBX download / apply + revocation",
+            "EFI integrity baseline drift checks",
+            "Signature-verified sigcheck auto-download",
             "LSA protection / UAC / telemetry toggles",
-            "WiFi Direct & hibernation controls",
             "SetupAPI P/Invoke device takedown",
         ]),
-        ("WORKFLOW EXTRAS", RED, [
-            "Plugin loader (AutoCommand.Sdk)",
-            "Default-apps manager",
-            "Scheduled tasks & startup managers",
-            "Firebase telemetry dashboards",
-            "Sysmon installer / watcher services",
+        ("APP & BLOATWARE CONTROL", RED, [
+            "Default Apps: Windows Settings parity",
+            "list with versions & publishers",
+            "Authenticode-validated signature status",
+            "1-click bloatware removal:",
+            "Outlook / Xbox / Family / Phone",
         ]),
     ]
 
