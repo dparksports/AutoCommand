@@ -3,27 +3,44 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d" 
+             mc:Ignorable="d"
              Loaded="UserControl_Loaded">
 
     <Grid Margin="20">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <!-- Header -->
-        <Grid Grid.Row="0" Margin="0,0,0,16">
-            <StackPanel Orientation="Horizontal">
-                <TextBlock Text="Default Apps &amp; Bloatware" Style="{StaticResource PageHeader}"/>
-                <Button Content="↻ Refresh List" Margin="20,0,0,0" 
-                        Style="{StaticResource PrimaryButton}" Click="RefreshBtn_Click"/>
+        <Grid Grid.Row="0" Margin="0,0,0,12">
+            <StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="Default Apps &amp; Bloatware" Style="{StaticResource PageHeader}"/>
+                    <Button Content="↻ Refresh List" Margin="20,0,0,0"
+                            Style="{StaticResource PrimaryButton}" Click="RefreshBtn_Click"/>
+                    <Button x:Name="RemoveBloatwareBtn" Content="🧹 Remove Bloatware" Margin="12,0,0,0"
+                            Style="{StaticResource DangerButton}" Click="RemoveBloatwareBtn_Click"
+                            ToolTip="Uninstall Outlook, Xbox, Family and Phone packages after confirmation."/>
+                </StackPanel>
+                <TextBlock Text="The same app list Windows Settings shows under Apps → Installed apps — apps you can uninstall (Outlook, Phone Link, Family, …)."
+                           Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" Margin="0,6,0,0"/>
             </StackPanel>
         </Grid>
 
+        <!-- View Filter -->
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,12">
+            <CheckBox x:Name="SystemComponentsCheck" Content="Include system components (OS-signed)"
+                      Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center"
+                      Checked="FilterChanged" Unchecked="FilterChanged"/>
+            <TextBlock x:Name="AppCountText" Text="" Foreground="{StaticResource TextSecondaryBrush}"
+                       Margin="20,0,0,0" VerticalAlignment="Center" FontSize="11"/>
+        </StackPanel>
+
         <!-- Apps List -->
-        <DataGrid x:Name="AppsDataGrid" Grid.Row="1">
+        <DataGrid x:Name="AppsDataGrid" Grid.Row="2">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="App Name" Binding="{Binding Name}" Width="2*"/>
                 <DataGridTextColumn Header="Version" Binding="{Binding Version}" Width="*"/>
@@ -31,13 +48,22 @@
                     <DataGridTextColumn.ElementStyle>
                         <Style TargetType="TextBlock">
                             <Style.Triggers>
-                                <Trigger Property="Text" Value="Valid">
+                                <Trigger Property="Text" Value="Valid (Store)">
                                     <Setter Property="Foreground" Value="{StaticResource AccentGreenBrush}"/>
                                 </Trigger>
-                                <Trigger Property="Text" Value="Inaccessible">
+                                <Trigger Property="Text" Value="Valid (Enterprise)">
+                                    <Setter Property="Foreground" Value="{StaticResource AccentGreenBrush}"/>
+                                </Trigger>
+                                <Trigger Property="Text" Value="System component">
+                                    <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+                                </Trigger>
+                                <Trigger Property="Text" Value="Developer-signed">
                                     <Setter Property="Foreground" Value="{StaticResource AccentAmberBrush}"/>
                                 </Trigger>
-                                <Trigger Property="Text" Value="NotSigned">
+                                <Trigger Property="Text" Value="Unsigned">
+                                    <Setter Property="Foreground" Value="{StaticResource AccentRedBrush}"/>
+                                </Trigger>
+                                <Trigger Property="Text" Value="Invalid/Error">
                                     <Setter Property="Foreground" Value="{StaticResource AccentRedBrush}"/>
                                 </Trigger>
                             </Style.Triggers>
@@ -48,7 +74,7 @@
                 <DataGridTemplateColumn Header="Action" Width="100">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <Button Content="Uninstall" Style="{StaticResource DangerButton}" 
+                            <Button Content="Uninstall" Style="{StaticResource DangerButton}"
                                     Padding="8,2" FontSize="10" Click="UninstallBtn_Click"/>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
@@ -57,8 +83,8 @@
         </DataGrid>
 
         <!-- Footer Info -->
-        <Border Grid.Row="2" Margin="0,16,0,0" Style="{StaticResource CardPanel}" Padding="12">
-            <TextBlock Text="Note: Removing system-critical apps may cause instability. Use with caution. Signature details are verified against the AppxManifest.xml." 
+        <Border Grid.Row="3" Margin="0,16,0,0" Style="{StaticResource CardPanel}" Padding="12">
+            <TextBlock Text="Note: Removing system-critical apps may cause instability. Use with caution. Signature status reflects the package's deployment-validated signature kind (Store / Enterprise signatures are valid); the signer is taken from the package publisher."
                        Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" TextWrapping="Wrap"/>
         </Border>
     </Grid>
