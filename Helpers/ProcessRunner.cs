@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace AutoCommand.Helpers
@@ -11,6 +12,16 @@ namespace AutoCommand.Helpers
     public static class ProcessRunner
     {
         public static string Run(string fileName, string arguments)
+        {
+            return Run(fileName, arguments, null);
+        }
+
+        /// <summary>
+        /// Run with an explicit output encoding. Required for Sysinternals tools
+        /// (sigcheck etc.), which emit UTF-16LE on redirected stdout — reading them
+        /// with the default codepage yields interleaved-null mojibake.
+        /// </summary>
+        public static string Run(string fileName, string arguments, Encoding outputEncoding)
         {
             var proc = new Process
             {
@@ -24,10 +35,12 @@ namespace AutoCommand.Helpers
                     CreateNoWindow = true
                 }
             };
+            if (outputEncoding != null)
+                proc.StartInfo.StandardOutputEncoding = outputEncoding;
             proc.Start();
             string output = proc.StandardOutput.ReadToEnd();
             proc.WaitForExit();
-            return output;
+            return StripNullChars(output);
         }
 
         public static (string Output, string Error, int ExitCode) RunWithDetails(string fileName, string arguments)
@@ -48,12 +61,17 @@ namespace AutoCommand.Helpers
             string output = proc.StandardOutput.ReadToEnd();
             string error = proc.StandardError.ReadToEnd();
             proc.WaitForExit();
-            return (output, error, proc.ExitCode);
+            return (StripNullChars(output), StripNullChars(error), proc.ExitCode);
         }
 
         public static Task<string> RunAsync(string fileName, string arguments)
         {
             return Task.Run(() => Run(fileName, arguments));
+        }
+
+        public static Task<string> RunAsync(string fileName, string arguments, Encoding outputEncoding)
+        {
+            return Task.Run(() => Run(fileName, arguments, outputEncoding));
         }
 
         public static Task<(string Output, string Error, int ExitCode)> RunWithDetailsAsync(string fileName, string arguments)
@@ -83,6 +101,12 @@ namespace AutoCommand.Helpers
                 Debug.WriteLine($"ProcessRunner.RunDetached Error: {ex.Message}");
             }
         }
+
+        private static string StripNullChars(string value)
+        {
+            return string.IsNullOrEmpty(value) || value.IndexOf('\0') < 0
+                ? value
+                : value.Replace("\0", "");
+        }
     }
 }
-

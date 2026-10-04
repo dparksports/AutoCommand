@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows;
@@ -249,21 +250,34 @@ namespace AutoCommand.Views
                 return;
             }
 
-            // Run sigcheck
-            string output = await ProcessRunner.RunAsync(sigcheckPath, $"-accepteula -nobanner \"{bootmgfwPath}\"");
+            // Sysinternals tools emit UTF-16LE on redirected stdout — decode accordingly,
+            // otherwise the verdict text arrives as interleaved-null mojibake and every
+            // check reads as "could not be verified".
+            string output = await ProcessRunner.RunAsync(sigcheckPath,
+                $"-accepteula -nobanner -h \"{bootmgfwPath}\"", Encoding.Unicode);
             Log($"  Sigcheck output:\n{output}");
 
-            bool verified = output.Contains("Verified") && output.Contains("Signed");
-            if (verified && !output.Contains("not verified", StringComparison.OrdinalIgnoreCase))
+            // Parse field-by-field instead of blanket substring matching
+            string verified = GetFieldValue(output, "Verified");
+            string publisher = GetFieldValue(output, "Publisher");
+
+            if (string.Equals(verified, "Signed", StringComparison.OrdinalIgnoreCase))
             {
-                SetStatus(SigcheckStatusText, "✓ Bootloader signature is valid (Authenticode verified)", true);
+                SetStatus(SigcheckStatusText,
+                    "✓ Bootloader signature is valid (Authenticode verified)"
+                    + (string.IsNullOrEmpty(publisher) ? "" : $" — {publisher}"),
+                    true);
+            }
+            else if (string.Equals(verified, "Unsigned", StringComparison.OrdinalIgnoreCase))
+            {
+                SetStatus(SigcheckStatusText, "✗ Bootloader is NOT signed — possible tampering", false);
             }
             else
             {
-                SetStatus(SigcheckStatusText, "⚠ Bootloader signature could not be verified", false);
+                SetStatus(SigcheckStatusText, "⚠ Bootloader signature could not be verified (sigcheck produced no parseable verdict)", false);
             }
 
-            // Extract PE hash for DBX comparison
+            // Extract PE hash for DBX comparison (-h makes sigcheck print these)
             string peHash = ExtractHash(output, "PE256");
             string sha256Hash = ExtractHash(output, "SHA256");
             if (!string.IsNullOrEmpty(peHash))
@@ -274,42 +288,97 @@ namespace AutoCommand.Views
 
         private async Task<string> FindSigcheckAsync()
         {
-            var searchPaths = new[]
+            // Existing copies are only used if they pass Microsoft Authenticode verification
+            var candidates = new[]
             {
                 Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "sigcheck64.exe"),
                 Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Sysinternals", "sigcheck64.exe")
             };
 
-            foreach (var p in searchPaths)
+            foreach (var p in candidates)
             {
-                if (File.Exists(p)) return p;
+                if (!File.Exists(p)) continue;
+                string detail;
+                if (AuthenticodeVerifier.IsMicrosoftSigned(p, out detail))
+                {
+                    Log($"  Using sigcheck64.exe at {p}");
+                    Log($"  Integrity: {detail}");
+                    return p;
+                }
+                Log($"  Found {p} but it FAILED integrity verification — ignoring. ({detail})");
             }
 
             try
             {
                 var result = ProcessRunner.RunWithDetails("where", "sigcheck64.exe");
                 if (result.ExitCode == 0 && !string.IsNullOrWhiteSpace(result.Output))
-                    return result.Output.Trim().Split('\n')[0].Trim();
+                {
+                    string pathCandidate = result.Output.Trim().Split('\n')[0].Trim();
+                    string pathDetail;
+                    if (AuthenticodeVerifier.IsMicrosoftSigned(pathCandidate, out pathDetail))
+                    {
+                        Log($"  Using sigcheck64.exe from PATH: {pathCandidate}");
+                        Log($"  Integrity: {pathDetail}");
+                        return pathCandidate;
+                    }
+                    Log($"  PATH copy failed integrity verification — ignoring. ({pathDetail})");
+                }
             }
             catch { }
 
-            // If not found, try to download it
+            // Not found — download the latest build from Sysinternals Live
             string dest = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "sigcheck64.exe");
             try
             {
-                Log("  Downloading sigcheck64.exe from Sysinternals...");
+                Log("  Downloading sigcheck64.exe from Sysinternals Live...");
                 using (var client = new System.Net.Http.HttpClient())
                 {
+                    client.DefaultRequestHeaders.Add("User-Agent", "AutoCommand/1.0");
                     var data = await client.GetByteArrayAsync("https://live.sysinternals.com/sigcheck64.exe");
+
+                    // Integrity gate 1 — record the exact SHA256 we received
+                    using (var sha = SHA256.Create())
+                    {
+                        string hash = BitConverter.ToString(sha.ComputeHash(data)).Replace("-", "");
+                        Log($"  Downloaded SHA256: {hash}");
+                    }
+
                     File.WriteAllBytes(dest, data);
                 }
+
+                // Integrity gate 2 — the binary must carry a valid Microsoft
+                // Authenticode signature (chain-validated, signer = Microsoft)
+                string verifyDetail;
+                if (!AuthenticodeVerifier.IsMicrosoftSigned(dest, out verifyDetail))
+                {
+                    File.Delete(dest);
+                    Log($"  ✗ Downloaded sigcheck64.exe FAILED integrity verification and was deleted. ({verifyDetail})");
+                    return null;
+                }
+                Log($"  Downloaded binary verified: {verifyDetail}");
                 return dest;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Log($"  Download failed: {ex.Message}");
             }
 
+            return null;
+        }
+
+        /// <summary>
+        /// Reads "Field: value" lines from sigcheck output (case-insensitive,
+        /// whitespace-tolerant). Returns null when the field is absent.
+        /// </summary>
+        private static string GetFieldValue(string output, string field)
+        {
+            if (string.IsNullOrEmpty(output)) return null;
+            foreach (var rawLine in output.Split('\n'))
+            {
+                var line = rawLine.Trim();
+                if (line.StartsWith(field + ":", StringComparison.OrdinalIgnoreCase))
+                    return line.Substring(field.Length + 1).Trim();
+            }
             return null;
         }
 
