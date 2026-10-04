@@ -11,7 +11,9 @@ namespace AutoCommand
     /// <summary>
     /// Background security enforcement loop.
     /// Ported from DeviceMonitorCS — all PowerShell replaced with native APIs.
-    /// Adapter detection is event-driven via AdapterEventWatcher (zero polling overhead).
+    /// Adapter detection is event-driven via AdapterEventWatcher (zero polling overhead),
+    /// backed by a state-reconciliation sweep that re-asserts the desired SSTP service
+    /// and kernel-debug state so anything re-enabled silently is neutralized again.
     /// </summary>
     public class SecurityEnforcer
     {
@@ -116,9 +118,16 @@ namespace AutoCommand
         // 5s  * 6  = 30s for hosts file
         // 5s  * 12 = 60s for privileged task scan
         // 5s  * 12 = 60s for firewall drift (was every 30s at 2s interval, now same cadence)
+        // 5s  * 6  = 30s for kernel debug state (spawns bcdedit)
         private const int HostsFileEveryN       = 6;   // every ~30s
         private const int PrivTasksEveryN        = 12;  // every ~60s
         private const int FirewallDriftEveryN    = 12;  // every ~60s
+        private const int KdnetEnforceEveryN     = 6;   // every ~30s
+
+        // Debounce so drift alerts don't spam every tick while the user decides
+        private static readonly TimeSpan DriftAlertDebounce = TimeSpan.FromSeconds(60);
+        private DateTime _lastSstpDriftAlertUtc = DateTime.MinValue;
+        private DateTime _lastKdnetDriftAlertUtc = DateTime.MinValue;
 
         public event Action<List<string>> ConfigurationDriftDetected;
 
@@ -130,6 +139,13 @@ namespace AutoCommand
                 {
                     // Hosted network is lightweight — run every tick
                     CheckHostedNetwork();
+
+                    // SSTP service & miniport state — reconcile every tick (cheap SCM/registry reads)
+                    EnforceSstpService();
+
+                    // Kernel debug (bcdedit + KDNIC device) — every 30s (spawns bcdedit)
+                    if (_loopCount % KdnetEnforceEveryN == 0)
+                        EnforceKernelDebug();
 
                     // Hosts file — run every 30s
                     if (_loopCount % HostsFileEveryN == 0)
@@ -218,6 +234,168 @@ namespace AutoCommand
                 }
             }
             catch { }
+        }
+
+        // ── State reconciliation sweep ────────────────────────────────────────
+        // The adapter event watcher only fires when a device is created or flips to
+        // working state. Re-enables that bypass device events — SstpSvc simply being
+        // started again, or kernel debug flipped back on in the BCD — are caught here
+        // by verifying the desired state every tick and neutralizing any drift.
+
+        /// <summary>
+        /// Reconciles the SSTP attack surface every tick: unless the user allow-listed
+        /// SSTP, SstpSvc must be stopped AND disabled (Start=4). Windows Update and RAS
+        /// reconfiguration can re-enable both silently, so the state is re-asserted.
+        /// </summary>
+        private void EnforceSstpService()
+        {
+            if (IsSstpAllowed) return;
+            try
+            {
+                bool running;
+                try
+                {
+                    using (var sc = new ServiceController("SstpSvc"))
+                    {
+                        running = sc.Status == ServiceControllerStatus.Running
+                               || sc.Status == ServiceControllerStatus.StartPending;
+                    }
+                }
+                catch
+                {
+                    return; // Service not installed — nothing to enforce
+                }
+
+                int startValue = GetServiceStartValue("SstpSvc");
+                if (startValue == -1) return; // registry unreadable — skip this tick
+                bool startDisabled = startValue == 4; // SERVICE_DISABLED
+
+                if (!running && startDisabled) return; // desired state
+
+                if (AutoMitigateAdapters)
+                {
+                    Helpers.ServiceHelper.StopAndDisable("SstpSvc");
+                    Helpers.WanMiniportRemover.SetSstpMiniportsEnabled(false);
+
+                    if (DateTime.UtcNow - _lastSstpDriftAlertUtc >= DriftAlertDebounce)
+                    {
+                        _lastSstpDriftAlertUtc = DateTime.UtcNow;
+                        _onThreatDetected?.Invoke("SSTP Service",
+                            $"SstpSvc was re-enabled ({(running ? "service running" : "startup type restored")}) and has been stopped and disabled again.");
+                        StatusChanged?.Invoke("Threat Blocked: SSTP Service", "Red");
+                        OnAdapterAlert?.Invoke("🔴 AutoCommand blocked: SSTP service",
+                            "SstpSvc was re-enabled and has been stopped and disabled again.");
+                    }
+                }
+                else if (DateTime.UtcNow - _lastSstpDriftAlertUtc >= DriftAlertDebounce)
+                {
+                    _lastSstpDriftAlertUtc = DateTime.UtcNow;
+                    // "WAN Miniport (SSTP)" keeps the existing Review flow working:
+                    // Block & Delete stops/disables the service, No whitelists SSTP.
+                    _onThreatDetected?.Invoke("Network Adapter", "WAN Miniport (SSTP)");
+                    StatusChanged?.Invoke("Threat Detected: SSTP Service", "Amber");
+                    OnAdapterAlert?.Invoke("⚠ Security Alert: SSTP Service Re-enabled",
+                        "SstpSvc is no longer disabled. Click to review and block it.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"EnforceSstpService Error: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Reconciles the KDNET attack surface every ~30s: unless allow-listed, kernel
+        /// debug must be OFF in the BCD and no working KDNIC adapter may be present.
+        /// </summary>
+        private void EnforceKernelDebug()
+        {
+            if (IsKernelDebugAllowed) return;
+            try
+            {
+                bool debugOn = false;
+                string bcdOutput = Helpers.ProcessRunner.Run("bcdedit", "/enum {current}");
+                if (!string.IsNullOrEmpty(bcdOutput))
+                {
+                    debugOn = bcdOutput.IndexOf("debug", StringComparison.OrdinalIgnoreCase) >= 0
+                           && bcdOutput.IndexOf("yes", StringComparison.OrdinalIgnoreCase) >= 0;
+                }
+
+                bool kdnicActive = IsKdnicAdapterActive();
+
+                if (!debugOn && !kdnicActive) return; // desired state
+
+                if (AutoMitigateAdapters)
+                {
+                    if (debugOn)
+                        Helpers.ProcessRunner.RunDetached("bcdedit", "/debug off");
+                    if (kdnicActive)
+                        Helpers.WanMiniportRemover.RemoveKdnet();
+
+                    if (DateTime.UtcNow - _lastKdnetDriftAlertUtc >= DriftAlertDebounce)
+                    {
+                        _lastKdnetDriftAlertUtc = DateTime.UtcNow;
+                        _onThreatDetected?.Invoke("Kernel Debug", debugOn
+                            ? "Kernel debugging was re-enabled in the boot configuration and has been turned off again."
+                            : "An active Kernel Debug adapter was detected and removed.");
+                        StatusChanged?.Invoke("Threat Blocked: Kernel Debug", "Red");
+                        OnAdapterAlert?.Invoke("🔴 AutoCommand blocked: Kernel Debug",
+                            debugOn
+                                ? "Kernel debugging (bcdedit) was re-enabled and turned off again."
+                                : "An active Kernel Debug (KDNIC) adapter was detected and removed.");
+                    }
+                }
+                else if (DateTime.UtcNow - _lastKdnetDriftAlertUtc >= DriftAlertDebounce)
+                {
+                    _lastKdnetDriftAlertUtc = DateTime.UtcNow;
+                    _onThreatDetected?.Invoke("Network Adapter", "Kernel Debug Network Adapter");
+                    StatusChanged?.Invoke("Threat Detected: Kernel Debug", "Amber");
+                    OnAdapterAlert?.Invoke("⚠ Security Alert: Kernel Debug Detected",
+                        debugOn
+                            ? "Kernel debugging is enabled in the boot configuration. Click to review."
+                            : "An active Kernel Debug (KDNIC) adapter is present. Click to review.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"EnforceKernelDebug Error: {ex.Message}");
+            }
+        }
+
+        private static bool IsKdnicAdapterActive()
+        {
+            try
+            {
+                using (var searcher = new ManagementObjectSearcher(
+                    "SELECT Name, ConfigManagerErrorCode FROM Win32_PnPEntity WHERE Name LIKE '%Kernel Debug%' OR Name LIKE '%KDNIC%'"))
+                {
+                    foreach (var obj in searcher.Get())
+                    {
+                        var raw = obj["ConfigManagerErrorCode"];
+                        int err = raw == null ? 0 : Convert.ToInt32(raw);
+                        if (err == 0) return true; // present and working
+                    }
+                }
+            }
+            catch { }
+            return false;
+        }
+
+        private static int GetServiceStartValue(string serviceName)
+        {
+            try
+            {
+                using (var key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Services\" + serviceName))
+                {
+                    if (key == null) return -1; // service key missing — not installed
+                    var raw = key.GetValue("Start");
+                    return raw == null ? -1 : Convert.ToInt32(raw);
+                }
+            }
+            catch
+            {
+                return -1;
+            }
         }
 
         /// <summary>
