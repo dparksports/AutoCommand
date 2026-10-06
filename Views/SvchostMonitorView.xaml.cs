@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
+using AutoCommand.Helpers;
 using AutoCommand.Models;
 using AutoCommand.Services;
 
@@ -94,8 +95,18 @@ namespace AutoCommand.Views
         private async void SetupSysmonBtn_Click(object sender, RoutedEventArgs e)
         {
             SetupSysmonBtn.IsEnabled = false;
+
+            // Inconsistent state = leftovers of a failed install (stale event
+            // manifest registration / stray Sysmon64.exe) that make every
+            // install attempt fail. Offer a guided repair instead.
+            if (_installerService.DetectInstallState() == SysmonInstallState.Inconsistent)
+            {
+                await RepairSysmonFlowAsync();
+                return;
+            }
+
             MonitorStatusText.Text = "Downloading and configuring Sysmon... please wait.";
-            
+
             var result = await _installerService.InstallAndConfigureAsync();
             if (result.Success)
             {
@@ -109,6 +120,61 @@ namespace AutoCommand.Views
                 SetupSysmonBtn.IsEnabled = true;
                 MonitorStatusText.Text = "Sysmon is not installed. Network tracking will not work.";
             }
+        }
+
+        private async Task RepairSysmonFlowAsync()
+        {
+            var repair = MessageBox.Show(
+                "Sysmon is in an inconsistent install state: leftovers of an earlier failed install " +
+                "(a stale event-manifest registration and/or a stray Sysmon64.exe) make every install attempt fail.\n\n" +
+                "Repair now? The leftovers will be removed and Sysmon reinstalled. " +
+                "If Windows still holds the stale registration, a restart will be offered to finish the repair.",
+                "Sysmon repair", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.Yes);
+
+            if (repair != MessageBoxResult.Yes)
+            {
+                SetupSysmonBtn.IsEnabled = true;
+                MonitorStatusText.Text = "Sysmon repair cancelled. Network tracking will not work.";
+                return;
+            }
+
+            MonitorStatusText.Text = "Repairing Sysmon... removing leftovers and reinstalling.";
+            var repaired = await _installerService.RepairAsync();
+
+            if (repaired.Success)
+            {
+                MessageBox.Show("Sysmon repair completed and verified. No restart was needed.", "Repair complete", MessageBoxButton.OK, MessageBoxImage.Information);
+                CheckSysmonStatus();
+                MonitorStatusText.Text = "Sysmon ready. Click 'Start Monitor' to begin tracking.";
+                return;
+            }
+
+            if (repaired.RebootRequired)
+            {
+                var restart = MessageBox.Show(
+                    "Windows still holds the stale Sysmon registration; it can only be cleared during a restart.\n\n" +
+                    "Restart Windows now to finish the repair? Save your work first — the PC will reboot. " +
+                    "After the restart AutoCommand will reinstall and verify Sysmon automatically.",
+                    "Sysmon repair — restart required", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No);
+
+                if (restart == MessageBoxResult.Yes)
+                {
+                    MonitorStatusText.Text = "Restarting Windows to complete the Sysmon repair...";
+                    ProcessRunner.RunDetached("shutdown.exe",
+                        "/r /t 10 /c \"AutoCommand: restarting to complete the Sysmon repair\"");
+                    return;
+                }
+
+                MessageBox.Show("The repair will finish automatically after the next Windows restart: " +
+                    "AutoCommand will reinstall and verify Sysmon on startup.", "Repair pending restart",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+                MonitorStatusText.Text = "Sysmon repair pending restart. Network tracking will not work until then.";
+                return;
+            }
+
+            MessageBox.Show($"Sysmon repair failed.\n\nDetails: {repaired.ErrorMessage}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            SetupSysmonBtn.IsEnabled = true;
+            MonitorStatusText.Text = "Sysmon is not installed. Network tracking will not work.";
         }
 
         private void Filter_Changed(object sender, RoutedEventArgs e)

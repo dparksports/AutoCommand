@@ -1,10 +1,19 @@
-# AutoCommand v3.7.0 🛡️
+# AutoCommand v3.8.0 🛡️
 
 ![AutoCommand Infographic Header](Assets/autocommand_infographic.png)
 
 **AutoCommand** is an enterprise-grade C# WPF security and OS hardening suite for Windows 10 and 11. It delivers zero-PowerShell threat monitoring, self-healing network-adapter defense, native COM firewall management with one-click profiles, UEFI/Secure Boot integrity checks, and an integrated AI command assistant — all from a single administrator dashboard.
 
 > **📥 Download:** grab the latest self-contained build from the [Releases page](https://github.com/dparksports/AutoCommand/releases) — no .NET installation required.
+
+---
+
+## 🆕 What's New in v3.8.0
+
+* **🛠️ Guided Sysmon Repair** — when Sysmon is stuck in an inconsistent install state (leftovers of a failed install — a stale event-manifest registration and/or a stray `Sysmon64.exe` — that make every install attempt abort with *"Event manifest installation failed"*), Setup now detects it, **offers a repair and asks before touching anything**, removes the leftovers, reinstalls, and — if Windows still holds the stale registration — **asks before restarting** and then automatically finishes and verifies the repair after the reboot (service present, event channel healthy).
+* **⚡ One-Click Setup Tab** — a fresh-install hardening plan on a single page. Each step reuses the exact action behind the corresponding dedicated page (Command Panel, Firewall, Privacy, OS Hardening, Default Apps), and the checklist re-reads live system state for every step, so it doubles as a status dashboard.
+* **🧯 Firewall Baseline & Drift Detection** — capture the expected enabled/disabled state of *every* firewall rule after applying a profile, then detect drift when Windows Update or a reboot silently re-enables rules or provisions new ones.
+* **⏱️ Configurable Enforcer Cadence** — the Security Enforcer's fast-check interval is now user-adjustable in Settings and persisted across restarts.
 
 ---
 
@@ -96,7 +105,7 @@ The **DBX Safety** page protects the earliest link in the boot chain:
 
 ## 🌐 System & Process Analytics
 
-* **Sysmon Integration** — native monitoring of `Microsoft-Windows-Sysmon/Operational` via `EventLogWatcher`, plus an installer service.
+* **Sysmon Integration** — native monitoring of `Microsoft-Windows-Sysmon/Operational` via `EventLogWatcher`, plus an installer service with guided repair for inconsistent installs.
 * **Active Connections & Geo-DNS** — live remote IPs, process bindings, and reverse-resolved domain names.
 * **Raw Socket Sniffer** — packet-level visibility without WinPcap dependencies.
 * **SVCHOST Monitor** — per-service breakdown of the generic host processes.

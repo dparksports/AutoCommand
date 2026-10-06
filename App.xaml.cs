@@ -32,6 +32,35 @@ namespace AutoCommand
                 LogCrash(args.Exception, "TaskScheduler");
                 args.SetObserved();
             };
+
+            // Finish a Sysmon repair that was waiting for a Windows restart
+            FinishSysmonRepairIfPending();
+        }
+
+        private async void FinishSysmonRepairIfPending()
+        {
+            try
+            {
+                var installer = new AutoCommand.Services.SysmonInstallerService();
+                var (verified, message) = await installer.CompletePendingRepairIfAnyAsync();
+                if (message == null) return; // no repair was pending
+
+                if (verified)
+                {
+                    MessageBox.Show($"Sysmon repair verified after the restart.\n\n{message}",
+                        "Sysmon repair complete", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                else
+                {
+                    MessageBox.Show($"Sysmon repair could not be verified after the restart.\n\nDetails: {message}\n\n" +
+                        "Use the Sysmon setup button in the Process Monitor view to retry the repair.",
+                        "Sysmon repair", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
+            }
+            catch (System.Exception ex)
+            {
+                LogCrash(ex, "SysmonRepair");
+            }
         }
 
         private void LogCrash(System.Exception ex, string source)
