@@ -47,9 +47,6 @@ namespace AutoCommand.Views
             await RefreshAppsList();
         }
 
-        // Package name / display-name patterns treated as bloatware
-        private static readonly string[] BloatwarePatterns = { "Outlook", "Xbox", "Family", "Phone" };
-
         private async void RemoveBloatwareBtn_Click(object sender, RoutedEventArgs e)
         {
             RemoveBloatwareBtn.IsEnabled = false;
@@ -57,40 +54,39 @@ namespace AutoCommand.Views
 
             try
             {
-                var matches = await _appService.FindBloatwareAsync(BloatwarePatterns);
-                if (matches.Count == 0)
+                var result = await _appService.RemoveBloatwareAsync(
+                    new Progress<string>(msg => AppCountText.Text = msg),
+                    async matches =>
+                    {
+                        var sb = new System.Text.StringBuilder();
+                        sb.AppendLine($"The following {matches.Count} package(s) will be removed:\n");
+                        foreach (var app in matches)
+                            sb.AppendLine($"• {app.Name}  ({app.FullName})");
+                        sb.AppendLine("\nContinue?");
+
+                        return MessageBox.Show(sb.ToString(), "Confirm Bloatware Removal",
+                            MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.Yes;
+                    });
+
+                if (result.Removed < 0)
+                {
+                    // User cancelled the confirmation
+                    return;
+                }
+
+                if (result.Matched.Count == 0)
                 {
                     MessageBox.Show("No installed packages matching Outlook / Xbox / Family / Phone were found.",
                         "Nothing to Remove", MessageBoxButton.OK, MessageBoxImage.Information);
                     return;
                 }
 
-                var sb = new System.Text.StringBuilder();
-                sb.AppendLine($"The following {matches.Count} package(s) will be removed:\n");
-                foreach (var app in matches)
-                    sb.AppendLine($"• {app.Name}  ({app.FullName})");
-                sb.AppendLine("\nContinue?");
-
-                if (MessageBox.Show(sb.ToString(), "Confirm Bloatware Removal",
-                    MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes) return;
-
-                int removed = 0;
-                var failed = new List<string>();
-                foreach (var app in matches)
-                {
-                    AppCountText.Text = $"Removing {app.Name}…";
-                    if (await _appService.UninstallAppAsync(app.FullName))
-                        removed++;
-                    else
-                        failed.Add(app.Name);
-                }
-
-                if (failed.Count == 0)
-                    MessageBox.Show($"Removed {removed} of {matches.Count} package(s) successfully.",
+                if (result.Failed.Count == 0)
+                    MessageBox.Show($"Removed {result.Removed} of {result.Matched.Count} package(s) successfully.",
                         "Bloatware Removal Complete", MessageBoxButton.OK, MessageBoxImage.Information);
                 else
-                    MessageBox.Show($"Removed {removed} of {matches.Count} package(s).\n\nFailed (may be system-protected or managed):\n- "
-                                    + string.Join("\n- ", failed),
+                    MessageBox.Show($"Removed {result.Removed} of {result.Matched.Count} package(s).\n\nFailed (may be system-protected or managed):\n- "
+                                    + string.Join("\n- ", result.Failed),
                         "Bloatware Removal Finished", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
             catch (Exception ex)

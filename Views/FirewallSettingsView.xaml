@@ -53,6 +53,14 @@
                          Checked="FilterChanged"/>
             <TextBlock x:Name="RuleCountText" Text="" Foreground="{StaticResource TextSecondaryBrush}"
                        Margin="20,0,0,0" VerticalAlignment="Center" FontSize="11"/>
+            <Button x:Name="RebaselineBtn" Content="📌 Re-baseline" Margin="16,0,0,0"
+                    Style="{StaticResource PrimaryButton}" Click="RebaselineBtn_Click"
+                    ToolTip="Capture the current firewall state as the expected baseline. The Security Enforcer re-disables rules that drift from it (e.g. re-enabled after Windows Update)."/>
+            <Button x:Name="PauseEnforcementBtn" Content="⏸ Pause auto-fix (15 min)" Margin="12,0,0,0"
+                    Style="{StaticResource PrimaryButton}" Click="PauseEnforcementBtn_Click"
+                    ToolTip="Suspend baseline enforcement for 15 minutes while you edit rules externally (wf.msc / netsh). Re-baseline afterwards to adopt your changes."/>
+            <TextBlock x:Name="BaselineStatusText" Text="" Foreground="{StaticResource TextSecondaryBrush}"
+                       Margin="12,0,0,0" VerticalAlignment="Center" FontSize="11"/>
             <ProgressBar x:Name="ProfileProgress" Width="120" Height="14" IsIndeterminate="True"
                          Visibility="Collapsed" Margin="16,0,0,0" VerticalAlignment="Center"/>
             <TextBlock x:Name="ProfileStatusText" Text="" Foreground="{StaticResource TextSecondaryBrush}"

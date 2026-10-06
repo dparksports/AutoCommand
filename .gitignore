@@ -11,3 +11,5 @@ ScratchTest/obj/
 Plugins/
 *.user
 publish_out/
+# SecurityEnforcer persisted check cadence (runtime data)
+check_interval.txt

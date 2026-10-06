@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -11,7 +12,7 @@ namespace AutoCommand.Views
 {
     public partial class SettingsView : UserControl
     {
-        private const string TaskName = "AutoCommandStartupTask";
+        private const string TaskName = FreshSetupService.StartupTaskName;
 
         public SettingsView()
         {
@@ -37,6 +38,27 @@ namespace AutoCommand.Views
             AutoMitigateAdaptersCheck.IsChecked = SecurityEnforcer.AutoMitigateAdapters;
             AutoMitigateAdaptersCheck.Checked += AutoMitigateAdaptersCheck_Checked;
             AutoMitigateAdaptersCheck.Unchecked += AutoMitigateAdaptersCheck_Unchecked;
+
+            // Load the security check rate (fast-check tick interval)
+            CheckRateCombo.SelectionChanged -= CheckRateCombo_SelectionChanged;
+            foreach (var item in CheckRateCombo.Items.OfType<ComboBoxItem>())
+            {
+                if (item.Tag is string tag && tag == SecurityEnforcer.CheckIntervalSeconds.ToString())
+                {
+                    item.IsSelected = true;
+                    break;
+                }
+            }
+            CheckRateCombo.SelectionChanged += CheckRateCombo_SelectionChanged;
+        }
+
+        private void CheckRateCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (CheckRateCombo.SelectedItem is ComboBoxItem item
+                && item.Tag is string tag && int.TryParse(tag, out int seconds))
+            {
+                SecurityEnforcer.CheckIntervalSeconds = seconds;
+            }
         }
 
         private void AnalyticsCheck_Checked(object sender, RoutedEventArgs e)
@@ -93,34 +115,16 @@ namespace AutoCommand.Views
 
         private async void LaunchOnStartupCheck_Checked(object sender, RoutedEventArgs e)
         {
-            await Task.Run(() =>
-            {
-                try
-                {
-                    string exePath = Process.GetCurrentProcess().MainModule.FileName;
-                    // Use schtasks to create a highest privilege task on logon
-                    ProcessRunner.Run("schtasks", $"/create /tn \"{TaskName}\" /tr \"\\\"{exePath}\\\"\" /sc onlogon /rl highest /f");
-                }
-                catch (Exception ex)
-                {
-                    Dispatcher.Invoke(() => MessageBox.Show($"Failed to create startup task: {ex.Message}"));
-                }
-            });
+            bool ok = await FreshSetupService.EnableLaunchAtLogon();
+            if (!ok)
+                MessageBox.Show("Failed to create startup task.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+            await CheckStartupTask();
         }
 
         private async void LaunchOnStartupCheck_Unchecked(object sender, RoutedEventArgs e)
         {
-            await Task.Run(() =>
-            {
-                try
-                {
-                    ProcessRunner.Run("schtasks", $"/delete /tn \"{TaskName}\" /f");
-                }
-                catch (Exception ex)
-                {
-                    Dispatcher.Invoke(() => MessageBox.Show($"Failed to remove startup task: {ex.Message}"));
-                }
-            });
+            await FreshSetupService.DisableLaunchAtLogon();
+            await CheckStartupTask();
         }
     }
 }

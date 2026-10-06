@@ -76,6 +76,11 @@ namespace AutoCommand
                     _isKernelDebugAllowed = System.IO.File.ReadAllText("allowed_kerneldebug.txt").Trim() == "True";
                 if (System.IO.File.Exists("auto_mitigate_adapters.txt"))
                     _autoMitigateAdapters = System.IO.File.ReadAllText("auto_mitigate_adapters.txt").Trim() == "True";
+                if (System.IO.File.Exists("check_interval.txt")
+                    && int.TryParse(System.IO.File.ReadAllText("check_interval.txt").Trim(), out int saved))
+                {
+                    CheckIntervalSeconds = saved;
+                }
             }
             catch { }
         }
@@ -111,23 +116,36 @@ namespace AutoCommand
             _adapterWatcher = null;
         }
 
-        public int CheckInterval { get; set; } = 5000;
-        private int _loopCount = 0;
+        // User-selected tick rate for the fast checks (persisted to check_interval.txt).
+        // Heavy scans keep fixed 30s/60s cadences regardless of this value.
+        private static int _checkIntervalSeconds = 5;
+        public static int CheckIntervalSeconds
+        {
+            get => _checkIntervalSeconds;
+            set
+            {
+                int[] allowed = { 60, 30, 10, 6, 5, 3, 1 };
+                _checkIntervalSeconds = allowed.Contains(value) ? value : 5;
+                try { System.IO.File.WriteAllText("check_interval.txt", _checkIntervalSeconds.ToString()); } catch { }
+            }
+        }
 
-        // Interval multipliers (based on CheckInterval = 5000ms)
-        // 5s  * 6  = 30s for hosts file
-        // 5s  * 12 = 60s for privileged task scan
-        // 5s  * 12 = 60s for firewall drift (was every 30s at 2s interval, now same cadence)
-        // 5s  * 6  = 30s for kernel debug state (spawns bcdedit)
-        private const int HostsFileEveryN       = 6;   // every ~30s
-        private const int PrivTasksEveryN        = 12;  // every ~60s
-        private const int FirewallDriftEveryN    = 12;  // every ~60s
-        private const int KdnetEnforceEveryN     = 6;   // every ~30s
+        // Fixed cadences for heavier scans (seconds) — independent of the tick rate
+        private const int HeavyScanKdnetSeconds = 30;
+        private const int HeavyScanHostsSeconds = 30;
+        private const int HeavyScanPrivTasksSeconds = 60;
+        private const int HeavyScanFirewallDriftSeconds = 60;
+
+        private DateTime _lastHostsCheckUtc = DateTime.MinValue;
+        private DateTime _lastPrivTasksCheckUtc = DateTime.MinValue;
+        private DateTime _lastFirewallDriftCheckUtc = DateTime.MinValue;
+        private DateTime _lastKdnetCheckUtc = DateTime.MinValue;
 
         // Debounce so drift alerts don't spam every tick while the user decides
         private static readonly TimeSpan DriftAlertDebounce = TimeSpan.FromSeconds(60);
         private DateTime _lastSstpDriftAlertUtc = DateTime.MinValue;
         private DateTime _lastKdnetDriftAlertUtc = DateTime.MinValue;
+        private DateTime _lastFirewallDriftAlertUtc = DateTime.MinValue;
 
         public event Action<List<string>> ConfigurationDriftDetected;
 
@@ -137,35 +155,39 @@ namespace AutoCommand
             {
                 try
                 {
-                    // Hosted network is lightweight — run every tick
+                    // Fast checks — every tick, at the user-selected rate
+                    // (cheap: one service-controller read, one registry read, one WMI query)
                     CheckHostedNetwork();
-
-                    // SSTP service & miniport state — reconcile every tick (cheap SCM/registry reads)
                     EnforceSstpService();
 
-                    // Kernel debug (bcdedit + KDNIC device) — every 30s (spawns bcdedit)
-                    if (_loopCount % KdnetEnforceEveryN == 0)
+                    // Heavier scans — fixed cadences regardless of tick rate
+                    var now = DateTime.UtcNow;
+                    if ((now - _lastKdnetCheckUtc).TotalSeconds >= HeavyScanKdnetSeconds)
+                    {
+                        _lastKdnetCheckUtc = now;
                         EnforceKernelDebug();
-
-                    // Hosts file — run every 30s
-                    if (_loopCount % HostsFileEveryN == 0)
+                    }
+                    if ((now - _lastHostsCheckUtc).TotalSeconds >= HeavyScanHostsSeconds)
+                    {
+                        _lastHostsCheckUtc = now;
                         CheckHostsFile();
-
-                    // Task scheduler scan — heavy, run every 60s
-                    if (_loopCount % PrivTasksEveryN == 0)
+                    }
+                    if ((now - _lastPrivTasksCheckUtc).TotalSeconds >= HeavyScanPrivTasksSeconds)
+                    {
+                        _lastPrivTasksCheckUtc = now;
                         CheckPrivilegedTasks();
-
-                    // Firewall drift — run every 60s
-                    if (_loopCount % FirewallDriftEveryN == 0)
+                    }
+                    if ((now - _lastFirewallDriftCheckUtc).TotalSeconds >= HeavyScanFirewallDriftSeconds)
+                    {
+                        _lastFirewallDriftCheckUtc = now;
                         await MonitorFirewallDrift();
-
-                    _loopCount++;
+                    }
                 }
                 catch (Exception ex)
                 {
                     Debug.WriteLine($"Enforcer Error: {ex.Message}");
                 }
-                await Task.Delay(CheckInterval);
+                await Task.Delay(TimeSpan.FromSeconds(_checkIntervalSeconds));
             }
         }
 
@@ -202,13 +224,63 @@ namespace AutoCommand
         {
             try
             {
-                var overrides = Helpers.FirewallConfigManager.Instance.RuleOverrides;
-                if (overrides.Count == 0) return;
+                // While paused the user is (or was) editing rules by hand — adopt, don't fight
+                if (Helpers.FirewallBaselineManager.PausedUntilUtc > DateTime.UtcNow)
+                    return;
 
-                var driftItems = await Services.FirewallService.Instance.CheckDriftAsync(overrides);
-                if (driftItems.Count > 0)
+                var overrides = Helpers.FirewallConfigManager.Instance.RuleOverrides;
+                if (overrides.Count > 0)
                 {
-                    ConfigurationDriftDetected?.Invoke(driftItems);
+                    var driftItems = await Services.FirewallService.Instance.CheckDriftAsync(overrides);
+                    if (driftItems.Count > 0)
+                    {
+                        ConfigurationDriftDetected?.Invoke(driftItems);
+                    }
+                }
+
+                // Whole-firewall baseline drift — detects rules re-enabled after a
+                // reboot or Windows Update, and new rules sneaking in. Restores the
+                // baseline when Auto-Mitigate is on; otherwise alerts (debounced).
+                if (Helpers.FirewallBaselineManager.HasBaseline)
+                {
+                    var drift = await Helpers.FirewallBaselineManager.GetDriftAsync();
+                    int problems = drift.ReEnabled.Count + drift.SneakedIn.Count + drift.UnexpectedlyDisabled.Count;
+                    if (problems > 0 && DateTime.UtcNow - _lastFirewallDriftAlertUtc >= DriftAlertDebounce)
+                    {
+                        _lastFirewallDriftAlertUtc = DateTime.UtcNow;
+
+                        if (AutoMitigateAdapters)
+                        {
+                            int fixedCount = 0;
+                            if (drift.ReEnabled.Count > 0)
+                                fixedCount += await Helpers.FirewallBaselineManager.ReDisableAsync(drift.ReEnabled);
+                            if (drift.UnexpectedlyDisabled.Count > 0)
+                                fixedCount += await Helpers.FirewallBaselineManager.RestoreEnableAsync(drift.UnexpectedlyDisabled);
+
+                            // New rules: grouped ones violate the applied profile's end
+                            // state (e.g. Shield Up) — block those; ungrouped ones are
+                            // reported for review instead of being touched.
+                            var groupedSneaks = drift.SneakedIn
+                                .Where(s => !string.IsNullOrEmpty(s.Item2))
+                                .Select(s => s.Item1).ToList();
+                            if (groupedSneaks.Count > 0)
+                                fixedCount += await Helpers.FirewallBaselineManager.ReDisableAsync(groupedSneaks);
+
+                            _onThreatDetected?.Invoke("Firewall Drift",
+                                $"{problems} drifted rule(s) detected; {fixedCount} restored to baseline.");
+                            StatusChanged?.Invoke("Threat Blocked: Firewall Drift", "Red");
+                            OnAdapterAlert?.Invoke("🟢 AutoCommand fixed firewall drift",
+                                $"{drift.ReEnabled.Count} disabled rule(s) had been re-enabled, {drift.SneakedIn.Count} new rule(s) appeared — baseline restored.");
+                        }
+                        else
+                        {
+                            _onThreatDetected?.Invoke("Firewall Drift",
+                                $"{drift.ReEnabled.Count} rule(s) re-enabled, {drift.SneakedIn.Count} new, {drift.UnexpectedlyDisabled.Count} disabled — review in the Firewall tab.");
+                            StatusChanged?.Invoke("Warning: Firewall Drift", "Amber");
+                            OnAdapterAlert?.Invoke("⚠ Firewall drift detected",
+                                "Rules differ from your saved baseline. Review them in the Firewall tab.");
+                        }
+                    }
                 }
             }
             catch (Exception ex)

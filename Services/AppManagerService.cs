@@ -9,6 +9,40 @@ namespace AutoCommand.Services
 {
     public class AppManagerService
     {
+        private static AppManagerService _instance;
+        public static AppManagerService Instance => _instance ??= new AppManagerService();
+
+        /// <summary>Package name / display-name patterns treated as bloatware.</summary>
+        public static readonly string[] BloatwarePatterns = { "Outlook", "Xbox", "Family", "Phone" };
+
+        /// <summary>
+        /// Finds bloatware (AppManagerService.BloatwarePatterns), optionally asks for
+        /// confirmation, uninstalls each package, and reports per-package results.
+        /// Returns Removed = -1 when the user cancelled the confirmation.
+        /// </summary>
+        public async Task<(List<AppPackageItem> Matched, int Removed, List<string> Failed)> RemoveBloatwareAsync(
+            IProgress<string> progress = null, Func<List<AppPackageItem>, Task<bool>> confirm = null)
+        {
+            var matched = await FindBloatwareAsync(BloatwarePatterns);
+            if (matched.Count == 0)
+                return (matched, 0, new List<string>());
+
+            if (confirm != null && !await confirm(matched))
+                return (matched, -1, new List<string>());
+
+            int removed = 0;
+            var failed = new List<string>();
+            foreach (var app in matched)
+            {
+                progress?.Report($"Removing {app.Name}…");
+                if (await UninstallAppAsync(app.FullName))
+                    removed++;
+                else
+                    failed.Add(app.Name);
+            }
+            return (matched, removed, failed);
+        }
+
         /// <summary>
         /// Lists installed apps the way Windows Settings → Apps → Installed apps does:
         /// user-visible main packages (frameworks, resource bundles, partially staged
@@ -60,7 +94,6 @@ namespace AutoCommand.Services
         {
             var patternList = patterns?.Where(s => !string.IsNullOrWhiteSpace(s)).ToList() ?? new List<string>();
             if (patternList.Count == 0) return new List<AppPackageItem>();
-
             return await Task.Run(() =>
             {
                 var matches = new List<AppPackageItem>();

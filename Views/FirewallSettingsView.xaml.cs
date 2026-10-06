@@ -23,9 +23,50 @@ namespace AutoCommand.Views
         private async void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
             await LoadRules();
+            await UpdateBaselineStatusAsync();
         }
 
-        private async void RefreshBtn_Click(object sender, RoutedEventArgs e) => await LoadRules();
+        private async void RefreshBtn_Click(object sender, RoutedEventArgs e)
+        {
+            await LoadRules();
+            await UpdateBaselineStatusAsync();
+        }
+
+        private async Task UpdateBaselineStatusAsync()
+        {
+            var info = FirewallBaselineManager.BaselineInfo;
+            if (FirewallBaselineManager.IsPaused)
+            {
+                BaselineStatusText.Text = $"Baseline auto-fix PAUSED until {FirewallBaselineManager.PausedUntilUtc.ToLocalTime():HH:mm}"
+                                          + (info == null ? "" : $" — baseline has {info.Value.Count} rules");
+            }
+            else
+            {
+                BaselineStatusText.Text = info == null
+                    ? "No baseline — apply a profile or click Re-baseline to capture one"
+                    : $"Baseline: {info.Value.Count} rules (captured {info.Value.CapturedAt:yyyy-MM-dd HH:mm})";
+            }
+        }
+
+        private async void RebaselineBtn_Click(object sender, RoutedEventArgs e)
+        {
+            RebaselineBtn.IsEnabled = false;
+            try
+            {
+                var (count, at) = await FirewallBaselineManager.CaptureBaselineAsync();
+                BaselineStatusText.Text = $"Baseline: {count} rules (captured {at:yyyy-MM-dd HH:mm})";
+            }
+            finally
+            {
+                RebaselineBtn.IsEnabled = true;
+            }
+        }
+
+        private async void PauseEnforcementBtn_Click(object sender, RoutedEventArgs e)
+        {
+            FirewallBaselineManager.PauseForMinutes(15);
+            await UpdateBaselineStatusAsync();
+        }
 
         private async void FilterChanged(object sender, RoutedEventArgs e) => await LoadRules();
 
@@ -56,6 +97,8 @@ namespace AutoCommand.Views
             bool newState = !rule.Enabled;
             await FirewallService.Instance.ToggleRuleAsync(rule.Name, newState);
             rule.Enabled = newState;
+            // Adopt the change into the baseline so the enforcer doesn't revert it
+            FirewallBaselineManager.UpdateRuleState(rule.Name, newState);
         }
 
         private async void EnableGroup_Click(object sender, RoutedEventArgs e)
@@ -65,6 +108,7 @@ namespace AutoCommand.Views
             var r = await FirewallService.Instance.ToggleGroupAsync(rule.DisplayGroup, true);
             ProfileStatusText.Text = $"Group '{rule.DisplayGroup}': {r.Matched} matched, {r.Changed} changed, {r.Failed} failed"
                                      + (r.FirstError != null ? $" — {r.FirstError}" : "");
+            await FirewallBaselineManager.UpdateGroupStateAsync(rule.DisplayGroup, true);
             await LoadRules();
         }
 
@@ -75,6 +119,7 @@ namespace AutoCommand.Views
             var r = await FirewallService.Instance.ToggleGroupAsync(rule.DisplayGroup, false);
             ProfileStatusText.Text = $"Group '{rule.DisplayGroup}': {r.Matched} matched, {r.Changed} changed, {r.Failed} failed"
                                      + (r.FirstError != null ? $" — {r.FirstError}" : "");
+            await FirewallBaselineManager.UpdateGroupStateAsync(rule.DisplayGroup, false);
             await LoadRules();
         }
 
@@ -124,6 +169,17 @@ namespace AutoCommand.Views
 
                 await LoadRules(); // Auto-refresh the grid so the new state is shown immediately
 
+                // The profile's end state is now the expected state — capture it as the
+                // baseline the Security Enforcer will enforce against future drift
+                int baselineCount = 0;
+                try
+                {
+                    var (count, at) = await FirewallBaselineManager.CaptureBaselineAsync();
+                    baselineCount = count;
+                    BaselineStatusText.Text = $"Baseline: {count} rules (captured {at:yyyy-MM-dd HH:mm})";
+                }
+                catch { }
+
                 var sb = new StringBuilder();
                 sb.AppendLine($"Profile '{profileName}' applied.");
                 if (!string.IsNullOrEmpty(result.Notes)) sb.AppendLine(result.Notes);
@@ -134,6 +190,8 @@ namespace AutoCommand.Views
                                   + (g.Failed > 0 ? $", {g.Failed} FAILED" : ""));
                 }
                 sb.AppendLine($"Total: {result.TotalChanged} rule(s) changed, {result.TotalFailed} failed.");
+                if (baselineCount > 0)
+                    sb.AppendLine($"Baseline captured with {baselineCount} rules — drift from this state will now be detected and fixed automatically.");
                 if (result.TotalMatched == 0) sb.AppendLine("No matching rules were found — no changes were made.");
                 if (result.FirstError != null) sb.AppendLine($"First error: {result.FirstError}");
 
