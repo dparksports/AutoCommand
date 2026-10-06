@@ -4,7 +4,7 @@
 
 **AutoCommand** is an enterprise-grade C# WPF security and OS hardening suite for Windows 10 and 11. It delivers zero-PowerShell threat monitoring, self-healing network-adapter defense, native COM firewall management with one-click profiles, UEFI/Secure Boot integrity checks, and an integrated AI command assistant — all from a single administrator dashboard.
 
-> **📥 Download:** grab the latest self-contained build from the [Releases page](https://github.com/dparksports/AutoCommand/releases) — no .NET installation required.
+> **📥 Download:** grab the latest self-contained build from the [Releases page](https://github.com/dparksports/autocommand-windows/releases) — no .NET installation required.
 
 ---
 
@@ -172,7 +172,7 @@ Assets/     README infographics + generator script
 
 ```powershell
 # Clone repository
-git clone https://github.com/dparksports/AutoCommand.git
+git clone https://github.com/dparksports/autocommand-windows.git
 cd AutoCommand
 
 # Build (Release)

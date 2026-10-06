@@ -204,7 +204,7 @@ def stack_infographic():
         body = "\n".join("•  " + b for b in bullets)
         ax.text(x + 24, y + 78, body, color=SUB, fontsize=12.4, va="top", linespacing=1.75)
 
-    footer(ax, "WINDOWS 10 / 11   •   .NET 10 (WPF)   •   ADMINISTRATOR PRIVILEGES   •   APACHE-2.0   •   github.com/dparksports/AutoCommand")
+    footer(ax, "WINDOWS 10 / 11   •   .NET 10 (WPF)   •   ADMINISTRATOR PRIVILEGES   •   APACHE-2.0   •   github.com/dparksports/autocommand-windows")
 
     out = os.path.join(os.path.dirname(os.path.abspath(__file__)), "security_stack_infographic.png")
     fig.savefig(out, dpi=150)
