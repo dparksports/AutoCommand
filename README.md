@@ -1,4 +1,4 @@
-# AutoCommand v3.8.0 🛡️
+# AutoCommand v2026.10.6 🛡️
 
 ![AutoCommand Infographic Header](Assets/autocommand_infographic.png)
 
@@ -8,7 +8,7 @@
 
 ---
 
-## 🆕 What's New in v3.8.0
+## 🆕 What's New in v2026.10.6
 
 * **🛠️ Guided Sysmon Repair** — when Sysmon is stuck in an inconsistent install state (leftovers of a failed install — a stale event-manifest registration and/or a stray `Sysmon64.exe` — that make every install attempt abort with *"Event manifest installation failed"*), Setup now detects it, **offers a repair and asks before touching anything**, removes the leftovers, reinstalls, and — if Windows still holds the stale registration — **asks before restarting** and then automatically finishes and verifies the repair after the reboot (service present, event channel healthy).
 * **⚡ One-Click Setup Tab** — a fresh-install hardening plan on a single page. Each step reuses the exact action behind the corresponding dedicated page (Command Panel, Firewall, Privacy, OS Hardening, Default Apps), and the checklist re-reads live system state for every step, so it doubles as a status dashboard.
