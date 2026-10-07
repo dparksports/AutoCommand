@@ -300,6 +300,12 @@ namespace AutoCommand.Views
             BlockProcessMenuItem.Header = blockableProcess && !string.IsNullOrEmpty(sel.ProcessName)
                 ? $"⛔ Block process '{sel.ProcessName}' in Firewall"
                 : "⛔ Block Process in Firewall";
+
+            bool killable = sel != null && sel.ProcessId > 0;
+            KillProcessMenuItem.IsEnabled = killable;
+            KillProcessMenuItem.Header = killable && !string.IsNullOrEmpty(sel.ProcessName)
+                ? $"💀 Kill process '{sel.ProcessName}' (PID {sel.ProcessId})"
+                : "💀 Kill process";
         }
 
         private void IgnoredListBtn_Click(object sender, RoutedEventArgs e)
@@ -463,6 +469,59 @@ namespace AutoCommand.Views
             catch (Exception ex)
             {
                 MessageBox.Show($"Failed to unblock: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private async void KillProcess_Click(object sender, RoutedEventArgs e)
+        {
+            if (SvchostGrid.SelectedItem is not SvchostMonitorItem item) return;
+
+            if (item.ProcessId == 0)
+            {
+                MessageBox.Show("Cannot kill System/Idle process.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            try
+            {
+                var proc = Process.GetProcessById(item.ProcessId);
+
+                // PID reuse guard: the row may be stale — the original process
+                // exited and Windows recycled the PID to something else.
+                // Verify the live identity before pulling the trigger.
+                string liveName = string.Empty;
+                try { liveName = proc.ProcessName; } catch { }
+
+                string knownName = Path.GetFileNameWithoutExtension(item.ProcessName ?? string.Empty);
+                string confirmName = item.ProcessName;
+                if (knownName.Length > 0 && !liveName.Equals(knownName, StringComparison.OrdinalIgnoreCase))
+                {
+                    confirmName = liveName;
+                    var stale = MessageBox.Show(
+                        $"This row is stale: PID {item.ProcessId} now runs '{liveName}', not '{item.ProcessName}'.\n\n" +
+                        $"Kill the running process '{liveName}' (PID {item.ProcessId}) anyway?\n" +
+                        "This forcefully terminates the application.",
+                        "PID reused — confirm kill", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
+                    if (stale != MessageBoxResult.Yes) return;
+                }
+                else if (MessageBox.Show(
+                    $"Kill process '{confirmName}' (PID {item.ProcessId})?\nThis forcefully terminates the application.",
+                    "Confirm Kill", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
+                {
+                    return;
+                }
+
+                proc.Kill();
+                await Task.Delay(500); // Give it a moment to release ports
+            }
+            catch (ArgumentException)
+            {
+                MessageBox.Show($"Process {item.ProcessId} is no longer running (it already exited).",
+                    "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to kill process: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 

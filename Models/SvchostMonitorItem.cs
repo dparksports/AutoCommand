@@ -18,6 +18,13 @@ namespace AutoCommand.Models
         public string RemoteIp { get; set; }
         public string Protocol { get; set; }
 
+        /// <summary>
+        /// Full executable path as logged by Sysmon (null when unknown). It
+        /// identifies the row's process even after that process has exited,
+        /// which is when the live name lookup would otherwise come up empty.
+        /// </summary>
+        public string ImagePath { get; set; }
+
         public string Hostname
         {
             get => _hostname;

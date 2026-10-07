@@ -205,9 +205,12 @@ namespace AutoCommand.Services
                 
                 if (FilterKnownCloudIps && IsKnownCloudIp(destIp)) return;
 
-                // Resolve process name from PID
+                // Resolve process name from PID; short-lived processes often exit
+                // before this lookup runs, so fall back to the image Sysmon logged
                 int pid = int.TryParse(processId, out int p) ? p : 0;
                 string processName = ResolveProcessName(pid);
+                if (string.IsNullOrEmpty(processName) && !string.IsNullOrEmpty(image))
+                    processName = Path.GetFileName(image);
 
                 if (_trackedIps.ContainsKey(destIp)) return; // Already tracked
 
@@ -225,6 +228,7 @@ namespace AutoCommand.Services
                 {
                     ProcessId   = pid,
                     ProcessName = processName,
+                    ImagePath   = string.IsNullOrEmpty(image) ? null : image,
                     RemoteIp    = destIp,
                     Hostname    = initialHost,
                     Protocol    = protocol,

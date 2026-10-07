@@ -111,6 +111,8 @@ The **DBX Safety** page protects the earliest link in the boot chain:
 * **SVCHOST Monitor** — per-service breakdown of the generic host processes.
 * **Process Ignore List** — hide noisy processes from the Process Monitor by name (type it in, right-click a row, or manage the list later); ignores persist across restarts in `ignored_processes.txt`.
 * **Block from Monitor** — right-click a connection in the Process Monitor or Connections view to block its remote IP in Windows Firewall (TCP/UDP × inbound/outbound rules) or block the whole process by its executable path; blocks are recorded in `blocked.txt` and can be lifted any time from the Blocked popup.
+* **Kill from Monitor** — right-click a Process Monitor row to kill its process; a PID-reuse guard detects stale rows (PID recycled to a different process) and asks for extra confirmation before terminating.
+* **Self-explaining rows** — the process name and full image path come straight from the Sysmon event, so rows keep their identity even after the process exits (no more mystery bare PIDs; hover the Process column for the path).
 * **1-Click Firewall Block** — block an executable's inbound and outbound traffic instantly via `INetFwPolicy2`.
 
 ---

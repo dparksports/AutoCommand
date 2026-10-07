@@ -98,10 +98,30 @@
                     <Separator/>
                     <MenuItem x:Name="BlockIpMenuItem" Header="⛔ Block Remote IP in Firewall" Click="BlockRemoteIP_Click"/>
                     <MenuItem x:Name="BlockProcessMenuItem" Header="⛔ Block Process in Firewall" Click="BlockProcess_Click"/>
+                    <MenuItem x:Name="KillProcessMenuItem" Header="💀 Kill process" Click="KillProcess_Click"/>
                 </ContextMenu>
             </DataGrid.ContextMenu>
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Process"     Binding="{Binding ProcessDisplay}"  Width="160"/>
+                <!-- Tooltip shows the full Sysmon image path, so rows keep their
+                     identity even after the process has exited (bare PIDs). -->
+                <DataGridTemplateColumn Header="Process" Width="160">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding ProcessDisplay}">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="ToolTip" Value="{Binding ImagePath}"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding ImagePath}" Value="{x:Null}">
+                                                <Setter Property="ToolTip" Value="{x:Null}"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
                 <DataGridTextColumn Header="Remote IP"   Binding="{Binding RemoteIp}"        Width="120"/>
                 <!-- Host column: dims + italicises cells that are still resolving -->
                 <DataGridTemplateColumn Header="Host" Width="220">
