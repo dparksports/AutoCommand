@@ -312,44 +312,6 @@ namespace AutoCommand.Services
             });
         }
 
-        /// <summary>
-        /// Adds TCP and UDP block rules (inbound and outbound) for a specific remote IP address.
-        /// </summary>
-        public Task AddBlockRuleForIpAsync(string remoteIp, string ruleName)
-        {
-            return Task.Run(() =>
-            {
-                try
-                {
-                    Type ruleType = Type.GetTypeFromProgID("HNetCfg.FWRule");
-                    dynamic fwPolicy = GetPolicy();
-                    (int dir, string dirName)[] directions = new[] { (2, "Outbound"), (1, "Inbound") };
-                    (int proto, string protoName)[] protocols = new[] { (6, "TCP"), (17, "UDP") };
-
-                    foreach (var (dir, dirName) in directions)
-                    {
-                        foreach (var (proto, protoName) in protocols)
-                        {
-                            dynamic rule = Activator.CreateInstance(ruleType);
-                            rule.Action = 0; // NET_FW_ACTION_BLOCK
-                            rule.Description = "AutoCommand Remote IP Block";
-                            rule.Direction = dir;
-                            rule.Enabled = true;
-                            rule.InterfaceTypes = "All";
-                            rule.Name = $"{ruleName} ({protoName} {dirName} Block)";
-                            rule.RemoteAddresses = remoteIp;
-                            rule.Protocol = proto;
-                            fwPolicy.Rules.Add(rule);
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    throw new Exception($"Failed to add firewall rule: {ex.Message}", ex);
-                }
-            });
-        }
-
         private static string DecodeProfile(int profiles)
         {
             var parts = new List<string>();

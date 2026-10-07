@@ -111,10 +111,8 @@
             </DataGrid.Columns>
             <DataGrid.ContextMenu>
                 <ContextMenu>
-                    <MenuItem Header="Block Remote IP in Firewall" Click="BlockRemoteIP_Click"/>
-                    <MenuItem Header="Block All Remote IPs of Process" Click="BlockAllRemoteIPs_Click"/>
-                    <MenuItem Header="Block Process in Firewall" Click="BlockProcess_Click"/>
                     <MenuItem Header="Kill Process" Click="KillProcess_Click"/>
+                    <MenuItem Header="Block Process in Firewall" Click="BlockProcess_Click"/>
                 </ContextMenu>
             </DataGrid.ContextMenu>
         </DataGrid>
