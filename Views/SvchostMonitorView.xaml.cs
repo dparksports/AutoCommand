@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Threading;
 using AutoCommand.Helpers;
 using AutoCommand.Models;
@@ -50,8 +51,10 @@ namespace AutoCommand.Views
 
             _sysmonService.OnError += ShowError;
             _sysmonService.OnNewConnectionTracked += AddToUi;
-            
+
             _snifferService.OnError += ShowError;
+
+            RefreshIgnoredUi();
 
             // Setup auto-save every 1 hour
             _saveTimer = new DispatcherTimer { Interval = TimeSpan.FromHours(1) };
@@ -194,7 +197,16 @@ namespace AutoCommand.Views
 
         private void AddToUi(SvchostMonitorItem item)
         {
-            Dispatcher.Invoke(() => _uiCollection.Add(item));
+            Dispatcher.Invoke(() =>
+            {
+                // The event may have raced with the user adding an ignore entry
+                if (_sysmonService.IsProcessIgnored(item.ProcessName))
+                {
+                    _trackedIps.TryRemove(item.RemoteIp, out _);
+                    return;
+                }
+                _uiCollection.Add(item);
+            });
         }
 
         private void ToggleMonitorBtn_Click(object sender, RoutedEventArgs e)
@@ -235,6 +247,91 @@ namespace AutoCommand.Views
             _sysmonService.AddTargetProcess(procName);
             NewProcessBox.Clear();
             MessageBox.Show($"Added {procName} to tracking list.", "Process Added", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        // -----------------------------------------------------------------------
+        // Process ignore list
+        // -----------------------------------------------------------------------
+
+        private void IgnoreProcessBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter) IgnoreProcessBtn_Click(sender, e);
+        }
+
+        private void IgnoreProcessBtn_Click(object sender, RoutedEventArgs e)
+        {
+            string procName = IgnoreProcessBox.Text.Trim();
+            if (string.IsNullOrEmpty(procName)) return;
+
+            IgnoreProcess(procName);
+            IgnoreProcessBox.Clear();
+        }
+
+        private void IgnoreRowMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            if (SvchostGrid.SelectedItem is SvchostMonitorItem item && !string.IsNullOrEmpty(item.ProcessName))
+                IgnoreProcess(item.ProcessName);
+        }
+
+        private void IgnoreMenu_Opened(object sender, RoutedEventArgs e)
+        {
+            IgnoreRowMenuItem.Header = SvchostGrid.SelectedItem is SvchostMonitorItem item && !string.IsNullOrEmpty(item.ProcessName)
+                ? $"🚫 Ignore process '{item.ProcessName}'"
+                : "🚫 Ignore process (no row selected)";
+        }
+
+        private void IgnoredListBtn_Click(object sender, RoutedEventArgs e)
+        {
+            RefreshIgnoredUi();
+            IgnoredListPopup.IsOpen = true;
+        }
+
+        private void RemoveIgnoredBtn_Click(object sender, RoutedEventArgs e)
+        {
+            if (IgnoredListBox.SelectedItem is string name)
+            {
+                _sysmonService.RemoveIgnoredProcess(name);
+                RefreshIgnoredUi();
+            }
+        }
+
+        /// <summary>
+        /// Hides a process name from the list: adds it to the persisted ignore
+        /// list, then removes any rows already on screen for it.
+        /// </summary>
+        private void IgnoreProcess(string procName)
+        {
+            _sysmonService.AddIgnoredProcess(procName);
+            PruneIgnoredRows();
+            RefreshIgnoredUi();
+        }
+
+        /// <summary>Drops rows whose process is now ignored (list + packet counters).</summary>
+        private void PruneIgnoredRows()
+        {
+            foreach (var item in _uiCollection.Where(i => _sysmonService.IsProcessIgnored(i.ProcessName)).ToList())
+            {
+                _uiCollection.Remove(item);
+                _trackedIps.TryRemove(item.RemoteIp, out _);
+            }
+        }
+
+        private void RefreshIgnoredUi()
+        {
+            var ignored = _sysmonService.IgnoredProcesses;
+            IgnoredListBtn.Content = $"Ignored: {ignored.Count}";
+            IgnoredListBox.ItemsSource = ignored.OrderBy(n => n, StringComparer.OrdinalIgnoreCase).ToList();
+        }
+
+        private void SvchostGrid_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            // Right-click selects the row under the cursor so the "Ignore
+            // process" menu item knows which process was meant.
+            if (e.OriginalSource is DependencyObject source &&
+                ItemsControl.ContainerFromElement(SvchostGrid, source) is DataGridRow row)
+            {
+                row.IsSelected = true;
+            }
         }
 
         private void SaveCsvBtn_Click(object sender, RoutedEventArgs e)

@@ -48,12 +48,39 @@
                     <TextBlock Text="Add Process:" VerticalAlignment="Center" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,8,0"/>
                     <TextBox x:Name="NewProcessBox" Width="150" Padding="4" Background="{StaticResource SurfaceBrush}" Foreground="{StaticResource TextPrimaryBrush}" BorderBrush="{StaticResource BorderBrush}"/>
                     <Button Content="Add" Click="AddProcessBtn_Click" Margin="8,0,0,0" Padding="12,2" Style="{StaticResource PrimaryButton}"/>
+                    <TextBlock Text="Ignore Process:" VerticalAlignment="Center" Foreground="{StaticResource TextSecondaryBrush}" Margin="16,0,8,0"
+                               ToolTip="Connections from ignored processes never appear in the list"/>
+                    <TextBox x:Name="IgnoreProcessBox" Width="130" Padding="4" Background="{StaticResource SurfaceBrush}" Foreground="{StaticResource TextPrimaryBrush}" BorderBrush="{StaticResource BorderBrush}"
+                             ToolTip="Process name to hide from the list, e.g. chrome or chrome.exe" KeyDown="IgnoreProcessBox_KeyDown"/>
+                    <Button x:Name="IgnoreProcessBtn" Content="Ignore" Click="IgnoreProcessBtn_Click" Margin="8,0,0,0" Padding="12,2" Style="{StaticResource PrimaryButton}"/>
+                    <Button x:Name="IgnoredListBtn" Content="Ignored: 0" Click="IgnoredListBtn_Click" Margin="8,0,0,0" Padding="10,2" FontSize="11"
+                            Background="#3A1520" Foreground="#F2A0B4" BorderThickness="0" Cursor="Hand"
+                            ToolTip="View and manage ignored processes">
+                        <Button.Resources>
+                            <Style TargetType="Border"><Setter Property="CornerRadius" Value="10"/></Style>
+                        </Button.Resources>
+                    </Button>
+                    <Popup x:Name="IgnoredListPopup" PlacementTarget="{Binding ElementName=IgnoredListBtn}" Placement="Bottom" StaysOpen="False">
+                        <Border Background="#0B101E" BorderBrush="#1E3A5F" BorderThickness="1" CornerRadius="4" Padding="10" MinWidth="260" Margin="0,4,0,0">
+                            <StackPanel>
+                                <TextBlock Text="Ignored processes" Foreground="{StaticResource TextPrimaryBrush}" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                                <ListBox x:Name="IgnoredListBox" MaxHeight="200" MinHeight="34" Background="{StaticResource SurfaceBrush}" Foreground="{StaticResource TextPrimaryBrush}" BorderBrush="{StaticResource BorderBrush}" FontFamily="Consolas" FontSize="11"/>
+                                <Button Content="Remove Selected" Click="RemoveIgnoredBtn_Click" Margin="0,8,0,0" Padding="12,2" HorizontalAlignment="Left" Style="{StaticResource PrimaryButton}"/>
+                            </StackPanel>
+                        </Border>
+                    </Popup>
                 </StackPanel>
             </Grid>
         </Border>
 
         <!-- Connections Grid -->
-        <DataGrid Grid.Row="2" x:Name="SvchostGrid" SelectionMode="Single">
+        <DataGrid Grid.Row="2" x:Name="SvchostGrid" SelectionMode="Single"
+                  PreviewMouseRightButtonDown="SvchostGrid_PreviewMouseRightButtonDown">
+            <DataGrid.ContextMenu>
+                <ContextMenu Opened="IgnoreMenu_Opened">
+                    <MenuItem x:Name="IgnoreRowMenuItem" Header="🚫 Ignore this process" Click="IgnoreRowMenuItem_Click"/>
+                </ContextMenu>
+            </DataGrid.ContextMenu>
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Process"     Binding="{Binding ProcessDisplay}"  Width="160"/>
                 <DataGridTextColumn Header="Remote IP"   Binding="{Binding RemoteIp}"        Width="120"/>

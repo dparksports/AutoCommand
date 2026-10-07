@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Diagnostics.Eventing.Reader;
+using System.IO;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -28,12 +29,18 @@ namespace AutoCommand.Services
         public bool MonitorAllProcesses { get; set; } = false;
         public bool FilterKnownCloudIps { get; set; } = false;
 
+        // Processes the user asked to keep out of the list, matched on the
+        // image file name (e.g. "chrome.exe"), case-insensitively.
+        private readonly ConcurrentBag<string> _ignoredProcesses = new ConcurrentBag<string>();
+        private const string IgnoredProcessesPath = "ignored_processes.txt";
+
         public SysmonWatcherService(
             ConcurrentDictionary<string, SvchostMonitorItem> trackedIps,
             DnsResolutionService dnsService)
         {
             _trackedIps  = trackedIps;
             _dnsService  = dnsService;
+            LoadIgnoredProcesses();
         }
 
         public void AddTargetProcess(string processName)
@@ -42,6 +49,80 @@ namespace AutoCommand.Services
             {
                 _targetProcesses.Add(processName);
             }
+        }
+
+        // -----------------------------------------------------------------------
+        // User ignore list
+        // -----------------------------------------------------------------------
+
+        /// <summary>Process names currently on the ignore list.</summary>
+        public IReadOnlyCollection<string> IgnoredProcesses => _ignoredProcesses.ToArray();
+
+        /// <summary>
+        /// Adds a process to the ignore list: its connections will no longer
+        /// create list entries. The ".exe" suffix is added when missing.
+        /// </summary>
+        public void AddIgnoredProcess(string processName)
+        {
+            string normalized = NormalizeProcessName(processName);
+            if (normalized.Length == 0) return;
+            if (_ignoredProcesses.Contains(normalized, StringComparer.OrdinalIgnoreCase)) return;
+
+            _ignoredProcesses.Add(normalized);
+            SaveIgnoredProcesses();
+        }
+
+        public void RemoveIgnoredProcess(string processName)
+        {
+            string normalized = NormalizeProcessName(processName);
+            if (normalized.Length == 0) return;
+
+            var remaining = _ignoredProcesses
+                .Where(p => !p.Equals(normalized, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+            if (remaining.Count == _ignoredProcesses.Count) return;
+
+            // ConcurrentBag has no conditional removal — drain it and refill
+            while (_ignoredProcesses.TryTake(out _)) { }
+            foreach (var p in remaining) _ignoredProcesses.Add(p);
+            SaveIgnoredProcesses();
+        }
+
+        /// <summary>True when the given process name (or full image path) is ignored.</summary>
+        public bool IsProcessIgnored(string processName)
+        {
+            string normalized = NormalizeProcessName(processName);
+            return normalized.Length > 0 &&
+                   _ignoredProcesses.Contains(normalized, StringComparer.OrdinalIgnoreCase);
+        }
+
+        private static string NormalizeProcessName(string processName)
+        {
+            if (string.IsNullOrWhiteSpace(processName)) return string.Empty;
+            string name = Path.GetFileName(processName.Trim());
+            if (name.Length == 0) return string.Empty;
+            if (!name.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)) name += ".exe";
+            return name;
+        }
+
+        private void LoadIgnoredProcesses()
+        {
+            try
+            {
+                foreach (var line in File.ReadAllLines(IgnoredProcessesPath))
+                    AddIgnoredProcess(line);
+            }
+            catch { /* first run or unreadable file — start with an empty ignore list */ }
+        }
+
+        private void SaveIgnoredProcesses()
+        {
+            try
+            {
+                File.WriteAllLines(IgnoredProcessesPath,
+                    _ignoredProcesses.OrderBy(p => p, StringComparer.OrdinalIgnoreCase));
+            }
+            catch { /* persistence is best-effort — filtering still works without it */ }
         }
 
         public void Start()
@@ -101,6 +182,9 @@ namespace AutoCommand.Services
                     else if (name == "DestinationHostname") destHost = data.Value;
                     else if (name == "Protocol") protocol = data.Value;
                 }
+
+                // User ignore list: these processes never create list entries
+                if (IsProcessIgnored(image)) return;
 
                 // Monitor target processes
                 bool isTarget = MonitorAllProcesses;
