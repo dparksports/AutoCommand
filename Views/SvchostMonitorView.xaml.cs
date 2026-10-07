@@ -34,6 +34,9 @@ namespace AutoCommand.Views
         private readonly List<BlockedEntry> _blockedEntries = new();
         private readonly string _blockedPath = "blocked.txt";
 
+        // Scheduled-task attribution for taskhostw rows (who/what/why launched)
+        private readonly TaskAttributionService _taskAttribution = new();
+
         public SvchostMonitorView()
         {
             InitializeComponent();
@@ -60,6 +63,10 @@ namespace AutoCommand.Views
 
             _snifferService.OnError += ShowError;
 
+            // Attribution errors are non-fatal (rows just lack task info)
+            _taskAttribution.OnError += msg => { };
+            _taskAttribution.Start();
+
             RefreshIgnoredUi();
             LoadBlockedEntries();
             RefreshBlockedUi();
@@ -78,6 +85,10 @@ namespace AutoCommand.Views
                 // Re-enqueue any rows still showing raw IPs (handles items loaded from CSV etc.)
                 foreach (var item in _uiCollection)
                     _dnsService.EnqueueForResolution(item);
+
+                // Fill in scheduled-task attribution as the event logs catch up
+                foreach (var item in _uiCollection)
+                    EnrichWithTaskInfo(item);
 
                 DnsCacheChip.Text = $"DNS cache: {_dnsService.CacheCount} entries";
             };
@@ -213,8 +224,21 @@ namespace AutoCommand.Views
                     _trackedIps.TryRemove(item.RemoteIp, out _);
                     return;
                 }
+                EnrichWithTaskInfo(item);
                 _uiCollection.Add(item);
             });
+        }
+
+        /// <summary>
+        /// Stamps scheduled-task attribution (task path + user) onto taskhostw
+        /// rows once the event logs have caught up with the launch.
+        /// </summary>
+        private void EnrichWithTaskInfo(SvchostMonitorItem item)
+        {
+            if (item.TaskName != null) return;
+            var info = _taskAttribution.GetTaskForPid(item.ProcessId);
+            if (info == null || string.IsNullOrEmpty(info.TaskPath)) return;
+            item.SetTaskInfo(info.TaskPath, info.UserContext);
         }
 
         private void ToggleMonitorBtn_Click(object sender, RoutedEventArgs e)
@@ -306,6 +330,13 @@ namespace AutoCommand.Views
             KillProcessMenuItem.Header = killable && !string.IsNullOrEmpty(sel.ProcessName)
                 ? $"💀 Kill process '{sel.ProcessName}' (PID {sel.ProcessId})"
                 : "💀 Kill process";
+
+            bool hasTask = sel != null && !string.IsNullOrEmpty(sel.TaskName);
+            TaskDetailsMenuItem.IsEnabled = hasTask;
+            TaskDetailsMenuItem.Header = hasTask
+                ? $"📋 Scheduled task '{sel.TaskName}'"
+                : "📋 Scheduled task details";
+            DisableTaskMenuItem.IsEnabled = hasTask;
         }
 
         private void IgnoredListBtn_Click(object sender, RoutedEventArgs e)
@@ -522,6 +553,42 @@ namespace AutoCommand.Views
             catch (Exception ex)
             {
                 MessageBox.Show($"Failed to kill process: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private async void TaskDetails_Click(object sender, RoutedEventArgs e)
+        {
+            if (SvchostGrid.SelectedItem is not SvchostMonitorItem item || string.IsNullOrEmpty(item.TaskName)) return;
+
+            var (summary, error) = await TaskSchedulerService.Instance.GetTaskSummaryAsync(item.TaskName);
+            MessageBox.Show(
+                string.IsNullOrEmpty(error)
+                    ? summary
+                    : $"Could not read task '{item.TaskName}': {error}",
+                "Scheduled task", MessageBoxButton.OK,
+                string.IsNullOrEmpty(error) ? MessageBoxImage.Information : MessageBoxImage.Warning);
+        }
+
+        private async void DisableTask_Click(object sender, RoutedEventArgs e)
+        {
+            if (SvchostGrid.SelectedItem is not SvchostMonitorItem item || string.IsNullOrEmpty(item.TaskName)) return;
+
+            if (MessageBox.Show(
+                $"Disable scheduled task '{item.TaskName}'?\n\n" +
+                "The task will not run again until it is re-enabled (Tasks tab, or:\n" +
+                $"schtasks /Change /TN \"{item.TaskName}\" /ENABLE).\n\n" +
+                "The running instance keeps going — use 'Kill process' to end it now.",
+                "Confirm Disable Task", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes) return;
+
+            try
+            {
+                await TaskSchedulerService.Instance.SetTaskEnabledAsync(item.TaskName, false);
+                MessageBox.Show($"Scheduled task disabled:\n{item.TaskName}", "Task Disabled",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to disable task: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 

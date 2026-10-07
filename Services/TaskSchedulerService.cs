@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using AutoCommand.Models;
 
 namespace AutoCommand.Services
@@ -245,6 +248,81 @@ namespace AutoCommand.Services
             {
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Compact human-readable summary of a task (run times, principal,
+        /// author, actions, triggers) for the Process Monitor attribution popup.
+        /// </summary>
+        public Task<(string Summary, string Error)> GetTaskSummaryAsync(string taskPath)
+        {
+            return Task.Run<(string, string)>(() =>
+            {
+                try
+                {
+                    dynamic ts = GetService();
+                    dynamic rootFolder = ts.GetFolder("\\");
+                    dynamic task = rootFolder.GetTask(taskPath);
+
+                    var sb = new StringBuilder();
+                    sb.AppendLine($"Task:     {taskPath}");
+                    int stateInt = (int)task.State;
+                    sb.AppendLine($"State:    " + stateInt switch
+                    {
+                        1 => "Disabled",
+                        2 => "Queued",
+                        3 => "Ready",
+                        4 => "Running",
+                        _ => "Unknown"
+                    });
+                    try { sb.AppendLine($"Last run: {task.LastRunTime:yyyy-MM-dd HH:mm:ss}"); } catch { }
+                    try { sb.AppendLine($"Next run: {task.NextRunTime:yyyy-MM-dd HH:mm:ss}"); } catch { }
+
+                    var xml = XDocument.Parse((string)task.Xml);
+                    var ns = xml.Root?.Name.Namespace ?? XNamespace.None;
+
+                    var principal = xml.Root?.Element(ns + "Principals")?.Element(ns + "Principal");
+                    if (principal != null)
+                    {
+                        string uid = principal.Element(ns + "UserId")?.Value ?? principal.Element(ns + "GroupId")?.Value;
+                        if (!string.IsNullOrEmpty(uid)) sb.AppendLine($"Runs as:  {uid}");
+                    }
+
+                    var registration = xml.Root?.Element(ns + "RegistrationInfo");
+                    string author = registration?.Element(ns + "Author")?.Value ?? registration?.Element(ns + "URI")?.Value;
+                    if (!string.IsNullOrEmpty(author)) sb.AppendLine($"Author:   {author}");
+                    string description = registration?.Element(ns + "Description")?.Value;
+                    if (!string.IsNullOrEmpty(description)) sb.AppendLine($"Description: {description}");
+
+                    foreach (var action in xml.Root?.Element(ns + "Actions")?.Elements(ns + "Exec") ?? Enumerable.Empty<XElement>())
+                    {
+                        string cmd = action.Element(ns + "Command")?.Value;
+                        string args = action.Element(ns + "Arguments")?.Value;
+                        if (!string.IsNullOrEmpty(cmd))
+                            sb.AppendLine($"Action:   {cmd}{(string.IsNullOrEmpty(args) ? "" : " " + args)}");
+                    }
+                    foreach (var action in xml.Root?.Element(ns + "Actions")?.Elements(ns + "ComHandler") ?? Enumerable.Empty<XElement>())
+                    {
+                        string clsid = action.Element(ns + "ClassId")?.Value;
+                        if (!string.IsNullOrEmpty(clsid)) sb.AppendLine($"COM handler: {clsid}");
+                    }
+
+                    foreach (var trigger in xml.Root?.Element(ns + "Triggers")?.Elements() ?? Enumerable.Empty<XElement>())
+                    {
+                        string startBoundary = trigger.Element(ns + "StartBoundary")?.Value;
+                        bool triggerDisabled = trigger.Element(ns + "Enabled")?.Value == "false";
+                        sb.AppendLine($"Trigger:  {trigger.Name.LocalName}" +
+                                      (string.IsNullOrEmpty(startBoundary) ? "" : $" from {startBoundary}") +
+                                      (triggerDisabled ? " (disabled)" : ""));
+                    }
+
+                    return (sb.ToString(), null);
+                }
+                catch (Exception ex)
+                {
+                    return (null, ex.Message);
+                }
+            });
         }
     }
 }

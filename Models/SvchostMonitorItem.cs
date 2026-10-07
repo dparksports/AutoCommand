@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Text;
 
 namespace AutoCommand.Models
 {
@@ -13,6 +14,8 @@ namespace AutoCommand.Models
         private DateTime _lastSeen;
         private string _processName;
         private string _hostname;
+        private string _taskName;
+        private string _taskUser;
 
         public int ProcessId { get; set; }
         public string RemoteIp { get; set; }
@@ -107,6 +110,48 @@ namespace AutoCommand.Models
 
         public string RxBytesDisplay => FormatBytes(RxBytes);
         public string TxBytesDisplay => FormatBytes(TxBytes);
+
+        /// <summary>
+        /// Scheduled task that launched this taskhostw instance (attribution from
+        /// TaskSchedulerService), or null when the row is not a task host.
+        /// </summary>
+        public string TaskName
+        {
+            get => _taskName;
+            private set { _taskName = value; OnPropertyChanged(); OnPropertyChanged(nameof(ProcessToolTip)); }
+        }
+
+        /// <summary>Account the scheduled task ran as, when known.</summary>
+        public string TaskUser
+        {
+            get => _taskUser;
+            private set { _taskUser = value; OnPropertyChanged(); OnPropertyChanged(nameof(ProcessToolTip)); }
+        }
+
+        /// <summary>Called by the view when TaskSchedulerService resolves the task behind a taskhostw row.</summary>
+        public void SetTaskInfo(string taskName, string taskUser)
+        {
+            if (TaskName != null) return;
+            TaskName = taskName;
+            TaskUser = taskUser;
+        }
+
+        /// <summary>Tooltip for the Process column: image path plus scheduled-task attribution.</summary>
+        public string ProcessToolTip
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(ImagePath) && TaskName == null) return null;
+                var sb = new StringBuilder();
+                if (!string.IsNullOrEmpty(ImagePath)) sb.AppendLine(ImagePath);
+                if (TaskName != null)
+                {
+                    sb.Append("Task: ").Append(TaskName);
+                    if (!string.IsNullOrEmpty(TaskUser)) sb.Append("   (as ").Append(TaskUser).Append(')');
+                }
+                return sb.ToString();
+            }
+        }
 
         public event PropertyChangedEventHandler PropertyChanged;
 
