@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -27,6 +29,10 @@ namespace AutoCommand.Views
         private DispatcherTimer _saveTimer;
         private DispatcherTimer _lastSeenRefreshTimer;
         private readonly string _csvPath = "ultimate_autopilot_stats.csv";
+
+        // Firewall blocks created from this monitor, persisted in blocked.txt
+        private readonly List<BlockedEntry> _blockedEntries = new();
+        private readonly string _blockedPath = "blocked.txt";
 
         public SvchostMonitorView()
         {
@@ -55,6 +61,8 @@ namespace AutoCommand.Views
             _snifferService.OnError += ShowError;
 
             RefreshIgnoredUi();
+            LoadBlockedEntries();
+            RefreshBlockedUi();
 
             // Setup auto-save every 1 hour
             _saveTimer = new DispatcherTimer { Interval = TimeSpan.FromHours(1) };
@@ -273,11 +281,25 @@ namespace AutoCommand.Views
                 IgnoreProcess(item.ProcessName);
         }
 
-        private void IgnoreMenu_Opened(object sender, RoutedEventArgs e)
+        private void RowMenu_Opened(object sender, RoutedEventArgs e)
         {
-            IgnoreRowMenuItem.Header = SvchostGrid.SelectedItem is SvchostMonitorItem item && !string.IsNullOrEmpty(item.ProcessName)
-                ? $"🚫 Ignore process '{item.ProcessName}'"
+            var sel = SvchostGrid.SelectedItem as SvchostMonitorItem;
+
+            IgnoreRowMenuItem.Header = sel != null && !string.IsNullOrEmpty(sel.ProcessName)
+                ? $"🚫 Ignore process '{sel.ProcessName}'"
                 : "🚫 Ignore process (no row selected)";
+
+            bool validIp = sel != null && System.Net.IPAddress.TryParse(sel.RemoteIp, out _);
+            BlockIpMenuItem.IsEnabled = validIp;
+            BlockIpMenuItem.Header = validIp
+                ? $"⛔ Block remote IP {sel.RemoteIp} in Firewall"
+                : "⛔ Block Remote IP in Firewall";
+
+            bool blockableProcess = sel != null && sel.ProcessId > 0;
+            BlockProcessMenuItem.IsEnabled = blockableProcess;
+            BlockProcessMenuItem.Header = blockableProcess && !string.IsNullOrEmpty(sel.ProcessName)
+                ? $"⛔ Block process '{sel.ProcessName}' in Firewall"
+                : "⛔ Block Process in Firewall";
         }
 
         private void IgnoredListBtn_Click(object sender, RoutedEventArgs e)
@@ -332,6 +354,196 @@ namespace AutoCommand.Views
             {
                 row.IsSelected = true;
             }
+        }
+
+        // -----------------------------------------------------------------------
+        // Firewall blocking (remote IP / process)
+        // -----------------------------------------------------------------------
+
+        /// <summary>A firewall block created from this monitor, persisted in blocked.txt.</summary>
+        private sealed class BlockedEntry
+        {
+            public string Kind;         // "ip" or "proc"
+            public string Key;          // remote IP or executable path
+            public string ProcessName;
+            public DateTime Timestamp;
+
+            public override string ToString() => Kind == "ip"
+                ? $"IP  {Key}  ({ProcessName}, blocked {Timestamp:yyyy-MM-dd HH:mm})"
+                : $"EXE {Key}  ({ProcessName}, blocked {Timestamp:yyyy-MM-dd HH:mm})";
+        }
+
+        private async void BlockRemoteIP_Click(object sender, RoutedEventArgs e)
+        {
+            if (SvchostGrid.SelectedItem is not SvchostMonitorItem item) return;
+
+            string ip = item.RemoteIp;
+            if (!System.Net.IPAddress.TryParse(ip, out _))
+            {
+                MessageBox.Show($"'{ip}' is not a valid IP address.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            if (MessageBox.Show($"Block all traffic to remote IP '{ip}' (contacted by '{item.ProcessName}') in Windows Firewall?\n\n" +
+                                "Four rules are created: TCP/UDP, inbound and outbound.",
+                "Confirm Block", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes) return;
+
+            try
+            {
+                await FirewallService.Instance.AddBlockRuleForIpAsync(ip, $"AutoCommand IP Block - {ip}");
+                RecordBlockedEntry("ip", ip, item.ProcessName);
+                MessageBox.Show($"Successfully blocked remote IP:\n{ip}\n\n(TCP/UDP, inbound and outbound)", "Blocked", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to block remote IP: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private async void BlockProcess_Click(object sender, RoutedEventArgs e)
+        {
+            if (SvchostGrid.SelectedItem is not SvchostMonitorItem item) return;
+
+            if (item.ProcessId == 0)
+            {
+                MessageBox.Show("Cannot block System/Idle process.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            if (MessageBox.Show($"Block all network traffic for '{item.ProcessName}' (PID {item.ProcessId}) in Windows Firewall?",
+                "Confirm Block", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes) return;
+
+            try
+            {
+                string path = GetProcessPath(item.ProcessId);
+                if (string.IsNullOrEmpty(path))
+                {
+                    MessageBox.Show("Could not determine process path (access denied or process exited).", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+
+                await FirewallService.Instance.AddBlockRuleForAppAsync(path, $"AutoCommand Process Block - {item.ProcessName}");
+                RecordBlockedEntry("proc", path, item.ProcessName);
+                MessageBox.Show($"Successfully added Inbound and Outbound block rules for:\n{path}", "Blocked", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to block process: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void BlockedListBtn_Click(object sender, RoutedEventArgs e)
+        {
+            RefreshBlockedUi();
+            BlockedListPopup.IsOpen = true;
+        }
+
+        private async void UnblockBtn_Click(object sender, RoutedEventArgs e)
+        {
+            if (BlockedListBox.SelectedItem is not BlockedEntry entry) return;
+
+            if (MessageBox.Show($"Remove the firewall block for '{entry.Key}'?",
+                "Confirm Unblock", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes) return;
+
+            try
+            {
+                int removed = entry.Kind == "ip"
+                    ? await FirewallService.Instance.RemoveBlockRulesForIpAsync(entry.Key)
+                    : await FirewallService.Instance.RemoveBlockRulesForAppAsync(entry.Key);
+
+                _blockedEntries.Remove(entry);
+                SaveBlockedEntries();
+                RefreshBlockedUi();
+
+                MessageBox.Show(removed > 0
+                    ? $"Removed {removed} firewall rule(s) for:\n{entry.Key}"
+                    : $"No matching firewall rules found (already removed?) for:\n{entry.Key}",
+                    "Unblocked", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to unblock: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        /// <summary>
+        /// Resolves an executable path for a PID; falls back to WMI when the
+        /// process module cannot be read (bitness mismatch) or the process exited.
+        /// </summary>
+        private static string GetProcessPath(int processId)
+        {
+            try
+            {
+                using var proc = Process.GetProcessById(processId);
+                string path = proc.MainModule?.FileName;
+                if (!string.IsNullOrEmpty(path)) return path;
+            }
+            catch { }
+
+            try
+            {
+                using var searcher = new System.Management.ManagementObjectSearcher(
+                    $"SELECT ExecutablePath FROM Win32_Process WHERE ProcessId = {processId}");
+                using var results = searcher.Get();
+                foreach (System.Management.ManagementObject obj in results)
+                {
+                    return obj["ExecutablePath"]?.ToString();
+                }
+            }
+            catch { }
+            return null;
+        }
+
+        // -----------------------------------------------------------------------
+        // blocked.txt persistence (format: kind|key|processName|timestamp)
+        // -----------------------------------------------------------------------
+
+        private void RecordBlockedEntry(string kind, string key, string processName)
+        {
+            // One record per key — re-blocking refreshes it instead of duplicating
+            _blockedEntries.RemoveAll(b => b.Kind == kind && b.Key.Equals(key, StringComparison.OrdinalIgnoreCase));
+            _blockedEntries.Add(new BlockedEntry { Kind = kind, Key = key, ProcessName = processName ?? "", Timestamp = DateTime.Now });
+            SaveBlockedEntries();
+            RefreshBlockedUi();
+        }
+
+        private void LoadBlockedEntries()
+        {
+            _blockedEntries.Clear();
+            try
+            {
+                foreach (string line in File.ReadAllLines(_blockedPath))
+                {
+                    string[] parts = line.Split('|');
+                    if (parts.Length < 4) continue;
+                    if (parts[0] != "ip" && parts[0] != "proc") continue;
+                    _blockedEntries.Add(new BlockedEntry
+                    {
+                        Kind = parts[0],
+                        Key = parts[1],
+                        ProcessName = parts[2],
+                        Timestamp = DateTime.TryParse(parts[3], out DateTime ts) ? ts : DateTime.Now
+                    });
+                }
+            }
+            catch { /* first run or unreadable file — start with an empty block list */ }
+        }
+
+        private void SaveBlockedEntries()
+        {
+            try
+            {
+                File.WriteAllLines(_blockedPath, _blockedEntries.Select(b => $"{b.Kind}|{b.Key}|{b.ProcessName}|{b.Timestamp:O}"));
+            }
+            catch { /* persistence is best-effort — the firewall rules themselves are the source of truth */ }
+        }
+
+        private void RefreshBlockedUi()
+        {
+            BlockedListBtn.Content = $"Blocked: {_blockedEntries.Count}";
+            BlockedListBox.ItemsSource = _blockedEntries
+                .OrderBy(b => b.Kind).ThenBy(b => b.Key, StringComparer.OrdinalIgnoreCase)
+                .ToList();
         }
 
         private void SaveCsvBtn_Click(object sender, RoutedEventArgs e)

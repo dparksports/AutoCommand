@@ -60,6 +60,22 @@
                             <Style TargetType="Border"><Setter Property="CornerRadius" Value="10"/></Style>
                         </Button.Resources>
                     </Button>
+                    <Button x:Name="BlockedListBtn" Content="Blocked: 0" Click="BlockedListBtn_Click" Margin="8,0,0,0" Padding="10,2" FontSize="11"
+                            Background="#3A1520" Foreground="#F2A0B4" BorderThickness="0" Cursor="Hand"
+                            ToolTip="View and remove firewall blocks created from this monitor">
+                        <Button.Resources>
+                            <Style TargetType="Border"><Setter Property="CornerRadius" Value="10"/></Style>
+                        </Button.Resources>
+                    </Button>
+                    <Popup x:Name="BlockedListPopup" PlacementTarget="{Binding ElementName=BlockedListBtn}" Placement="Bottom" StaysOpen="False">
+                        <Border Background="#0B101E" BorderBrush="#1E3A5F" BorderThickness="1" CornerRadius="4" Padding="10" MinWidth="340" Margin="0,4,0,0">
+                            <StackPanel>
+                                <TextBlock Text="Firewall blocks created from this monitor" Foreground="{StaticResource TextPrimaryBrush}" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                                <ListBox x:Name="BlockedListBox" MaxHeight="200" MinHeight="34" Background="{StaticResource SurfaceBrush}" Foreground="{StaticResource TextPrimaryBrush}" BorderBrush="{StaticResource BorderBrush}" FontFamily="Consolas" FontSize="11"/>
+                                <Button Content="Unblock Selected" Click="UnblockBtn_Click" Margin="0,8,0,0" Padding="12,2" HorizontalAlignment="Left" Style="{StaticResource PrimaryButton}"/>
+                            </StackPanel>
+                        </Border>
+                    </Popup>
                     <Popup x:Name="IgnoredListPopup" PlacementTarget="{Binding ElementName=IgnoredListBtn}" Placement="Bottom" StaysOpen="False">
                         <Border Background="#0B101E" BorderBrush="#1E3A5F" BorderThickness="1" CornerRadius="4" Padding="10" MinWidth="260" Margin="0,4,0,0">
                             <StackPanel>
@@ -77,8 +93,11 @@
         <DataGrid Grid.Row="2" x:Name="SvchostGrid" SelectionMode="Single"
                   PreviewMouseRightButtonDown="SvchostGrid_PreviewMouseRightButtonDown">
             <DataGrid.ContextMenu>
-                <ContextMenu Opened="IgnoreMenu_Opened">
+                <ContextMenu Opened="RowMenu_Opened">
                     <MenuItem x:Name="IgnoreRowMenuItem" Header="🚫 Ignore this process" Click="IgnoreRowMenuItem_Click"/>
+                    <Separator/>
+                    <MenuItem x:Name="BlockIpMenuItem" Header="⛔ Block Remote IP in Firewall" Click="BlockRemoteIP_Click"/>
+                    <MenuItem x:Name="BlockProcessMenuItem" Header="⛔ Block Process in Firewall" Click="BlockProcess_Click"/>
                 </ContextMenu>
             </DataGrid.ContextMenu>
             <DataGrid.Columns>

@@ -350,6 +350,88 @@ namespace AutoCommand.Services
             });
         }
 
+        /// <summary>
+        /// Removes the block rules previously created for a remote IP by
+        /// AddBlockRuleForIpAsync (matched on the "AutoCommand IP Block - &lt;ip&gt;" name prefix).
+        /// Returns how many rules were removed.
+        /// </summary>
+        public Task<int> RemoveBlockRulesForIpAsync(string remoteIp)
+        {
+            return Task.Run(() => RemoveRulesByNamePrefix($"AutoCommand IP Block - {remoteIp} ("));
+        }
+
+        /// <summary>
+        /// Removes the inbound/outbound block rules previously created for an
+        /// application path (matched on the rule name prefix used by the
+        /// monitor views plus the exact ApplicationName). Returns the removal count.
+        /// </summary>
+        public Task<int> RemoveBlockRulesForAppAsync(string appPath)
+        {
+            return Task.Run(() =>
+            {
+                int removed = 0;
+                try
+                {
+                    dynamic fwPolicy = GetPolicy();
+                    var names = new List<string>();
+                    foreach (dynamic rule in fwPolicy.Rules)
+                    {
+                        try
+                        {
+                            string name = rule.Name ?? "";
+                            string app = rule.ApplicationName ?? "";
+                            if (name.StartsWith("AutoCommand Process Block - ", StringComparison.OrdinalIgnoreCase) &&
+                                string.Equals(app, appPath, StringComparison.OrdinalIgnoreCase))
+                            {
+                                names.Add(name);
+                            }
+                        }
+                        catch { }
+                    }
+
+                    foreach (string name in names)
+                    {
+                        try { fwPolicy.Rules.Remove(name); removed++; } catch { }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception($"Failed to remove firewall rules: {ex.Message}", ex);
+                }
+                return removed;
+            });
+        }
+
+        private int RemoveRulesByNamePrefix(string namePrefix)
+        {
+            int removed = 0;
+            try
+            {
+                dynamic fwPolicy = GetPolicy();
+                // Collect matches first — removing while enumerating the COM collection is unreliable
+                var names = new List<string>();
+                foreach (dynamic rule in fwPolicy.Rules)
+                {
+                    try
+                    {
+                        string name = rule.Name ?? "";
+                        if (name.StartsWith(namePrefix, StringComparison.OrdinalIgnoreCase)) names.Add(name);
+                    }
+                    catch { }
+                }
+
+                foreach (string name in names)
+                {
+                    try { fwPolicy.Rules.Remove(name); removed++; } catch { }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Failed to remove firewall rules: {ex.Message}", ex);
+            }
+            return removed;
+        }
+
         private static string DecodeProfile(int profiles)
         {
             var parts = new List<string>();

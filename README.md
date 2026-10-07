@@ -110,6 +110,7 @@ The **DBX Safety** page protects the earliest link in the boot chain:
 * **Raw Socket Sniffer** — packet-level visibility without WinPcap dependencies.
 * **SVCHOST Monitor** — per-service breakdown of the generic host processes.
 * **Process Ignore List** — hide noisy processes from the Process Monitor by name (type it in, right-click a row, or manage the list later); ignores persist across restarts in `ignored_processes.txt`.
+* **Block from Monitor** — right-click a connection in the Process Monitor or Connections view to block its remote IP in Windows Firewall (TCP/UDP × inbound/outbound rules) or block the whole process by its executable path; blocks are recorded in `blocked.txt` and can be lifted any time from the Blocked popup.
 * **1-Click Firewall Block** — block an executable's inbound and outbound traffic instantly via `INetFwPolicy2`.
 
 ---
