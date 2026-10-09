@@ -92,6 +92,17 @@
         <!-- Connections Grid -->
         <DataGrid Grid.Row="2" x:Name="SvchostGrid" SelectionMode="Single"
                   PreviewMouseRightButtonDown="SvchostGrid_PreviewMouseRightButtonDown">
+            <DataGrid.RowStyle>
+                <!-- Rows with no traffic for 5+ minutes fade into the background so
+                     active conversations stand out. -->
+                <Style TargetType="DataGridRow">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsStale}" Value="True">
+                            <Setter Property="Opacity" Value="0.45"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </DataGrid.RowStyle>
             <DataGrid.ContextMenu>
                 <ContextMenu Opened="RowMenu_Opened">
                     <MenuItem x:Name="IgnoreRowMenuItem" Header="🚫 Ignore this process" Click="IgnoreRowMenuItem_Click"/>
@@ -151,7 +162,10 @@
                 <DataGridTextColumn Header="Tx Pkts"    Binding="{Binding TxPackets}"      Width="80"/>
                 <DataGridTextColumn Header="Rx Bytes"   Binding="{Binding RxBytesDisplay}" Width="90"/>
                 <DataGridTextColumn Header="Tx Bytes"   Binding="{Binding TxBytesDisplay}" Width="90"/>
-                <DataGridTextColumn Header="Last Packet" Binding="{Binding LastSeenDisplay}" Width="100"/>
+                <!-- Header-click sorting uses the DateTime (LastSeen), not the
+                     relative-time display string, which has no meaningful order. -->
+                <DataGridTextColumn Header="Last Packet" Binding="{Binding LastSeenDisplay}"
+                                    SortMemberPath="LastSeen" Width="100"/>
             </DataGrid.Columns>
         </DataGrid>
     </Grid>

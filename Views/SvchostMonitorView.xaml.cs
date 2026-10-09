@@ -2,12 +2,14 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Threading;
 using AutoCommand.Helpers;
@@ -41,6 +43,25 @@ namespace AutoCommand.Views
         {
             InitializeComponent();
             SvchostGrid.ItemsSource = _uiCollection;
+
+            // Most-recent-first order that keeps itself current: the LastSeen
+            // setter raises PropertyChanged on every packet, and live sorting
+            // repositions that row at the top. The Remote IP tiebreaker keeps
+            // equal-timestamp rows in a stable order instead of reshuffling.
+            // (ListCollectionView implements ICollectionViewLiveShaping
+            // explicitly, so the shaping members need the interface cast.)
+            if (CollectionViewSource.GetDefaultView(_uiCollection) is ICollectionViewLiveShaping liveShaping)
+            {
+                liveShaping.LiveSortingProperties.Add(nameof(SvchostMonitorItem.LastSeen));
+                liveShaping.IsLiveSorting = true;
+            }
+            if (CollectionViewSource.GetDefaultView(_uiCollection) is ListCollectionView view)
+            {
+                view.SortDescriptions.Add(new SortDescription(
+                    nameof(SvchostMonitorItem.LastSeen), ListSortDirection.Descending));
+                view.SortDescriptions.Add(new SortDescription(
+                    nameof(SvchostMonitorItem.RemoteIp), ListSortDirection.Ascending));
+            }
         }
 
         private bool _isInitialized = false;

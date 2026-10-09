@@ -62,8 +62,17 @@ namespace AutoCommand.Models
         public DateTime LastSeen
         {
             get => _lastSeen;
-            set { _lastSeen = value; OnPropertyChanged(); OnPropertyChanged(nameof(LastSeenDisplay)); }
+            set
+            {
+                _lastSeen = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(LastSeenDisplay));
+                OnPropertyChanged(nameof(IsStale));
+            }
         }
+
+        /// <summary>True when no traffic has been seen for over five minutes (row dims).</summary>
+        public bool IsStale => _lastSeen != default && DateTime.UtcNow - _lastSeen > TimeSpan.FromMinutes(5);
 
         /// <summary>Friendly display: "PID (name)" or just "PID" if name is unknown.</summary>
         public string ProcessDisplay => string.IsNullOrEmpty(ProcessName)
@@ -157,10 +166,13 @@ namespace AutoCommand.Models
 
         /// <summary>
         /// Called by the UI refresh timer to re-evaluate the relative "Xs ago" text
-        /// without needing to mutate LastSeen itself.
+        /// and the staleness flag without needing to mutate LastSeen itself.
         /// </summary>
-        public void RefreshLastSeenDisplay() =>
+        public void RefreshLastSeenDisplay()
+        {
             OnPropertyChanged(nameof(LastSeenDisplay));
+            OnPropertyChanged(nameof(IsStale));
+        }
 
         protected void OnPropertyChanged([CallerMemberName] string name = null)
         {
