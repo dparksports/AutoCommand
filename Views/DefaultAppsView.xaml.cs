@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
+using AutoCommand.Helpers;
 using AutoCommand.Models;
 using AutoCommand.Services;
 
@@ -76,7 +77,7 @@ namespace AutoCommand.Views
 
                 if (result.Matched.Count == 0)
                 {
-                    MessageBox.Show("No installed packages matching Outlook / Xbox / Family / Phone were found.",
+                    MessageBox.Show("No bloatware apps were found on this system.",
                         "Nothing to Remove", MessageBoxButton.OK, MessageBoxImage.Information);
                     return;
                 }
@@ -98,6 +99,43 @@ namespace AutoCommand.Views
                 RemoveBloatwareBtn.IsEnabled = true;
                 await RefreshAppsList();
             }
+        }
+
+        /// <summary>
+        /// Toggles the row's app in/out of the bloatware list. Unmatched rows are
+        /// added as exact package names; matched rows drop whichever entry covers
+        /// them (custom addition, custom pattern, or a disabled default).
+        /// </summary>
+        private async void BloatwareToggle_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.DataContext is AppPackageItem app)
+            {
+                var source = AppManagerService.GetMatchSource(app.PackageName, app.Name, out var pattern);
+                switch (source)
+                {
+                    case AppManagerService.BloatwareMatchSource.None:
+                        BloatwareConfig.Instance.AddCustomPackage(app.PackageName);
+                        break;
+                    case AppManagerService.BloatwareMatchSource.CustomPackage:
+                        BloatwareConfig.Instance.RemoveCustomPackage(app.PackageName);
+                        break;
+                    case AppManagerService.BloatwareMatchSource.CustomPattern:
+                        BloatwareConfig.Instance.RemoveCustomPattern(pattern);
+                        break;
+                    case AppManagerService.BloatwareMatchSource.DefaultPattern:
+                        BloatwareConfig.Instance.DisableDefault(pattern);
+                        break;
+                }
+                // Rebuild so every row's toggle re-evaluates against the new config
+                await RefreshAppsList();
+            }
+        }
+
+        private async void ManageBloatwareBtn_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new BloatwareListDialog { Owner = Window.GetWindow(this) };
+            dialog.ShowDialog();
+            await RefreshAppsList();
         }
 
         private async System.Threading.Tasks.Task RefreshAppsList()

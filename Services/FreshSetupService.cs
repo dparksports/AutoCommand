@@ -186,7 +186,7 @@ namespace AutoCommand.Services
                         {
                             Id = "bloatware",
                             Title = "Default Apps: remove bloatware",
-                            Description = "Uninstalls Outlook, Xbox, Family and Phone packages (included in the master confirmation).",
+                            Description = "Uninstalls the apps on the Default Apps bloatware list (Outlook, Xbox, Teams, Copilot, OneDrive, … — user-configurable; included in the master confirmation).",
                             Apply = async progress =>
                             {
                                 var (matched, removed, failed) = await AppManagerService.Instance.RemoveBloatwareAsync(progress);
@@ -200,7 +200,10 @@ namespace AutoCommand.Services
                             {
                                 var (ok, detail) = await Task.Run(async () =>
                                 {
-                                    var matched = await AppManagerService.Instance.FindBloatwareAsync(AppManagerService.BloatwarePatterns);
+                                    // Same effective (user-configured) list the removal
+                                    // step used — verifying raw defaults would flag
+                                    // apps the user deliberately opted out of
+                                    var matched = await AppManagerService.Instance.FindBloatwareAsync();
                                     return (matched.Count == 0,
                                         matched.Count == 0 ? "no bloatware packages installed" : $"{matched.Count} bloatware package(s) still installed");
                                 });

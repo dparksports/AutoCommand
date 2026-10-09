@@ -3,8 +3,13 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:conv="clr-namespace:AutoCommand.Converters"
              mc:Ignorable="d"
              Loaded="UserControl_Loaded">
+
+    <UserControl.Resources>
+        <conv:BloatwareStateConverter x:Key="BloatwareStateConverter"/>
+    </UserControl.Resources>
 
     <Grid Margin="20">
         <Grid.RowDefinitions>
@@ -23,9 +28,12 @@
                             Style="{StaticResource PrimaryButton}" Click="RefreshBtn_Click"/>
                     <Button x:Name="RemoveBloatwareBtn" Content="🧹 Remove Bloatware" Margin="12,0,0,0"
                             Style="{StaticResource DangerButton}" Click="RemoveBloatwareBtn_Click"
-                            ToolTip="Uninstall Outlook, Xbox, Family and Phone packages after confirmation."/>
+                            ToolTip="Uninstall Outlook, Xbox, Phone Link, Teams, Copilot, OneDrive and other preinstalled apps after confirmation."/>
+                    <Button x:Name="ManageBloatwareBtn" Content="⚙ Manage List" Margin="12,0,0,0"
+                            Style="{StaticResource PrimaryButton}" Click="ManageBloatwareBtn_Click"
+                            ToolTip="Customize which apps count as bloatware: enable/disable defaults, add your own."/>
                 </StackPanel>
-                <TextBlock Text="The same app list Windows Settings shows under Apps → Installed apps — apps you can uninstall (Outlook, Phone Link, Family, …)."
+                <TextBlock Text="The Store-packaged apps Windows Settings shows under Apps → Installed apps — apps you can uninstall (Outlook, Teams, Copilot, …). Win32 desktop apps such as OneDrive are only targeted by Remove Bloatware."
                            Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" Margin="0,6,0,0"/>
             </StackPanel>
         </Grid>
@@ -71,6 +79,27 @@
                     </DataGridTextColumn.ElementStyle>
                 </DataGridTextColumn>
                 <DataGridTextColumn Header="Signer / Publisher" Binding="{Binding SignerCertificate}" Width="2*"/>
+                <!-- One-click list membership: add exact package / disable the
+                     matching default pattern. Collapses on non-toggleable rows. -->
+                <DataGridTemplateColumn Header="Bloatware" Width="105">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Button Content="{Binding Converter={StaticResource BloatwareStateConverter}}"
+                                    ToolTip="{Binding Converter={StaticResource BloatwareStateConverter}, ConverterParameter=tooltip}"
+                                    Click="BloatwareToggle_Click" Padding="8,2" FontSize="10">
+                                <Button.Style>
+                                    <Style TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Content, RelativeSource={RelativeSource Self}}" Value="">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
                 <DataGridTemplateColumn Header="Action" Width="100">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>

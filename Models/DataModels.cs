@@ -116,6 +116,10 @@ namespace AutoCommand.Models
     public class AppPackageItem
     {
         public string Name { get; set; }
+
+        /// <summary>Exact Appx package name (e.g. Microsoft.Todos) — identity used
+        /// for user-added custom bloatware entries, unlike the display Name.</summary>
+        public string PackageName { get; set; }
         public string FullName { get; set; }
         public string Version { get; set; }
         public string Publisher { get; set; }
