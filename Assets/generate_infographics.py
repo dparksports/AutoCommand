@@ -636,8 +636,64 @@ def ai_assistant_infographic():
     return out
 
 
+# ============================================================ why / benefits
+def why_infographic():
+    fig, ax = new_canvas()
+    header(ax, "AUTOCOMMAND  —  WHY RUN IT?",
+           "What it does for you  —  not just what it does")
+
+    benefits = [
+        ("SEE EVERY CONNECTION", CYAN,
+         "Know which process talked to which\naddress, when it went quiet, and\nwhich scheduled task launched it —\nlive, with Geo-DNS names, without\nbecoming a Wireshark expert."),
+        ("SHUT THREATS DOWN IN SECONDS", RED,
+         "Right-click a suspicious row to block\nits remote IP or the whole executable,\nkill the process — or disable the\nscheduled task that would just\nresurrect it."),
+        ("DEBLOAT WINDOWS IN ONE CLICK", GREEN,
+         "Remove 23 preinstalled apps — Copilot,\nTeams, OneDrive, Xbox, Solitaire… —\nwith one confirmation instead of 23\nuninstallers. Keep any app by toggling\nit off your list."),
+        ("LOCK YOUR PERIMETER IN SECONDS", ORANGE,
+         "Five firewall profiles from paranoid\nlockdown to trusted home LAN, applied\nclassifier-free across every rule —\nand silent rule drift after Windows\nUpdates gets detected."),
+        ("TRUST WHAT BOOTS", PURPLE,
+         "Every EFI module hashed and watched\nfor drift, your boot manager signature\nchecked, and Microsoft's latest DBX\nrevocations applied — the earliest\nlink in the chain, verified."),
+        ("GET COMMANDS, NOT RISKS", BLUE,
+         "Describe what you need in plain\nEnglish — cloud AI or a fully local\nmodel — and every generated command\nwaits for your approval before it\ncan run."),
+    ]
+
+    cw, ch, gap = 489, 270, 22
+    x0, y0 = 44, 180
+    for i, (title, accent, body) in enumerate(benefits):
+        col, row = i % 3, i // 3
+        x = x0 + col * (cw + gap)
+        y = y0 + row * (ch + 20)
+        panel(ax, x, y, cw, ch)
+        topbar(ax, x, y, cw, accent)
+        ax.text(x + 24, y + 42, title, color=accent, fontsize=15.5, fontweight="bold", va="center")
+        ax.text(x + 24, y + 74, body, color=SUB, fontsize=11.8, va="top", linespacing=1.65)
+
+    section_title(ax, 44, 772, "WHO IT'S FOR")
+
+    personas = [
+        ("HOME POWER USERS", CYAN, "tired of preinstalled apps and opaque\nbackground chatter on their own PCs"),
+        ("IT TECHNICIANS", GREEN, "imaging new machines that need the\nsame hard baseline every single time"),
+        ("SECURITY-MINDED PROS", ORANGE, "who want evidence and one-click\nresponse, not scripts of hope"),
+    ]
+    pw, ph, pgap = 489, 96, 22
+    for i, (title, accent, body) in enumerate(personas):
+        x = x0 + i * (pw + pgap)
+        panel(ax, x, 794, pw, ph)
+        topbar(ax, x, 794, pw, accent)
+        ax.text(x + 24, 794 + 28, title, color=accent, fontsize=13.5, fontweight="bold", va="center")
+        ax.text(x + 24, 794 + 48, body, color=SUB, fontsize=11.2, va="top", linespacing=1.45)
+
+    footer(ax, "ONE ADMINISTRATOR DASHBOARD   •   ZERO-POWERSHELL CORE   •   YOUR MACHINE, YOUR RULES")
+
+    out = os.path.join(os.path.dirname(os.path.abspath(__file__)), "why_autocommand_infographic.png")
+    fig.savefig(out, dpi=150)
+    plt.close(fig)
+    return out
+
+
 if __name__ == "__main__":
     for generate in (
+        why_infographic,
         hero_infographic,
         stack_infographic,
         firewall_infographic,
