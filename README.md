@@ -2,7 +2,7 @@
 
 ![AutoCommand](Assets/corp_banner.png)
 
-A free, open-source security and control dashboard for Windows 10 and 11. One administrator window answers every question that normally costs you an afternoon — *what is this process, who launched it, where is it connecting, how do I make it stop?* — as a row in a table, a colored card, or a single button, all in a deep-space dark UI with neon accents.
+A free, open-source security and control dashboard for Windows 10 and 11. One administrator window answers every question that normally costs you an afternoon — *what is this process, who launched it, where is it connecting, how do I make it stop?* — as a row in a table, a colored card, or a single button, all wrapped in a deep-space dark UI wearing the app icon's violet-magenta-blue gradient identity.
 
 > **⬇ Download** the latest self-contained build from the [**Releases page**](https://github.com/dparksports/autocommand-windows/releases) — no .NET required. Unzip, run `AutoCommand.exe` as Administrator.
 >
@@ -39,7 +39,7 @@ Windows spreads the answers across a dozen tools that don't talk to each other. 
 | ❄ **Update Control** | Freeze self-updating apps at the version that works — `icacls` snapshots make unfreezing exact. Windows binaries are refused. |
 | 📋 **Tasks · 🚀 Startup · 🌙 Hibernation · 🌐 Connections** | Full Task Scheduler control, startup entries, hibernation posture, and a second live connection view. |
 | 🔒 **OS Hardening + ✅ DBX Safety** | Self-healing guards on SSTP/kernel-debug, the Secure Boot chain hashed and watched, DBX revocations applied only with your yes. |
-| ⚙ **Settings** | Startup behavior, analytics opt-in, live version — and the status bar's **🚑 Restore Internet** button. |
+| ⚙ **Settings** | Startup behavior, analytics opt-in, live version — and the status bar's **🚑 Restore Internet** button. The About card signs off: Made with ❤️ in California · Apache License 2.0 · © 2026 Dan Park, magicpoint.ai. |
 
 ![Process Monitor and Sysmon Audit](Assets/corp_visibility.png)
 
