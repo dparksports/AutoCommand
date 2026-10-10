@@ -175,23 +175,57 @@ namespace AutoCommand.Services
 
         private static async Task<string> WriteConfigAsync()
         {
-            // Generate optimized config (Enable Network Connect - Event ID 3)
-            // We exclude common noise to keep the log clean
+            // Recommended config for post-hoc process/network forensics:
+            //   ProcessCreate   (ID 1)  every launch with full command line + parent image
+            //   NetworkConnect  (ID 3)  every outbound connection with image + PID
+            //   DnsQuery       (ID 22)  hostname lookups, ties IPs to names after the fact
+            // An empty onmatch="exclude" rule is the Sysmon idiom for "capture
+            // everything"; noise filtering happens app-side (ignore lists,
+            // cloud-IP filter) so the raw log stays complete.
             string configXml = @"
 <Sysmon schemaversion=""4.82"">
   <EventFiltering>
     <RuleGroup name="""" groupRelation=""or"">
-      <NetworkConnect onmatch=""include"">
-        <Rule groupRelation=""and"">
-          <Image condition=""not end with"">browser.exe</Image> <!-- Example exclusion -->
-        </Rule>
-      </NetworkConnect>
+      <ProcessCreate onmatch=""exclude""/>
+      <NetworkConnect onmatch=""exclude""/>
+      <DnsQuery onmatch=""exclude""/>
     </RuleGroup>
   </EventFiltering>
 </Sysmon>";
             string configPath = Path.Combine(TempDir, ConfigFileName);
             await File.WriteAllTextAsync(configPath, configXml);
             return configPath;
+        }
+
+        /// <summary>
+        /// Applies the recommended config to an already-installed Sysmon
+        /// without reinstalling (Sysmon64 -c). Needed when an install made
+        /// with an older config (e.g. network-only) should start capturing
+        /// process creations and DNS queries too. Call only when Sysmon is
+        /// actually installed — otherwise the call just fails.
+        /// </summary>
+        public async Task<(bool Success, string ErrorMessage)> UpdateConfigAsync()
+        {
+            try
+            {
+                // Prefer the installed exe; fall back to the downloaded copy
+                string installedExe = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.Windows), SysmonExeName);
+                string exePath = File.Exists(installedExe)
+                    ? installedExe
+                    : await EnsureSysmonDownloadedAsync();
+
+                string configPath = await WriteConfigAsync();
+                var (output, error, exitCode) = await ProcessRunner.RunWithDetailsAsync(exePath, $"-c \"{configPath}\" -accepteula");
+
+                if (exitCode == 0)
+                    return (true, string.Empty);
+                return (false, $"Exit code: {exitCode}. Output: {output}. Error: {error}");
+            }
+            catch (Exception ex)
+            {
+                return (false, ex.Message);
+            }
         }
 
         private static bool IsProviderRegistered()

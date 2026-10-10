@@ -127,7 +127,7 @@ namespace AutoCommand.Views
             if (!_installerService.IsSysmonInstalled())
             {
                 SetupSysmonBtn.Visibility = Visibility.Visible;
-                MonitorStatusText.Text = "Sysmon is not installed. Network tracking will not work.";
+                MonitorStatusText.Text = "Sysmon is not installed — install it from the Sysmon Audit tab. Network tracking will not work.";
             }
             else
             {
@@ -161,7 +161,7 @@ namespace AutoCommand.Views
             {
                 MessageBox.Show($"Failed to install Sysmon.\n\nDetails: {result.ErrorMessage}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 SetupSysmonBtn.IsEnabled = true;
-                MonitorStatusText.Text = "Sysmon is not installed. Network tracking will not work.";
+                MonitorStatusText.Text = "Sysmon is not installed — install it from the Sysmon Audit tab. Network tracking will not work.";
             }
         }
 
@@ -582,6 +582,19 @@ namespace AutoCommand.Views
             if (SvchostGrid.SelectedItem is not SvchostMonitorItem item || string.IsNullOrEmpty(item.TaskName)) return;
 
             var (summary, error) = await TaskSchedulerService.Instance.GetTaskSummaryAsync(item.TaskName);
+
+            // What code the task actually executes (COM-handler DLL), when
+            // attribution has it — DLL tasks have no command line of their own
+            var launch = _taskAttribution.GetTaskForPid(item.ProcessId);
+            if (launch?.HandlerClassId != null)
+            {
+                string handler = launch.HandlerDllExists == true
+                    ? $"Handler DLL: {launch.HandlerDll} (CLSID {launch.HandlerClassId})"
+                    : $"Handler CLSID {launch.HandlerClassId} is not registered — the task's DLL is gone (leftover of uninstalled software)";
+                summary = string.IsNullOrEmpty(summary) ? handler : $"{handler}\n\n{summary}";
+                error = null;
+            }
+
             MessageBox.Show(
                 string.IsNullOrEmpty(error)
                     ? summary

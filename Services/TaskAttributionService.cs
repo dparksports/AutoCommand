@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics.Eventing.Reader;
+using System.IO;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
@@ -20,6 +21,12 @@ namespace AutoCommand.Services
         public string CommandLine;
         public DateTime? StartedAt;
         public DateTime? CompletedAt;
+
+        // COM-handler evidence: what code the task actually runs. A task with
+        // a ClassId whose DLL is missing is an orphan (its software is gone).
+        public string HandlerClassId;
+        public string HandlerDll;
+        public bool? HandlerDllExists;
     }
 
     /// <summary>
@@ -101,6 +108,56 @@ namespace AutoCommand.Services
         /// <summary>Attribution for a taskhostw PID, or null when unknown/not a task host.</summary>
         public TaskLaunchInfo GetTaskForPid(int pid) =>
             _byPid.TryGetValue(pid, out var info) ? info : null;
+
+        /// <summary>
+        /// Fills HandlerClassId/HandlerDll for a task whose path is known.
+        /// Scheduled-task files live under %WINDIR%\System32\Tasks\<path>; a
+        /// ComHandler action's XML contains the ClassId, which resolves to the
+        /// DLL through HKCR\CLSID\{...}\InprocServer32. Exec/spawn tasks have
+        /// no ClassId and are left null — their command line already says
+        /// what they run.
+        /// </summary>
+        private static void ResolveHandler(TaskLaunchInfo info)
+        {
+            try
+            {
+                string tasksRoot = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.System), "Tasks");
+                string taskFile = tasksRoot + info.TaskPath;
+                if (!File.Exists(taskFile)) return;
+
+                string xml = File.ReadAllText(taskFile);
+                int open = xml.IndexOf("<ClassId>", StringComparison.OrdinalIgnoreCase);
+                int close = xml.IndexOf("</ClassId>", StringComparison.OrdinalIgnoreCase);
+                if (open < 0 || close <= open) return;
+
+                string classId = xml.Substring(open + 9, close - open - 9).Trim();
+                if (!classId.StartsWith("{")) return;
+                info.HandlerClassId = classId;
+
+                // HKCR merges HKLM\Software\Classes and HKCU\Software\Classes;
+                // check the 64-bit view first, then WOW6432Node for 32-bit DLLs
+                foreach (string hive in new[]
+                         {
+                             @"Software\Classes\CLSID\" + classId + @"\InprocServer32",
+                             @"Software\Classes\WOW6432Node\CLSID\" + classId + @"\InprocServer32"
+                         })
+                {
+                    using var key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(hive);
+                    string dll = key?.GetValue(null)?.ToString();
+                    if (string.IsNullOrEmpty(dll)) continue;
+
+                    info.HandlerDll = Environment.ExpandEnvironmentVariables(dll);
+                    info.HandlerDllExists = File.Exists(info.HandlerDll);
+                    return;
+                }
+
+                // Registered nowhere: the task fires but its DLL is gone —
+                // classic leftover of uninstalled software
+                info.HandlerDllExists = false;
+            }
+            catch { /* attribution extras are best-effort */ }
+        }
 
         private void EnableHistoryChannel()
         {
@@ -199,6 +256,13 @@ namespace AutoCommand.Services
 
                 if (!string.IsNullOrEmpty(taskName)) info.TaskPath = taskName;
                 if (!string.IsNullOrEmpty(userContext)) info.UserContext = userContext;
+
+                // Knowing the task path, resolve what code a COM-handler task
+                // runs: the task XML carries the ClassId, and the registry maps
+                // ClassId → DLL. This is the "what does taskhostw actually
+                // execute" answer for DLL tasks, which have no command line.
+                if (!string.IsNullOrEmpty(info.TaskPath) && string.IsNullOrEmpty(info.HandlerDll))
+                    ResolveHandler(info);
 
                 if (e.EventRecord.Id == 100) info.StartedAt ??= e.EventRecord.TimeCreated;
                 else if (e.EventRecord.Id == 102) info.CompletedAt = e.EventRecord.TimeCreated;
