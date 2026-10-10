@@ -1,6 +1,6 @@
 # AutoCommand — see what your Windows PC is really doing, then take it back with one click
 
-![AutoCommand](Assets/corp_banner.png)
+![AutoCommand](Assets/corp_banner.png?v=fluent1)
 
 A free, open-source security and control dashboard for Windows 10 and 11. One administrator window answers every question that normally costs you an afternoon — *what is this process, who launched it, where is it connecting, how do I make it stop?* — as a row in a table, a colored card, or a single button, in a clean Fluent design with light and dark themes.
 
@@ -14,7 +14,7 @@ A free, open-source security and control dashboard for Windows 10 and 11. One ad
 
 Windows spreads the answers across a dozen tools that don't talk to each other. AutoCommand puts the whole picture in one place:
 
-![Why AutoCommand](Assets/corp_why.png)
+![Why AutoCommand](Assets/corp_why.png?v=fluent1)
 
 - **A mystery process is phoning home.** Find the row — process, destination, owner — then block the IP, block the executable, kill the process, or disable the scheduled task that would resurrect it at 3 a.m.
 - **You want a record, not a guess.** One click installs Sysmon, and from then on every process launch, connection, and DNS query is recorded locally.
@@ -41,9 +41,9 @@ Windows spreads the answers across a dozen tools that don't talk to each other. 
 | 🔒 **OS Hardening + ✅ DBX Safety** | Self-healing guards on SSTP/kernel-debug, the Secure Boot chain hashed and watched, DBX revocations applied only with your yes. |
 | ⚙ **Settings** | Appearance — **Dark/Light theme, applied instantly and remembered**; startup behavior, analytics opt-in, live version — and the status bar's **🚑 Restore Internet** button. The About card signs off: Made with ❤️ in California · Apache License 2.0 · © 2026 Dan Park, magicpoint.ai. |
 
-![Quick Scan — one guided pass](Assets/corp_debloat.png)
+![Quick Scan — one guided pass](Assets/corp_debloat.png?v=fluent1)
 
-![Process Monitor and Sysmon Audit](Assets/corp_visibility.png)
+![Process Monitor and Sysmon Audit](Assets/corp_visibility.png?v=fluent1)
 
 ## Blocked things, managed
 
@@ -55,7 +55,7 @@ Blocking is easy; *un*-blocking is where other tools strand you. AutoCommand:
 - **verifies unknown IPs for you** — one button asks the internet registries (RDAP) who owns each target, cached machine-wide;
 - **restores you from mistakes** — the status-bar 🚑 button disables every AutoCommand block and flushes DNS in one click; *Restore except Microsoft/Windows* brings your real blocks back while leaving only the breakage-causing ones off.
 
-![Update Control and Telemetry](Assets/corp_control.png)
+![Update Control and Telemetry](Assets/corp_control.png?v=fluent1)
 
 ## What AutoCommand will not do
 
@@ -63,7 +63,7 @@ Blocking is easy; *un*-blocking is where other tools strand you. AutoCommand:
 - **Non-removable means non-offered.** System-signed components never appear in the bloatware list; Windows binaries are never frozen.
 - **No hidden state.** Everything the app remembers is readable JSON/text on disk (listed in the [Technical Notes](docs/TECHNICAL_NOTES.md)); its own telemetry is opt-in and off by default.
 
-![OS Hardening](Assets/corp_hardening.png)
+![OS Hardening](Assets/corp_hardening.png?v=fluent1)
 
 ## Build from source
 
