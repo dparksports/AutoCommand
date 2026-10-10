@@ -37,13 +37,11 @@ namespace AutoCommand.Views
             await RefreshStatusAsync();
 
             // If Sysmon is already recording process creations, show history
-            // immediately instead of waiting for the next launch
+            // immediately instead of waiting for the next launch. ToggleCapture
+            // performs the backfill — doing it here too would duplicate rows.
             var info = await _diagnostics.GetStatusAsync();
             if (info.State == SysmonInstallState.Installed)
-            {
-                BackfillFeed();
                 ToggleCapture();
-            }
         }
 
         private async Task RefreshStatusAsync()
@@ -208,8 +206,9 @@ namespace AutoCommand.Views
 
         private void TrimFeed()
         {
+            // Newest rows sit at index 0; drop from the bottom until capped
             while (_events.Count > MaxFeedRows)
-                _events.RemoveAt(_events.Count);
+                _events.RemoveAt(_events.Count - 1);
         }
 
         public string GetAuditContext()
