@@ -678,9 +678,11 @@ namespace AutoCommand.Services
         }
 
         /// <summary>
-        /// One-click cleanup of the legacy 4-rules-per-IP sets: delete the
-        /// redundant inbound pair, rewrite the outbound pair under the v2
-        /// naming scheme (provenance preserved + migration marker).
+        /// One-click cleanup of ALL legacy-name blocks: IP sets (4 rules) shrink
+        /// to the v2 2-rule scheme, app blocks (2 rules) shrink to the v2 single
+        /// outbound rule. Lossless — descriptions carry over with a migration
+        /// marker, protection unchanged (inbound was covered by stateful filtering).
+        /// Safe to run repeatedly; exits fast when nothing legacy remains.
         /// </summary>
         public Task<(int targets, int removedInbound, int migratedOutbound)> ConsolidateLegacyIpBlocksAsync()
         {
@@ -736,9 +738,82 @@ namespace AutoCommand.Services
                             }
                         }
                     }
+
+                    // ── legacy app blocks: 2 rules → 1 outbound v2 rule ──
+                    var legacyApps = new List<(string name, dynamic rule, string app)>();
+                    foreach (dynamic rule in fwPolicy.Rules)
+                    {
+                        try
+                        {
+                            string name = (string)rule.Name ?? "";
+                            if ((int)rule.Action != 0 || !name.StartsWith(LegacyAppPrefix[0], StringComparison.OrdinalIgnoreCase)) continue;
+                            string app = rule.ApplicationName ?? "";
+                            if (app.Length == 0) continue;
+                            legacyApps.Add((name, rule, app));
+                        }
+                        catch { }
+                    }
+
+                    foreach (var appGroup in legacyApps.GroupBy(x => x.app, StringComparer.OrdinalIgnoreCase))
+                    {
+                        targets++;
+                        foreach (var (name, rule, app) in appGroup)
+                        {
+                            if (name.Contains("Inbound"))
+                            {
+                                try { fwPolicy.Rules.Remove(name); removed++; } catch { }
+                            }
+                            else
+                            {
+                                try
+                                {
+                                    string newName = $"{NewAppPrefix}{System.IO.Path.GetFileName(app)} (Out)";
+                                    if (FindRule(fwPolicy, newName) == null)
+                                    {
+                                        dynamic nr = Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FWRule"));
+                                        nr.Action = 0; nr.Direction = 2; nr.Enabled = true;
+                                        nr.InterfaceTypes = "All";
+                                        nr.Name = newName; nr.ApplicationName = app;
+                                        nr.Description = (rule.Description ?? "") + " [migrated from AutoCommand legacy rule]";
+                                        fwPolicy.Rules.Add(nr);
+                                    }
+                                    fwPolicy.Rules.Remove(name);
+                                    migrated++;
+                                }
+                                catch { }
+                            }
+                        }
+                    }
                 }
                 catch { }
                 return (targets, removed, migrated);
+            });
+        }
+
+        /// <summary>Count of legacy-name block rules still in the firewall (0 after migration).</summary>
+        public Task<int> CountLegacyBlocksAsync()
+        {
+            return Task.Run(() =>
+            {
+                int count = 0;
+                try
+                {
+                    dynamic fwPolicy = GetPolicy();
+                    foreach (dynamic rule in fwPolicy.Rules)
+                    {
+                        try
+                        {
+                            if ((int)rule.Action != 0) continue;
+                            string name = (string)rule.Name ?? "";
+                            if (name.StartsWith(LegacyIpPrefix[0], StringComparison.OrdinalIgnoreCase) ||
+                                name.StartsWith(LegacyAppPrefix[0], StringComparison.OrdinalIgnoreCase))
+                                count++;
+                        }
+                        catch { }
+                    }
+                }
+                catch { }
+                return count;
             });
         }
 

@@ -38,8 +38,23 @@ namespace AutoCommand.Views
             var view = (ListCollectionView)CollectionViewSource.GetDefaultView(_rows);
             view.GroupDescriptions.Add(new PropertyGroupDescription("Class"));
             RulesGrid.ItemsSource = _rows;
-            Loaded += (_, _) => _ = ReloadAsync();
+            Loaded += async (_, _) =>
+            {
+                // auto-migrate legacy-name rules on open — lossless (provenance
+                // carries over, protection unchanged), so users never have to
+                // know or care about the old naming scheme
+                int legacy = await FirewallService.Instance.CountLegacyBlocksAsync();
+                if (legacy > 0)
+                {
+                    StatusText.Text = $"Migrating {legacy} legacy firewall rule(s) to the current naming scheme…";
+                    var r = await FirewallService.Instance.ConsolidateLegacyIpBlocksAsync();
+                    _migrationNote = $"Auto-migrated {r.migratedOutbound} legacy rule(s) ({r.removedInbound} redundant inbound rules removed) across {r.targets} target(s). ";
+                }
+                await ReloadAsync();
+            };
         }
+
+        private string _migrationNote = "";
 
         private async Task ReloadAsync()
         {
