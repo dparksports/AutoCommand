@@ -56,6 +56,14 @@ Twenty-three preinstalled apps (Copilot, Teams, OneDrive, Xbox, Solitaire, Feedb
 
 The part Windows cannot do: **attribution that survives process exit.** Short-lived helpers (spawned scripts, one-shot updaters, `taskhostw.exe` DLL hosts) are named, pathed, and tied to the scheduled task that launched them — including *which DLL* a COM-handler task actually executes, and a flag when that DLL no longer exists (classic leftover of uninstalled software). Right-click any row to block its IP or executable, kill the process, or inspect/disable the task behind it. Everything exports to CSV.
 
+**Blocking that won't bite you.** Before a block lands, the destination is classified against known Microsoft/CDN ranges and service hosts are recognized — so taking out an update edge or the DNS-carrying svchost instance warns you *first*. Every block is 2 idempotent rules (not 4 near-duplicates) with full provenance in the rule description, readable from `wf.msc`. **Blocked → Manage all** opens the fleet view: targets grouped by destination owner with Microsoft/Windows rows in red, bulk unblock (including "unblock all Microsoft-owned"), one-click legacy-set consolidation (4 rules → 2), hit counts from the firewall's own drop log (one button to enable), and **RDAP-verified ownership** — registry answers cached machine-wide in `C:\ProgramData\AutoCommand\rdap-cache.json`, keyed by registered block so one lookup covers thousands of sibling IPs.
+
+### 🔬 Svchost Trace — the timeline and the pattern detector
+
+**Svchost Trace** watches the 70+ `svchost.exe` service hosts the way Process Monitor watches connections: spawn events with parent process and hosted service, TCP connect/close with lifetimes, cumulative byte samples — one JSONL timeline you can export and re-analyze offline. On top of it, a pattern detector flags what matters: svchost instances whose parent isn't `services.exe`, service respawn loops, destinations classified against known Microsoft/CDN ranges (unknowns flagged for RDAP verification), beacon-regular connection intervals (coefficient of variation below 0.35), and upload-dominant flows.
+
+The tab also drives the headless capture service: **Start/Stop** runs the collector as a detached process that survives the app; **Auto-start on boot** persists it via your user Run key (no UAC); a global mutex keeps exactly one capture alive; size-capped rotation keeps the disk bounded. Traces exported here replay in the command-line analyzer (`svchost-watch/SvchostAnalyzer`).
+
 ### 📊 Telemetry — real opt-outs, verified quiet
 
 ![Pin the version that works — silence the beacons](Assets/corp_control.png)
@@ -82,7 +90,7 @@ Self-healing guards stop and disable SSTP tunneling and kernel-debug surfaces �
 
 ### ⚙ Settings
 
-Startup behavior, analytics preference, and live application information — plus a status bar that always tells you whether the background Security Enforcer is active.
+Startup behavior, analytics preference, and live application information — plus a status bar that always tells you whether the background Security Enforcer is active, and a **🚑 Restore Internet** panic button for the worst-case click: one press disables every AutoCommand-created block rule (nothing deleted, fully reversible) and flushes the DNS cache automatically, while **Restore except Microsoft/Windows** in the Blocked Rules manager brings back your real blocks and leaves only the breakage-causing ones off. The About card carries the © footnote.
 
 ---
 

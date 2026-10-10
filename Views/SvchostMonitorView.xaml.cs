@@ -442,15 +442,25 @@ namespace AutoCommand.Views
                 return;
             }
 
-            if (MessageBox.Show($"Block all traffic to remote IP '{ip}' (contacted by '{item.ProcessName}') in Windows Firewall?\n\n" +
-                                "Four rules are created: TCP/UDP, inbound and outbound.",
-                "Confirm Block", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes) return;
+            string warning = Services.IpClassifier.WarningText(ip);
+            string confirm = $"{warning}\nBlock all outbound traffic to remote IP '{ip}' (contacted by '{item.ProcessName}')?\n\n" +
+                             "2 rules are created: outbound TCP and UDP. Inbound is already covered by the\n" +
+                             "firewall's stateful filtering — this avoids the old 4-rule clutter.\n" +
+                             "Undo anytime: right-click this row again, or 'Blocked' → Manage all.";
+            if (warning.Length > 0)
+                confirm += "\n\n⚠ Think twice: this IP is Microsoft infrastructure.";
+            if (MessageBox.Show(confirm, "Confirm Block",
+                    MessageBoxButton.YesNo, warning.Length > 0 ? MessageBoxImage.Warning : MessageBoxImage.Question) != MessageBoxResult.Yes) return;
 
             try
             {
-                await FirewallService.Instance.AddBlockRuleForIpAsync(ip, $"AutoCommand IP Block - {ip}");
+                string note = BuildProvenance(item, $"→ {ip}");
+                var (created, updated) = await Services.FirewallService.Instance.AddIpBlockAsync(ip, note);
                 RecordBlockedEntry("ip", ip, item.ProcessName);
-                MessageBox.Show($"Successfully blocked remote IP:\n{ip}\n\n(TCP/UDP, inbound and outbound)", "Blocked", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show(created > 0
+                        ? $"Blocked remote IP {ip} — 2 rules (outbound TCP/UDP).\nProvenance written to the rule description (visible in wf.msc)."
+                        : $"Block for {ip} already existed — refreshed its provenance (no duplicate rules).",
+                    "Blocked", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
@@ -468,9 +478,6 @@ namespace AutoCommand.Views
                 return;
             }
 
-            if (MessageBox.Show($"Block all network traffic for '{item.ProcessName}' (PID {item.ProcessId}) in Windows Firewall?",
-                "Confirm Block", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes) return;
-
             try
             {
                 string path = GetProcessPath(item.ProcessId);
@@ -480,9 +487,26 @@ namespace AutoCommand.Views
                     return;
                 }
 
-                await FirewallService.Instance.AddBlockRuleForAppAsync(path, $"AutoCommand Process Block - {item.ProcessName}");
+                string warning = "";
+                if (string.Equals(item.ProcessName, "svchost.exe", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(item.ProcessName, "taskhostw.exe", StringComparison.OrdinalIgnoreCase))
+                    warning = $"⚠ '{item.ProcessName}' hosts Windows SERVICES. One instance carries DNS (Dnscache),\n" +
+                              "DHCP, diagnostics and more — blocking it is the #1 cause of 'I blocked something\n" +
+                              "and lost my internet'. If a specific connection looks bad, block the IP, not this process.\n\n";
+                else if (path.StartsWith(Environment.SystemDirectory, StringComparison.OrdinalIgnoreCase))
+                    warning = $"⚠ '{item.ProcessName}' is a Windows component. Blocking it can break shell features,\n" +
+                              "widgets, or web content in Start/Settings.\n\n";
+
+                if (MessageBox.Show($"{warning}Block all outbound network traffic for\n{path}\n(1 outbound rule; undo from 'Blocked' → Manage all)?",
+                        "Confirm Block", MessageBoxButton.YesNo, warning.Length > 0 ? MessageBoxImage.Warning : MessageBoxImage.Question) != MessageBoxResult.Yes) return;
+
+                string note = BuildProvenance(item, $"app: {path}");
+                var (created, updated) = await Services.FirewallService.Instance.AddAppBlockAsync(path, note);
                 RecordBlockedEntry("proc", path, item.ProcessName);
-                MessageBox.Show($"Successfully added Inbound and Outbound block rules for:\n{path}", "Blocked", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show(created > 0
+                        ? $"Blocked application (1 outbound rule):\n{path}"
+                        : $"Block for {System.IO.Path.GetFileName(path)} already existed — provenance refreshed.",
+                    "Blocked", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
@@ -490,10 +514,26 @@ namespace AutoCommand.Views
             }
         }
 
+        /// <summary>Full provenance embedded into the firewall rule Description.</summary>
+        private static string BuildProvenance(SvchostMonitorItem item, string what)
+        {
+            string host = "";
+            try { host = item.HostnameDisplay is string h && h.Contains("…") == false && h != "resolving…" ? $" host {h}" : ""; } catch { }
+            return $"[blocked {DateTime.UtcNow:yyyy-MM-dd HH:mm} UTC] {item.ProcessName} PID {item.ProcessId} {what}{host} · " +
+                   $"rx {item.RxBytesDisplay} tx {item.TxBytesDisplay} · AutoCommand Process Monitor";
+        }
+
         private void BlockedListBtn_Click(object sender, RoutedEventArgs e)
         {
             RefreshBlockedUi();
             BlockedListPopup.IsOpen = true;
+        }
+
+        private void ManageBlockedBtn_Click(object sender, RoutedEventArgs e)
+        {
+            BlockedListPopup.IsOpen = false;
+            var win = new BlockedRulesWindow { Owner = Window.GetWindow(this) };
+            win.Show();
         }
 
         private async void UnblockBtn_Click(object sender, RoutedEventArgs e)

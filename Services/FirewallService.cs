@@ -357,7 +357,9 @@ namespace AutoCommand.Services
         /// </summary>
         public Task<int> RemoveBlockRulesForIpAsync(string remoteIp)
         {
-            return Task.Run(() => RemoveRulesByNamePrefix($"AutoCommand IP Block - {remoteIp} ("));
+            return Task.Run(() =>
+                RemoveRulesByNamePrefix($"AutoCommand IP Block - {remoteIp} (") +
+                RemoveRulesByNamePrefix($"{NewIpPrefix}{remoteIp} ("));
         }
 
         /// <summary>
@@ -380,7 +382,8 @@ namespace AutoCommand.Services
                         {
                             string name = rule.Name ?? "";
                             string app = rule.ApplicationName ?? "";
-                            if (name.StartsWith("AutoCommand Process Block - ", StringComparison.OrdinalIgnoreCase) &&
+                            if ((name.StartsWith("AutoCommand Process Block - ", StringComparison.OrdinalIgnoreCase) ||
+                                 name.StartsWith(NewAppPrefix, StringComparison.OrdinalIgnoreCase)) &&
                                 string.Equals(app, appPath, StringComparison.OrdinalIgnoreCase))
                             {
                                 names.Add(name);
@@ -431,6 +434,402 @@ namespace AutoCommand.Services
             }
             return removed;
         }
+
+        // ── AutoCommand-managed block fleet ────────────────────────────────
+        //
+        // v2 block rules are FEWER and SELF-DESCRIBING:
+        //   IP:  2 rules (outbound TCP + UDP) — inbound blocks are redundant on
+        //        a client; unsolicited inbound is already dropped by the
+        //        firewall's stateful defaults.
+        //   APP: 1 outbound rule.
+        // Names are deterministic ("AC-BLOCK-IP <ip> (TCP Out)") which makes
+        // creation idempotent and lets wf.msc users sort/filter by "AC-BLOCK".
+        // The Description field carries full provenance (process, PID, host,
+        // byte counts, UTC time) — that's the audit trail visible in wf.msc.
+
+        public const string NewIpPrefix = "AC-BLOCK-IP ";
+        public const string NewAppPrefix = "AC-BLOCK-APP ";
+        private static readonly string[] LegacyIpPrefix = { "AutoCommand IP Block - " };
+        private static readonly string[] LegacyAppPrefix = { "AutoCommand Process Block - " };
+
+        public class BlockedTarget
+        {
+            public string Target;      // IP or exe name for display
+            public string Kind;        // "ip" | "app"
+            public string Key;         // grouping key (ip or lowercased full path)
+            public string AppPath;
+            public string Ip;
+            public int Rules;
+            public int EnabledRules;
+            public string Description = "";
+            public string Class;       // Microsoft/Azure, Akamai, Gcore, Windows component, Application, Unclassified
+            public DateTime? Created;  // parsed from v2 description; null for legacy rules
+        }
+
+        public class FleetToggleResult { public int Matched; public int Changed; public int SkippedRisky; public string FirstError; }
+
+        /// <summary>
+        /// Shared parser: extracts the IP from a v2 or legacy IP-block rule name.
+        /// ("AC-BLOCK-IP 1.2.3.4 (TCP Out)" / "AutoCommand IP Block - 1.2.3.4 (…)")
+        /// </summary>
+        private static string ParseIpTarget(string name)
+        {
+            string prefix = name.StartsWith(NewIpPrefix, StringComparison.OrdinalIgnoreCase)
+                ? NewIpPrefix : LegacyIpPrefix[0];
+            int cut = name.IndexOf('(');
+            return (cut > 0 ? name.Substring(prefix.Length, cut - prefix.Length)
+                            : name.Substring(prefix.Length)).Trim();
+        }
+
+        /// <summary>
+        /// A rule is "risky" when its target is Microsoft/CDN infrastructure or a
+        /// Windows component — re-enabling those is what re-breaks internet,
+        /// updates or notifications after a panic restore.
+        /// </summary>
+        private static bool IsRiskyRule(string name, dynamic rule)
+        {
+            try
+            {
+                if (name.StartsWith(NewIpPrefix, StringComparison.OrdinalIgnoreCase) ||
+                    name.StartsWith(LegacyIpPrefix[0], StringComparison.OrdinalIgnoreCase))
+                    return Services.IpClassifier.IsMicrosoftInfra(ParseIpTarget(name));
+                string app = rule.ApplicationName ?? "";
+                return app.Length > 0 && app.StartsWith(Environment.SystemDirectory, StringComparison.OrdinalIgnoreCase);
+            }
+            catch { return false; }
+        }
+
+        private static dynamic FindRule(dynamic fwPolicy, string name)
+        {
+            foreach (dynamic r in fwPolicy.Rules)
+            {
+                try { if ((string)r.Name == name) return r; } catch { }
+            }
+            return null;
+        }
+
+        private static bool IsOurBlock(dynamic rule, out string name)
+        {
+            name = null;
+            try
+            {
+                name = (string)rule.Name ?? "";
+                if ((int)rule.Action != 0) return false; // Block only
+                return name.StartsWith(NewIpPrefix, StringComparison.OrdinalIgnoreCase)
+                    || name.StartsWith(NewAppPrefix, StringComparison.OrdinalIgnoreCase)
+                    || name.StartsWith(LegacyIpPrefix[0], StringComparison.OrdinalIgnoreCase)
+                    || name.StartsWith(LegacyAppPrefix[0], StringComparison.OrdinalIgnoreCase);
+            }
+            catch { return false; }
+        }
+
+        /// <summary>Add a 2-rule (outbound TCP+UDP) idempotent IP block with full provenance.</summary>
+        public Task<(int created, int updated)> AddIpBlockAsync(string ip, string description)
+        {
+            return Task.Run(() =>
+            {
+                int created = 0, updated = 0;
+                try
+                {
+                    dynamic fwPolicy = GetPolicy();
+                    foreach (var (proto, suffix) in new[] { (6, "TCP Out"), (17, "UDP Out") })
+                    {
+                        string name = $"{NewIpPrefix}{ip} ({suffix})";
+                        dynamic existing = FindRule(fwPolicy, name);
+                        if (existing != null)
+                        {
+                            try { existing.Description = description; updated++; } catch { }
+                            continue;
+                        }
+                        dynamic rule = Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FWRule"));
+                        rule.Action = 0; rule.Direction = 2; rule.Enabled = true;
+                        rule.InterfaceTypes = "All";
+                        rule.Name = name; rule.RemoteAddresses = ip; rule.Protocol = proto;
+                        rule.Description = description;
+                        fwPolicy.Rules.Add(rule);
+                        created++;
+                    }
+                }
+                catch (Exception ex) { throw new Exception($"Failed to add IP block: {ex.Message}", ex); }
+                return (created, updated);
+            });
+        }
+
+        /// <summary>Add a 1-rule (outbound) idempotent app block with full provenance.</summary>
+        public Task<(int created, int updated)> AddAppBlockAsync(string appPath, string description)
+        {
+            return Task.Run(() =>
+            {
+                int created = 0, updated = 0;
+                try
+                {
+                    dynamic fwPolicy = GetPolicy();
+                    string name = $"{NewAppPrefix}{System.IO.Path.GetFileName(appPath)} (Out)";
+                    dynamic existing = FindRule(fwPolicy, name);
+                    if (existing != null)
+                    {
+                        try { existing.Description = description; updated++; } catch { }
+                        return (0, 1);
+                    }
+                    dynamic rule = Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FWRule"));
+                    rule.Action = 0; rule.Direction = 2; rule.Enabled = true;
+                    rule.InterfaceTypes = "All";
+                    rule.Name = name; rule.ApplicationName = appPath;
+                    rule.Description = description;
+                    fwPolicy.Rules.Add(rule);
+                    created = 1;
+                }
+                catch (Exception ex) { throw new Exception($"Failed to add app block: {ex.Message}", ex); }
+                return (created, updated);
+            });
+        }
+
+        /// <summary>
+        /// Emergency internet restore / re-enable. With skipRisky=true, rules
+        /// targeting Microsoft/CDN infrastructure or Windows components are left
+        /// in their current state — that's the "restore everything except the
+        /// problematic ones" path after a panic disable.
+        /// </summary>
+        public Task<FleetToggleResult> SetAllAutoCommandBlocksEnabledAsync(bool enabled, bool skipRisky = false)
+        {
+            return Task.Run(() =>
+            {
+                var result = new FleetToggleResult();
+                try
+                {
+                    dynamic fwPolicy = GetPolicy();
+                    foreach (dynamic rule in fwPolicy.Rules)
+                    {
+                        if (!IsOurBlock(rule, out string name)) continue;
+                        if (skipRisky && enabled && IsRiskyRule(name, rule))
+                        {
+                            result.SkippedRisky++;
+                            continue;
+                        }
+                        result.Matched++;
+                        try
+                        {
+                            bool was = (bool)rule.Enabled;
+                            rule.Enabled = enabled;
+                            if (was != enabled) result.Changed++;
+                        }
+                        catch (Exception ex) { if (result.FirstError == null) result.FirstError = ex.Message; }
+                    }
+                }
+                catch (Exception ex) { result.FirstError = ex.Message; }
+                return result;
+            });
+        }
+
+        /// <summary>Inventory of all AutoCommand block rules, grouped per target, classified.</summary>
+        public Task<List<BlockedTarget>> GetBlockedInventoryAsync()
+        {
+            return Task.Run(() =>
+            {
+                var byKey = new Dictionary<string, BlockedTarget>(StringComparer.OrdinalIgnoreCase);
+                try
+                {
+                    dynamic fwPolicy = GetPolicy();
+                    foreach (dynamic rule in fwPolicy.Rules)
+                    {
+                        if (!IsOurBlock(rule, out string name)) continue;
+                        try
+                        {
+                            string desc = rule.Description ?? "";
+                            bool enabled = (bool)rule.Enabled;
+                            string app = rule.ApplicationName ?? "";
+
+                            BlockedTarget t = null;
+                            if (name.StartsWith(NewIpPrefix, StringComparison.OrdinalIgnoreCase) ||
+                                name.StartsWith(LegacyIpPrefix[0], StringComparison.OrdinalIgnoreCase))
+                            {
+                                string ip = ParseIpTarget(name);
+                                string key = "ip:" + ip;
+                                if (!byKey.TryGetValue(key, out t))
+                                    byKey[key] = t = new BlockedTarget
+                                    {
+                                        Kind = "ip", Key = key, Ip = ip, Target = ip,
+                                        Class = Services.IpClassifier.Classify(ip),
+                                    };
+                            }
+                            else
+                            {
+                                string path = !string.IsNullOrEmpty(app) ? app : name;
+                                string key = "app:" + path.ToLowerInvariant();
+                                if (!byKey.TryGetValue(key, out t))
+                                    byKey[key] = t = new BlockedTarget
+                                    {
+                                        Kind = "app", Key = key, AppPath = path,
+                                        Target = System.IO.Path.GetFileName(path),
+                                        Class = IsWindowsComponent(path) ? "Windows component ⚠" : "Application",
+                                    };
+                            }
+                            t.Rules++;
+                            if (enabled) t.EnabledRules++;
+                            if (string.IsNullOrEmpty(t.Description)) t.Description = desc;
+                            if (!t.Created.HasValue) t.Created = ParseBlockedTime(desc);
+                        }
+                        catch { }
+                    }
+                }
+                catch { }
+                return byKey.Values.OrderByDescending(t => t.Class).ThenBy(t => t.Target).ToList();
+            });
+        }
+
+        /// <summary>
+        /// One-click cleanup of the legacy 4-rules-per-IP sets: delete the
+        /// redundant inbound pair, rewrite the outbound pair under the v2
+        /// naming scheme (provenance preserved + migration marker).
+        /// </summary>
+        public Task<(int targets, int removedInbound, int migratedOutbound)> ConsolidateLegacyIpBlocksAsync()
+        {
+            return Task.Run(() =>
+            {
+                int targets = 0, removed = 0, migrated = 0;
+                try
+                {
+                    dynamic fwPolicy = GetPolicy();
+                    var legacy = new List<(string name, dynamic rule, string ip)>();
+                    foreach (dynamic rule in fwPolicy.Rules)
+                    {
+                        try
+                        {
+                            string name = (string)rule.Name ?? "";
+                            if ((int)rule.Action != 0 || !name.StartsWith(LegacyIpPrefix[0], StringComparison.OrdinalIgnoreCase)) continue;
+                            string ip = ParseIpTarget(name);
+                            legacy.Add((name, rule, ip));
+                        }
+                        catch { }
+                    }
+
+                    foreach (var ipGroup in legacy.GroupBy(x => x.ip))
+                    {
+                        targets++;
+                        foreach (var (name, rule, ip) in ipGroup)
+                        {
+                            if (name.Contains("Inbound"))
+                            {
+                                try { fwPolicy.Rules.Remove(name); removed++; } catch { }
+                            }
+                            else
+                            {
+                                // rewrite under v2 name: copy-create-remove (COM rename is unreliable)
+                                try
+                                {
+                                    string proto = name.Contains("UDP") ? "UDP" : "TCP";
+                                    string newName = $"{NewIpPrefix}{ip} ({proto} Out)";
+                                    if (FindRule(fwPolicy, newName) == null)
+                                    {
+                                        dynamic nr = Activator.CreateInstance(Type.GetTypeFromProgID("HNetCfg.FWRule"));
+                                        nr.Action = 0; nr.Direction = 2; nr.Enabled = true;
+                                        nr.InterfaceTypes = "All";
+                                        nr.Name = newName; nr.RemoteAddresses = ip;
+                                        nr.Protocol = name.Contains("UDP") ? 17 : 6;
+                                        nr.Description = (rule.Description ?? "") + " [migrated from AutoCommand legacy rule]";
+                                        fwPolicy.Rules.Add(nr);
+                                    }
+                                    fwPolicy.Rules.Remove(name);
+                                    migrated++;
+                                }
+                                catch { }
+                            }
+                        }
+                    }
+                }
+                catch { }
+                return (targets, removed, migrated);
+            });
+        }
+
+        /// <summary>Recent DROP hits per IP from the firewall log (empty when logging is off).</summary>
+        public static Dictionary<string, int> GetRecentBlockHits(int minutes)
+        {
+            var hits = new Dictionary<string, int>();
+            try
+            {
+                string log = Environment.SystemDirectory + @"\LogFiles\Firewall\pfirewall.log";
+                if (!System.IO.File.Exists(log)) return hits;
+                var cutoff = DateTime.Now.AddMinutes(-minutes);
+                foreach (var line in System.IO.File.ReadLines(log))
+                {
+                    // 2026-10-10  14:22:31  DROP  TCP  src  port  dst  port ...
+                    if (!line.Contains("DROP")) continue;
+                    var parts = line.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                    if (parts.Length < 2) continue;
+                    if (!DateTime.TryParse(parts[0] + " " + parts[1], out DateTime ts) || ts < cutoff) continue;
+                    foreach (var p in parts)
+                    {
+                        if (System.Net.IPAddress.TryParse(p, out _))
+                        {
+                            hits[p] = hits.TryGetValue(p, out int c) ? c + 1 : 1;
+                        }
+                    }
+                }
+            }
+            catch { }
+            return hits;
+        }
+
+        public static bool FirewallDropLoggingOn()
+        {
+            // INetFwPolicy2.FirewallProfile is a parameterized COM property — the
+            // .NET dynamic binder cannot dispatch it (verified: RuntimeBinderException),
+            // so detection reads the registry keys netsh/wf.msc write, with a
+            // log-file-existence fallback.
+            try
+            {
+                const string baseKey = @"SYSTEM\CurrentControlSet\Services\SharedAccess\Parameters\FirewallPolicy";
+                foreach (string profile in new[] { "DomainProfile", "StandardProfile", "PublicProfile" })
+                {
+                    using var k = Microsoft.Win32.Registry.LocalMachine.OpenSubKey($@"{baseKey}\{profile}\Logging");
+                    if (k?.GetValue("LogDroppedPackets") is int v && v == 1) return true;
+                }
+            }
+            catch { }
+            try { return System.IO.File.Exists(Environment.SystemDirectory + @"\LogFiles\Firewall\pfirewall.log"); }
+            catch { return false; }
+        }
+
+        /// <summary>
+        /// Enable/disable "log dropped packets" on all profiles via the documented
+        /// netsh CLI (needs the app's elevated context). Returns null on success,
+        /// otherwise the netsh output/error.
+        /// </summary>
+        public static string SetDropLogging(bool enable)
+        {
+            try
+            {
+                var psi = new System.Diagnostics.ProcessStartInfo("netsh",
+                    $"advfirewall set allprofiles logging droppedconnections {(enable ? "enable" : "disable")}")
+                {
+                    CreateNoWindow = true, UseShellExecute = false,
+                    RedirectStandardOutput = true, RedirectStandardError = true
+                };
+                using var p = System.Diagnostics.Process.Start(psi);
+                string output = (p.StandardOutput.ReadToEnd() + " " + p.StandardError.ReadToEnd()).Trim();
+                p.WaitForExit(10000);
+                return p.ExitCode == 0 ? null : $"netsh exit {p.ExitCode}: {output}";
+            }
+            catch (Exception ex) { return ex.Message; }
+        }
+
+        private static DateTime? ParseBlockedTime(string desc)
+        {
+            // v2 descriptions embed "[blocked 2026-10-10 14:22 UTC]"
+            int i = desc?.IndexOf("[blocked ") ?? -1;
+            if (i < 0) return null;
+            string s = desc.Substring(i + 9);
+            int j = s.IndexOf(']');
+            if (j > 0 && DateTime.TryParseExact(s.Substring(0, j).Replace(" UTC", ""), "yyyy-MM-dd HH:mm", null,
+                    System.Globalization.DateTimeStyles.AssumeUniversal, out DateTime t))
+                return t.ToLocalTime();
+            return null;
+        }
+
+        private static bool IsWindowsComponent(string path) =>
+            !string.IsNullOrEmpty(path) &&
+            path.StartsWith(Environment.SystemDirectory, StringComparison.OrdinalIgnoreCase);
 
         private static string DecodeProfile(int profiles)
         {

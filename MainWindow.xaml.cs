@@ -183,6 +183,66 @@ namespace AutoCommand
             base.OnClosed(e);
         }
 
+        // ── Emergency internet restore (panic button) ───────────────────────
+        //
+        // The #1 self-inflicted outage from Process Monitor blocking is blocking
+        // svchost/DNS or a Microsoft endpoint. This disables every AutoCommand-
+        // created block rule in one click — reversible, nothing deleted.
+
+        private async void RestoreInternetBtn_Click(object sender, RoutedEventArgs e)
+        {
+            var confirm = MessageBox.Show(
+                "Restore internet access?\n\n" +
+                "This DISABLES every firewall block rule AutoCommand created (IP and process\n" +
+                "blocks — including legacy ones). Nothing is deleted; re-enable all of them\n" +
+                "from Process Monitor → Blocked → Manage all.\n\n" +
+                "If this does not restore connectivity, the block came from another tool\n" +
+                "or a proxy/VPN — this button only touches AutoCommand rules.",
+                "🚑 Restore Internet", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+            if (confirm != MessageBoxResult.Yes) return;
+
+            RestoreInternetBtn.IsEnabled = false;
+            try
+            {
+                var result = await Services.FirewallService.Instance
+                    .SetAllAutoCommandBlocksEnabledAsync(false);
+
+                // A stale DNS cache keeps sites dead even after the block is
+                // lifted — flush it automatically so recovery is one click.
+                string dnsNote;
+                try
+                {
+                    var psi = new System.Diagnostics.ProcessStartInfo("ipconfig", "/flushdns")
+                    {
+                        CreateNoWindow = true,
+                        UseShellExecute = false,
+                        RedirectStandardOutput = true
+                    };
+                    using var p = System.Diagnostics.Process.Start(psi);
+                    p.StandardOutput.ReadToEnd();
+                    p.WaitForExit(5000);
+                    dnsNote = p.ExitCode == 0
+                        ? "The DNS cache was flushed automatically — no further steps needed."
+                        : $"ipconfig /flushdns returned exit code {p.ExitCode}; run it manually if sites still fail.";
+                }
+                catch (Exception ex)
+                {
+                    dnsNote = $"Could not flush DNS automatically ({ex.Message}); run  ipconfig /flushdns  manually.";
+                }
+
+                string extra = result.FirstError != null ? $"\nFirst error: {result.FirstError}" : "";
+                MessageBox.Show(
+                    $"Disabled {result.Changed} of {result.Matched} AutoCommand block rule(s).{extra}\n\n" +
+                    $"{dnsNote}\n\n" +
+                    "Restore options in Process Monitor → Blocked → Manage all:\n" +
+                    "  · 'Restore except Microsoft/Windows' — recommended: brings back your\n" +
+                    "    real blocks, leaves the breakage-causing ones (red rows) off\n" +
+                    "  · 'Re-enable all' — everything back on",
+                    "🚑 Restore Internet", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            finally { RestoreInternetBtn.IsEnabled = true; }
+        }
+
         // ── Tab-switch handler ───────────────────────────────────────────────
 
         private void MainTabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)

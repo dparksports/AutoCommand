@@ -73,6 +73,8 @@
                                 <TextBlock Text="Firewall blocks created from this monitor" Foreground="{StaticResource TextPrimaryBrush}" FontWeight="SemiBold" Margin="0,0,0,6"/>
                                 <ListBox x:Name="BlockedListBox" MaxHeight="200" MinHeight="34" Background="{StaticResource SurfaceBrush}" Foreground="{StaticResource TextPrimaryBrush}" BorderBrush="{StaticResource BorderBrush}" FontFamily="Consolas" FontSize="11"/>
                                 <Button Content="Unblock Selected" Click="UnblockBtn_Click" Margin="0,8,0,0" Padding="12,2" HorizontalAlignment="Left" Style="{StaticResource PrimaryButton}"/>
+                                <Button Content="🛠 Manage all (grouped, classified, bulk actions)…" Click="ManageBlockedBtn_Click" Margin="0,6,0,0" Padding="4,2" HorizontalAlignment="Left"
+                                        Background="Transparent" Foreground="#7EB8F7" BorderThickness="0" Cursor="Hand"/>
                             </StackPanel>
                         </Border>
                     </Popup>
@@ -136,6 +138,10 @@
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
+                <!-- Header-click sorting uses the DateTime (LastSeen), not the
+                     relative-time display string, which has no meaningful order. -->
+                <DataGridTextColumn Header="Last Update" Binding="{Binding LastSeenDisplay}"
+                                    SortMemberPath="LastSeen" Width="100"/>
                 <DataGridTextColumn Header="Remote IP"   Binding="{Binding RemoteIp}"        Width="120"/>
                 <!-- Host column: dims + italicises cells that are still resolving -->
                 <DataGridTemplateColumn Header="Host" Width="220">
@@ -162,10 +168,6 @@
                 <DataGridTextColumn Header="Tx Pkts"    Binding="{Binding TxPackets}"      Width="80"/>
                 <DataGridTextColumn Header="Rx Bytes"   Binding="{Binding RxBytesDisplay}" Width="90"/>
                 <DataGridTextColumn Header="Tx Bytes"   Binding="{Binding TxBytesDisplay}" Width="90"/>
-                <!-- Header-click sorting uses the DateTime (LastSeen), not the
-                     relative-time display string, which has no meaningful order. -->
-                <DataGridTextColumn Header="Last Packet" Binding="{Binding LastSeenDisplay}"
-                                    SortMemberPath="LastSeen" Width="100"/>
             </DataGrid.Columns>
         </DataGrid>
     </Grid>

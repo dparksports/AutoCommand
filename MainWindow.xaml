@@ -83,6 +83,16 @@
             <TabItem>
                 <TabItem.Header>
                     <StackPanel Width="160" Margin="0,10">
+                        <TextBlock Text="🔬" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                        <TextBlock Text="Svchost Trace" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <views:SvchostTraceView x:Name="SvchostTraceTab"/>
+            </TabItem>
+
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Width="160" Margin="0,10">
                         <TextBlock Text="📊" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,4"/>
                         <TextBlock Text="Telemetry" HorizontalAlignment="Center"/>
                     </StackPanel>
@@ -204,6 +214,10 @@
                     <Button x:Name="ReviewAlertBtn" Content="Review"
                             Style="{StaticResource PrimaryButton}" Padding="8,2" FontSize="10" Margin="8,0,0,0"
                             Visibility="Collapsed" Click="ReviewAlertBtn_Click"/>
+                    <Button x:Name="RestoreInternetBtn" Content="🚑 Restore Internet"
+                            Style="{StaticResource PrimaryButton}" Padding="8,2" FontSize="10" Margin="8,0,0,0"
+                            ToolTip="Blocked something and lost connectivity? Disables ALL AutoCommand-created firewall block rules at once. Fully reversible — nothing is deleted."
+                            Click="RestoreInternetBtn_Click"/>
                 </StackPanel>
 
                 <!-- Version -->
