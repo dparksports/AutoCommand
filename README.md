@@ -2,7 +2,7 @@
 
 ![AutoCommand](Assets/corp_banner.png)
 
-A free, open-source security and control dashboard for Windows 10 and 11. One administrator window answers every question that normally costs you an afternoon — *what is this process, who launched it, where is it connecting, how do I make it stop?* — as a row in a table, a colored card, or a single button.
+A free, open-source security and control dashboard for Windows 10 and 11. One administrator window answers every question that normally costs you an afternoon — *what is this process, who launched it, where is it connecting, how do I make it stop?* — as a row in a table, a colored card, or a single button, all in a deep-space dark UI with neon accents.
 
 > **⬇ Download** the latest self-contained build from the [**Releases page**](https://github.com/dparksports/autocommand-windows/releases) — no .NET required. Unzip, run `AutoCommand.exe` as Administrator.
 >
@@ -33,7 +33,7 @@ Windows spreads the answers across a dozen tools that don't talk to each other. 
 | 📦 **Bloatware** | 23 preinstalled apps removed in one sweep. Use one of them? Toggle it off the list — permanently. |
 | 🧭 **Sysmon Audit** | One status card + a live feed of every process launch with full command line and parent. Installed and configured from the app. |
 | 🔍 **Process Monitor** | Live grid of outbound connections with packet counters (no WinPcap needed), background reverse-DNS, and attribution that survives process exit. Block, kill, inspect — with warnings before you take out something Windows needs. |
-| 🔬 **Svchost Trace** | A timeline over the 70+ `svchost.exe` service hosts — spawns with parents, connection lifetimes, byte flows — plus a pattern detector: bad parents, respawn loops, beacon-regular connections, upload-dominant flows. Exports JSONL; drives a headless capture service with boot auto-start. |
+| 🔬 **Svchost Trace** | A timeline over the 70+ `svchost.exe` service hosts — spawns with parents, connection lifetimes, byte flows — plus a pattern detector: bad parents, respawn loops, beacon-regular connections, upload-dominant flows. Exports JSONL; drives a headless capture service with boot auto-start. The capture engine ships in the release zip (`tools\`), and older installs get a one-click SHA-256-verified auto-install. |
 | 📊 **Telemetry** | Known telemetry senders (Edge, Chrome, .NET CLI, VS Code, …), the vendor's own documented opt-out, previous value snapshotted, quiet verified via the DNS cache. |
 | 👁 **Privacy** | Microsoft's diagnostic task disabled, AutoCommand's own analytics opt-in, tamper-protection status visible. |
 | ❄ **Update Control** | Freeze self-updating apps at the version that works — `icacls` snapshots make unfreezing exact. Windows binaries are refused. |
@@ -48,7 +48,7 @@ Windows spreads the answers across a dozen tools that don't talk to each other. 
 Blocking is easy; *un*-blocking is where other tools strand you. AutoCommand:
 
 - **warns before you block** — Microsoft/CDN destinations and DNS-carrying service hosts are flagged with what will break;
-- **keeps rules self-describing** — 2 idempotent rules per target with full provenance in the description, readable from `wf.msc`;
+- **keeps rules self-describing** — 2 idempotent rules per target with full provenance in the description, readable from `wf.msc`; legacy `AutoCommand IP Block …` names **auto-migrate silently** to the clean scheme the first time you open the manager;
 - **groups every block in one manager** — Microsoft/Windows rows in red, bulk unblock, legacy 4-rules-per-IP consolidation, and hit counts from the firewall's own drop log (one click to enable);
 - **verifies unknown IPs for you** — one button asks the internet registries (RDAP) who owns each target, cached machine-wide;
 - **restores you from mistakes** — the status-bar 🚑 button disables every AutoCommand block and flushes DNS in one click; *Restore except Microsoft/Windows* brings your real blocks back while leaving only the breakage-causing ones off.
