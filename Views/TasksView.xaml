@@ -30,18 +30,18 @@
         <!-- Filter -->
         <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,12">
             <RadioButton x:Name="AllRadio" Content="All" 
-                         Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,16,0"
+                         Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,16,0"
                          Checked="FilterChanged"/>
             <RadioButton x:Name="RunningRadio" Content="Running" IsChecked="True"
-                         Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,16,0"
+                         Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,16,0"
                          Checked="FilterChanged"/>
             <RadioButton x:Name="ReadyRadio" Content="Ready" 
-                         Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,16,0"
+                         Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,16,0"
                          Checked="FilterChanged"/>
             <RadioButton x:Name="DisabledRadio" Content="Disabled" 
-                         Foreground="{StaticResource TextPrimaryBrush}"
+                         Foreground="{DynamicResource TextPrimaryBrush}"
                          Checked="FilterChanged"/>
-            <TextBlock x:Name="TaskCountText" Text="" Foreground="{StaticResource TextSecondaryBrush}" 
+            <TextBlock x:Name="TaskCountText" Text="" Foreground="{DynamicResource TextSecondaryBrush}" 
                        Margin="20,0,0,0" VerticalAlignment="Center" FontSize="11"/>
         </StackPanel>
 

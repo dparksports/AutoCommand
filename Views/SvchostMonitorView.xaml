@@ -20,7 +20,7 @@
             <StackPanel>
                 <TextBlock Text="Process Monitor" Style="{StaticResource PageHeader}"/>
                 <TextBlock Text="Native Sysmon Event ID 3 tracing + Raw Socket Packet Sniffer" 
-                           Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" Margin="0,-12,0,0"/>
+                           Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12" Margin="0,-12,0,0"/>
             </StackPanel>
             <StackPanel Grid.Column="2" Orientation="Horizontal">
                 <Button x:Name="SetupSysmonBtn" Content="🛠 Setup Sysmon" Style="{StaticResource PrimaryButton}" Click="SetupSysmonBtn_Click" Margin="0,0,8,0" Visibility="Collapsed"/>
@@ -30,27 +30,27 @@
         </Grid>
 
         <!-- Status -->
-        <Border Grid.Row="1" Background="{StaticResource SurfaceAltBrush}" CornerRadius="4" Padding="12,8" Margin="0,0,0,12">
+        <Border Grid.Row="1" Background="{DynamicResource SurfaceAltBrush}" CornerRadius="4" Padding="12,8" Margin="0,0,0,12">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-                <TextBlock x:Name="MonitorStatusText" Text="Monitor is stopped." Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center"/>
+                <TextBlock x:Name="MonitorStatusText" Text="Monitor is stopped." Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center"/>
                 <!-- DNS cache counter chip -->
                 <Border Grid.Column="1" Background="#1A4A8A" CornerRadius="10" Padding="10,3" Margin="0,0,12,0" VerticalAlignment="Center">
                     <TextBlock x:Name="DnsCacheChip" Text="DNS cache: 0 entries"
                                Foreground="#7EB8F7" FontSize="11" FontFamily="Consolas"/>
                 </Border>
                 <StackPanel Grid.Column="2" Orientation="Horizontal">
-                    <CheckBox x:Name="HideCloudCheck" Content="Hide Known/Cloud IPs" IsChecked="False" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center" Margin="0,0,12,0" Checked="Filter_Changed" Unchecked="Filter_Changed"/>
-                    <TextBlock Text="Add Process:" VerticalAlignment="Center" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,8,0"/>
-                    <TextBox x:Name="NewProcessBox" Width="150" Padding="4" Background="{StaticResource SurfaceBrush}" Foreground="{StaticResource TextPrimaryBrush}" BorderBrush="{StaticResource BorderBrush}"/>
+                    <CheckBox x:Name="HideCloudCheck" Content="Hide Known/Cloud IPs" IsChecked="False" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center" Margin="0,0,12,0" Checked="Filter_Changed" Unchecked="Filter_Changed"/>
+                    <TextBlock Text="Add Process:" VerticalAlignment="Center" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,8,0"/>
+                    <TextBox x:Name="NewProcessBox" Width="150" Padding="4" Background="{DynamicResource SurfaceBrush}" Foreground="{DynamicResource TextPrimaryBrush}" BorderBrush="{DynamicResource BorderBrush}"/>
                     <Button Content="Add" Click="AddProcessBtn_Click" Margin="8,0,0,0" Padding="12,2" Style="{StaticResource PrimaryButton}"/>
-                    <TextBlock Text="Ignore Process:" VerticalAlignment="Center" Foreground="{StaticResource TextSecondaryBrush}" Margin="16,0,8,0"
+                    <TextBlock Text="Ignore Process:" VerticalAlignment="Center" Foreground="{DynamicResource TextSecondaryBrush}" Margin="16,0,8,0"
                                ToolTip="Connections from ignored processes never appear in the list"/>
-                    <TextBox x:Name="IgnoreProcessBox" Width="130" Padding="4" Background="{StaticResource SurfaceBrush}" Foreground="{StaticResource TextPrimaryBrush}" BorderBrush="{StaticResource BorderBrush}"
+                    <TextBox x:Name="IgnoreProcessBox" Width="130" Padding="4" Background="{DynamicResource SurfaceBrush}" Foreground="{DynamicResource TextPrimaryBrush}" BorderBrush="{DynamicResource BorderBrush}"
                              ToolTip="Process name to hide from the list, e.g. chrome or chrome.exe" KeyDown="IgnoreProcessBox_KeyDown"/>
                     <Button x:Name="IgnoreProcessBtn" Content="Ignore" Click="IgnoreProcessBtn_Click" Margin="8,0,0,0" Padding="12,2" Style="{StaticResource PrimaryButton}"/>
                     <Button x:Name="IgnoredListBtn" Content="Ignored: 0" Click="IgnoredListBtn_Click" Margin="8,0,0,0" Padding="10,2" FontSize="11"
@@ -68,10 +68,10 @@
                         </Button.Resources>
                     </Button>
                     <Popup x:Name="BlockedListPopup" PlacementTarget="{Binding ElementName=BlockedListBtn}" Placement="Bottom" StaysOpen="False">
-                        <Border Background="#0B101E" BorderBrush="#1E3A5F" BorderThickness="1" CornerRadius="4" Padding="10" MinWidth="340" Margin="0,4,0,0">
+                        <Border Background="{DynamicResource SurfaceAltBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="4" Padding="10" MinWidth="340" Margin="0,4,0,0">
                             <StackPanel>
-                                <TextBlock Text="Firewall blocks created from this monitor" Foreground="{StaticResource TextPrimaryBrush}" FontWeight="SemiBold" Margin="0,0,0,6"/>
-                                <ListBox x:Name="BlockedListBox" MaxHeight="200" MinHeight="34" Background="{StaticResource SurfaceBrush}" Foreground="{StaticResource TextPrimaryBrush}" BorderBrush="{StaticResource BorderBrush}" FontFamily="Consolas" FontSize="11"/>
+                                <TextBlock Text="Firewall blocks created from this monitor" Foreground="{DynamicResource TextPrimaryBrush}" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                                <ListBox x:Name="BlockedListBox" MaxHeight="200" MinHeight="34" Background="{DynamicResource SurfaceBrush}" Foreground="{DynamicResource TextPrimaryBrush}" BorderBrush="{DynamicResource BorderBrush}" FontFamily="Consolas" FontSize="11"/>
                                 <Button Content="Unblock Selected" Click="UnblockBtn_Click" Margin="0,8,0,0" Padding="12,2" HorizontalAlignment="Left" Style="{StaticResource PrimaryButton}"/>
                                 <Button Content="🛠 Manage all (grouped, classified, bulk actions)…" Click="ManageBlockedBtn_Click" Margin="0,6,0,0" Padding="4,2" HorizontalAlignment="Left"
                                         Background="Transparent" Foreground="#7EB8F7" BorderThickness="0" Cursor="Hand"/>
@@ -79,10 +79,10 @@
                         </Border>
                     </Popup>
                     <Popup x:Name="IgnoredListPopup" PlacementTarget="{Binding ElementName=IgnoredListBtn}" Placement="Bottom" StaysOpen="False">
-                        <Border Background="#0B101E" BorderBrush="#1E3A5F" BorderThickness="1" CornerRadius="4" Padding="10" MinWidth="260" Margin="0,4,0,0">
+                        <Border Background="{DynamicResource SurfaceAltBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="4" Padding="10" MinWidth="260" Margin="0,4,0,0">
                             <StackPanel>
-                                <TextBlock Text="Ignored processes" Foreground="{StaticResource TextPrimaryBrush}" FontWeight="SemiBold" Margin="0,0,0,6"/>
-                                <ListBox x:Name="IgnoredListBox" MaxHeight="200" MinHeight="34" Background="{StaticResource SurfaceBrush}" Foreground="{StaticResource TextPrimaryBrush}" BorderBrush="{StaticResource BorderBrush}" FontFamily="Consolas" FontSize="11"/>
+                                <TextBlock Text="Ignored processes" Foreground="{DynamicResource TextPrimaryBrush}" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                                <ListBox x:Name="IgnoredListBox" MaxHeight="200" MinHeight="34" Background="{DynamicResource SurfaceBrush}" Foreground="{DynamicResource TextPrimaryBrush}" BorderBrush="{DynamicResource BorderBrush}" FontFamily="Consolas" FontSize="11"/>
                                 <Button Content="Remove Selected" Click="RemoveIgnoredBtn_Click" Margin="0,8,0,0" Padding="12,2" HorizontalAlignment="Left" Style="{StaticResource PrimaryButton}"/>
                             </StackPanel>
                         </Border>
@@ -152,11 +152,11 @@
                             <TextBlock Text="{Binding HostnameDisplay}">
                                 <TextBlock.Style>
                                     <Style TargetType="TextBlock">
-                                        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+                                        <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
                                         <Setter Property="FontStyle"  Value="Normal"/>
                                         <Style.Triggers>
                                             <DataTrigger Binding="{Binding IsResolved}" Value="False">
-                                                <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+                                                <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
                                                 <Setter Property="FontStyle"  Value="Italic"/>
                                             </DataTrigger>
                                         </Style.Triggers>

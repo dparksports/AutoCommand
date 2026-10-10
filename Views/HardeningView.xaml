@@ -31,9 +31,9 @@
                         <StackPanel>
                             <TextBlock Text="Local Security Authority (LSA) Protection" FontSize="14" FontWeight="SemiBold"/>
                             <TextBlock Text="RunAsPPL protects LSASS.exe from memory dumping tools like Mimikatz." 
-                                       Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" Margin="0,4,0,0"/>
+                                       Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" Margin="0,4,0,0"/>
                             <TextBlock x:Name="LsaStatusText" Text="Checking..." 
-                                       Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" Margin="0,8,0,0"/>
+                                       Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12" Margin="0,8,0,0"/>
                         </StackPanel>
                         <StackPanel Grid.Column="1" Orientation="Horizontal">
                             <Button Content="Disable" Margin="0,0,8,0"
@@ -54,9 +54,9 @@
                         <StackPanel>
                             <TextBlock Text="UAC Maximum Strictness" FontSize="14" FontWeight="SemiBold"/>
                             <TextBlock Text="Requires explicit consent for all administrative actions (ConsentPromptBehaviorAdmin=2)." 
-                                       Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" Margin="0,4,0,0"/>
+                                       Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" Margin="0,4,0,0"/>
                             <TextBlock x:Name="UacStatusText" Text="Checking..." 
-                                       Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" Margin="0,8,0,0"/>
+                                       Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12" Margin="0,8,0,0"/>
                         </StackPanel>
                         <StackPanel Grid.Column="1" Orientation="Horizontal">
                             <Button Content="Relax UAC" Margin="0,0,8,0"
@@ -82,16 +82,16 @@
                             <StackPanel>
                                 <TextBlock Text="Hosts File Integrity" FontSize="14" FontWeight="SemiBold"/>
                                 <TextBlock Text="C:\Windows\System32\drivers\etc\hosts — often modified by malware for silent redirects." 
-                                           Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" Margin="0,4,0,0"/>
+                                           Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" Margin="0,4,0,0"/>
                                 <TextBlock x:Name="HostsStatusText" Text="Checking..." 
-                                           Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" Margin="0,8,0,12"/>
+                                           Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12" Margin="0,8,0,12"/>
                             </StackPanel>
                             <Button Grid.Column="1" Content="Reset to Default" VerticalAlignment="Top"
                                     Style="{StaticResource DangerButton}" Click="HostsResetBtn_Click"/>
                         </Grid>
                         
                         <TextBox Grid.Row="1" x:Name="HostsContentBox" IsReadOnly="True" TextWrapping="Wrap"
-                                 Background="{StaticResource SurfaceAltBrush}" Foreground="{StaticResource TextPrimaryBrush}"
+                                 Background="{DynamicResource SurfaceAltBrush}" Foreground="{DynamicResource TextPrimaryBrush}"
                                  BorderThickness="0" FontFamily="Consolas" FontSize="11"
                                  MaxHeight="200" VerticalScrollBarVisibility="Auto" Padding="8"/>
                     </Grid>
@@ -107,9 +107,9 @@
                         <StackPanel>
                             <TextBlock Text="Disable IPv6 System-Wide" FontSize="14" FontWeight="SemiBold"/>
                             <TextBlock Text="Disables IPv6 on all network adapters to reduce attack surface (requires reboot)." 
-                                       Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" Margin="0,4,0,0"/>
+                                       Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" Margin="0,4,0,0"/>
                             <TextBlock x:Name="Ipv6StatusText" Text="Checking..." 
-                                       Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" Margin="0,8,0,0"/>
+                                       Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12" Margin="0,8,0,0"/>
                         </StackPanel>
                         <StackPanel Grid.Column="1" Orientation="Horizontal">
                             <Button Content="Enable IPv6" Margin="0,0,8,0"

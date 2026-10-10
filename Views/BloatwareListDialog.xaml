@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Manage Bloatware List" Width="720" Height="660" MinWidth="600" MinHeight="500"
         WindowStartupLocation="CenterOwner"
-        Background="{StaticResource SurfaceBrush}">
+        Background="{DynamicResource SurfaceBrush}">
     <Grid Margin="16">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -12,7 +12,7 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <TextBlock Grid.Row="0" TextWrapping="Wrap" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" Margin="0,0,0,10"
+        <TextBlock Grid.Row="0" TextWrapping="Wrap" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12" Margin="0,0,0,10"
                    Text="Changes apply immediately and are saved to C:\ProgramData\AutoCommand\bloatware_config.json (machine-wide). Defaults shipped in future app updates stay in force unless disabled here."/>
 
         <Grid Grid.Row="1">
@@ -29,13 +29,13 @@
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
                     <TextBlock Text="Default bloatware list" FontWeight="Bold"
-                               Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,6"/>
+                               Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,6"/>
                     <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
                         <ItemsControl x:Name="DefaultsList">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
                                     <CheckBox Content="{Binding Label}" IsChecked="{Binding IsEnabled}"
-                                              Foreground="{StaticResource TextPrimaryBrush}" Margin="0,3,0,3"
+                                              Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,3,0,3"
                                               Checked="DefaultCheck_Changed" Unchecked="DefaultCheck_Changed"
                                               ToolTip="{Binding Pattern}"/>
                                 </DataTemplate>
@@ -60,22 +60,22 @@
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
                         <TextBlock Text="Custom apps (exact package names)" FontWeight="Bold"
-                                   Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,6"/>
+                                   Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,6"/>
                         <Grid Grid.Row="1" Margin="0,0,0,6">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <TextBox x:Name="NewPackageBox" Padding="4"
-                                     Background="{StaticResource SurfaceBrush}" Foreground="{StaticResource TextPrimaryBrush}"
-                                     BorderBrush="{StaticResource BorderBrush}" FontFamily="Consolas" FontSize="11"
+                                     Background="{DynamicResource SurfaceBrush}" Foreground="{DynamicResource TextPrimaryBrush}"
+                                     BorderBrush="{DynamicResource BorderBrush}" FontFamily="Consolas" FontSize="11"
                                      KeyDown="NewPackageBox_KeyDown"/>
                             <Button Grid.Column="1" Content="Add" Margin="6,0,0,0" Padding="12,2"
                                     Style="{StaticResource PrimaryButton}" Click="AddCustomPackageBtn_Click"/>
                         </Grid>
                         <ListBox x:Name="CustomPackagesList" Grid.Row="2" MinHeight="60"
-                                 Background="{StaticResource SurfaceBrush}" Foreground="{StaticResource TextPrimaryBrush}"
-                                 BorderBrush="{StaticResource BorderBrush}" FontFamily="Consolas" FontSize="11"
+                                 Background="{DynamicResource SurfaceBrush}" Foreground="{DynamicResource TextPrimaryBrush}"
+                                 BorderBrush="{DynamicResource BorderBrush}" FontFamily="Consolas" FontSize="11"
                                  ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                             <ListBox.ItemTemplate>
                                 <DataTemplate>
@@ -99,24 +99,24 @@
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
                         <TextBlock Text="Custom patterns (advanced — substring match)" FontWeight="Bold"
-                                   Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,2"/>
+                                   Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,2"/>
                         <TextBlock Grid.Row="1" Text="A pattern matches any package whose name or display name contains it. Prefer exact apps; use Preview below to check what a pattern would catch."
-                                   TextWrapping="Wrap" Foreground="{StaticResource TextSecondaryBrush}" FontSize="10" Margin="0,0,0,6"/>
+                                   TextWrapping="Wrap" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="10" Margin="0,0,0,6"/>
                         <Grid Grid.Row="2" Margin="0,0,0,6">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <TextBox x:Name="NewPatternBox" Padding="4"
-                                     Background="{StaticResource SurfaceBrush}" Foreground="{StaticResource TextPrimaryBrush}"
-                                     BorderBrush="{StaticResource BorderBrush}" FontFamily="Consolas" FontSize="11"
+                                     Background="{DynamicResource SurfaceBrush}" Foreground="{DynamicResource TextPrimaryBrush}"
+                                     BorderBrush="{DynamicResource BorderBrush}" FontFamily="Consolas" FontSize="11"
                                      KeyDown="NewPatternBox_KeyDown"/>
                             <Button Grid.Column="1" Content="Add" Margin="6,0,0,0" Padding="12,2"
                                     Style="{StaticResource PrimaryButton}" Click="AddCustomPatternBtn_Click"/>
                         </Grid>
                         <ListBox x:Name="CustomPatternsList" Grid.Row="3" MinHeight="40"
-                                 Background="{StaticResource SurfaceBrush}" Foreground="{StaticResource TextPrimaryBrush}"
-                                 BorderBrush="{StaticResource BorderBrush}" FontFamily="Consolas" FontSize="11">
+                                 Background="{DynamicResource SurfaceBrush}" Foreground="{DynamicResource TextPrimaryBrush}"
+                                 BorderBrush="{DynamicResource BorderBrush}" FontFamily="Consolas" FontSize="11">
                             <ListBox.ItemTemplate>
                                 <DataTemplate>
                                     <DockPanel>
@@ -143,12 +143,12 @@
                     <Button x:Name="PreviewBtn" Content="🔍 Preview matches" Padding="12,2"
                             Style="{StaticResource PrimaryButton}" Click="PreviewBtn_Click"/>
                     <TextBlock x:Name="PreviewCountText" Text="See exactly what the current list would remove."
-                               Foreground="{StaticResource TextSecondaryBrush}" FontSize="11"
+                               Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11"
                                Margin="12,0,0,0" VerticalAlignment="Center"/>
                 </StackPanel>
                 <ListBox x:Name="PreviewList" Grid.Row="1" Height="110" Margin="0,8,0,0"
-                         Background="{StaticResource SurfaceBrush}" Foreground="{StaticResource TextPrimaryBrush}"
-                         BorderBrush="{StaticResource BorderBrush}" FontFamily="Consolas" FontSize="11"
+                         Background="{DynamicResource SurfaceBrush}" Foreground="{DynamicResource TextPrimaryBrush}"
+                         BorderBrush="{DynamicResource BorderBrush}" FontFamily="Consolas" FontSize="11"
                          ScrollViewer.HorizontalScrollBarVisibility="Disabled"/>
             </Grid>
         </Border>

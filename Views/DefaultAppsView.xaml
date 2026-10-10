@@ -34,16 +34,16 @@
                             ToolTip="Customize which apps count as bloatware: enable/disable defaults, add your own."/>
                 </StackPanel>
                 <TextBlock Text="The Store-packaged apps Windows Settings shows under Apps → Installed apps — apps you can uninstall (Outlook, Teams, Copilot, …). Win32 desktop apps such as OneDrive are only targeted by Remove Bloatware."
-                           Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" Margin="0,6,0,0"/>
+                           Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12" Margin="0,6,0,0"/>
             </StackPanel>
         </Grid>
 
         <!-- View Filter -->
         <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,12">
             <CheckBox x:Name="SystemComponentsCheck" Content="Include system components (OS-signed)"
-                      Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center"
+                      Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center"
                       Checked="FilterChanged" Unchecked="FilterChanged"/>
-            <TextBlock x:Name="AppCountText" Text="" Foreground="{StaticResource TextSecondaryBrush}"
+            <TextBlock x:Name="AppCountText" Text="" Foreground="{DynamicResource TextSecondaryBrush}"
                        Margin="20,0,0,0" VerticalAlignment="Center" FontSize="11"/>
         </StackPanel>
 
@@ -57,22 +57,22 @@
                         <Style TargetType="TextBlock">
                             <Style.Triggers>
                                 <Trigger Property="Text" Value="Valid (Store)">
-                                    <Setter Property="Foreground" Value="{StaticResource AccentGreenBrush}"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource AccentGreenBrush}"/>
                                 </Trigger>
                                 <Trigger Property="Text" Value="Valid (Enterprise)">
-                                    <Setter Property="Foreground" Value="{StaticResource AccentGreenBrush}"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource AccentGreenBrush}"/>
                                 </Trigger>
                                 <Trigger Property="Text" Value="System component">
-                                    <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
                                 </Trigger>
                                 <Trigger Property="Text" Value="Developer-signed">
-                                    <Setter Property="Foreground" Value="{StaticResource AccentAmberBrush}"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource AccentAmberBrush}"/>
                                 </Trigger>
                                 <Trigger Property="Text" Value="Unsigned">
-                                    <Setter Property="Foreground" Value="{StaticResource AccentRedBrush}"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource AccentRedBrush}"/>
                                 </Trigger>
                                 <Trigger Property="Text" Value="Invalid/Error">
-                                    <Setter Property="Foreground" Value="{StaticResource AccentRedBrush}"/>
+                                    <Setter Property="Foreground" Value="{DynamicResource AccentRedBrush}"/>
                                 </Trigger>
                             </Style.Triggers>
                         </Style>
@@ -114,7 +114,7 @@
         <!-- Footer Info -->
         <Border Grid.Row="3" Margin="0,16,0,0" Style="{StaticResource CardPanel}" Padding="12">
             <TextBlock Text="Note: Removing system-critical apps may cause instability. Use with caution. Signature status reflects the package's deployment-validated signature kind (Store / Enterprise signatures are valid); the signer is taken from the package publisher."
-                       Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" TextWrapping="Wrap"/>
+                       Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" TextWrapping="Wrap"/>
         </Border>
     </Grid>
 </UserControl>

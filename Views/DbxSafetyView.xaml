@@ -34,7 +34,7 @@
                     <StackPanel>
                         <TextBlock Text="EFI PARTITION" Style="{StaticResource SectionHeader}"/>
                         <TextBlock x:Name="EfiStatusText" Text="Not checked" 
-                                   Foreground="{StaticResource TextSecondaryBrush}"/>
+                                   Foreground="{DynamicResource TextSecondaryBrush}"/>
                     </StackPanel>
                 </Border>
 
@@ -43,7 +43,7 @@
                     <StackPanel>
                         <TextBlock Text="INTEGRITY BASELINE" Style="{StaticResource SectionHeader}"/>
                         <TextBlock x:Name="BaselineStatusText" Text="Not checked" 
-                                   Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap"/>
+                                   Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap"/>
                     </StackPanel>
                 </Border>
 
@@ -52,7 +52,7 @@
                     <StackPanel>
                         <TextBlock Text="AUTHENTICODE VERIFICATION" Style="{StaticResource SectionHeader}"/>
                         <TextBlock x:Name="SigcheckStatusText" Text="Not checked" 
-                                   Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap"/>
+                                   Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap"/>
                     </StackPanel>
                 </Border>
 
@@ -61,7 +61,7 @@
                     <StackPanel>
                         <TextBlock Text="DBX REVOCATION CHECK" Style="{StaticResource SectionHeader}"/>
                         <TextBlock x:Name="DbxStatusText" Text="Not checked" 
-                                   Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap"/>
+                                   Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap"/>
                     </StackPanel>
                 </Border>
 
@@ -75,7 +75,7 @@
                         <StackPanel>
                             <TextBlock Text="DBX UPDATE" Style="{StaticResource SectionHeader}"/>
                             <TextBlock x:Name="DbxUpdateStatusText" Text="Download the latest DBX update from Microsoft"
-                                       Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap"/>
+                                       Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap"/>
                         </StackPanel>
                         <StackPanel Grid.Column="1" Orientation="Horizontal">
                             <Button x:Name="DownloadDbxBtn" Content="Download" Margin="0,0,8,0"
@@ -91,7 +91,7 @@
                     <StackPanel>
                         <TextBlock Text="DETAILED LOG" Style="{StaticResource SectionHeader}"/>
                         <TextBox x:Name="LogOutput" IsReadOnly="True" TextWrapping="Wrap"
-                                 Background="{StaticResource SurfaceAltBrush}" Foreground="{StaticResource TextPrimaryBrush}"
+                                 Background="{DynamicResource SurfaceAltBrush}" Foreground="{DynamicResource TextPrimaryBrush}"
                                  BorderThickness="0" FontFamily="Consolas" FontSize="11"
                                  MaxHeight="300" VerticalScrollBarVisibility="Auto" Padding="8"/>
                     </StackPanel>

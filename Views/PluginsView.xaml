@@ -47,11 +47,11 @@
         <Border Grid.Row="2" Margin="0,16,0,0" Style="{StaticResource CardPanel}" Padding="12" 
                 x:Name="CompileErrorsPanel" Visibility="Collapsed">
             <StackPanel>
-                <TextBlock Text="Source Compilation Errors" FontWeight="SemiBold" Foreground="{StaticResource AccentRedBrush}" Margin="0,0,0,4"/>
+                <TextBlock Text="Source Compilation Errors" FontWeight="SemiBold" Foreground="{DynamicResource AccentRedBrush}" Margin="0,0,0,4"/>
                 <ItemsControl x:Name="ErrorsList">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <TextBlock Text="{Binding}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" TextWrapping="Wrap" Margin="0,2"/>
+                            <TextBlock Text="{Binding}" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" TextWrapping="Wrap" Margin="0,2"/>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
@@ -63,9 +63,9 @@
             <StackPanel>
                 <TextBlock Text="Extensibility SDK" FontWeight="SemiBold" Margin="0,0,0,4"/>
                 <TextBlock Text="You can drop pre-compiled .dll files OR raw C# .cs files into the 'Plugins' folder." 
-                           Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" TextWrapping="Wrap"/>
+                           Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" TextWrapping="Wrap"/>
                 <TextBlock Text="The app uses Roslyn to dynamically compile and load your source code at runtime." 
-                           Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" Margin="0,4,0,0"/>
+                           Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" Margin="0,4,0,0"/>
             </StackPanel>
         </Border>
     </Grid>

@@ -55,6 +55,26 @@ namespace AutoCommand.Views
                 }
             }
             CheckRateCombo.SelectionChanged += CheckRateCombo_SelectionChanged;
+
+            // Load theme preference (Dark | Light)
+            ThemeCombo.SelectionChanged -= ThemeCombo_SelectionChanged;
+            foreach (var item in ThemeCombo.Items.OfType<ComboBoxItem>())
+            {
+                if (item.Tag is string tag && tag == ThemeService.Saved)
+                {
+                    item.IsSelected = true;
+                    break;
+                }
+            }
+            ThemeCombo.SelectionChanged += ThemeCombo_SelectionChanged;
+        }
+
+        private void ThemeCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (ThemeCombo.SelectedItem is ComboBoxItem item && item.Tag is string theme)
+            {
+                ThemeService.ApplyTheme(theme);
+            }
         }
 
         private void CheckRateCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)

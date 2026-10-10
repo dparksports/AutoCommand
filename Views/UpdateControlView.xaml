@@ -7,7 +7,7 @@
 
             <TextBlock Text="Update Control" Style="{StaticResource PageHeader}"/>
             <TextBlock Text="Some apps silently replace themselves in place (rename the old exe to .old, write a new one). Freezing an app adds an NTFS deny rule for delete/write on its exe: the app keeps running normally, but its updater fails until you unfreeze it. The original permissions are snapshotted first, so unfreezing restores exactly what was there."
-                       Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" Margin="0,4,0,16"/>
+                       Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap" Margin="0,4,0,16"/>
 
             <Border Style="{StaticResource CardPanel}">
                 <StackPanel>
@@ -21,7 +21,7 @@
                                 Padding="12,4" Click="DiscoverBtn_Click"/>
                     </Grid>
                     <TextBlock x:Name="StatusText" Text="Press Discover to scan for self-updating apps (self-update .old leftovers, updater folders, autostart updaters)."
-                               Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" Margin="0,0,0,8" TextWrapping="Wrap"/>
+                               Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" Margin="0,0,0,8" TextWrapping="Wrap"/>
                     <DataGrid x:Name="TargetsGrid" MinHeight="140" MaxHeight="380" AutoGenerateColumns="False" IsReadOnly="True">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="App" Binding="{Binding Name}" Width="150"/>

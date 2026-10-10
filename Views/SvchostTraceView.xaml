@@ -23,7 +23,7 @@
             <StackPanel>
                 <TextBlock Text="Svchost Trace &amp; Patterns" Style="{StaticResource PageHeader}"/>
                 <TextBlock Text="Spawn genealogy · connection timeline · destination classification · beacon detection"
-                           Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" Margin="0,-12,0,0"/>
+                           Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12" Margin="0,-12,0,0"/>
             </StackPanel>
             <StackPanel Grid.Column="2" Orientation="Horizontal">
                 <Button x:Name="StartTraceBtn" Content="▶ Start Trace" Style="{StaticResource PrimaryButton}" Click="StartTraceBtn_Click" Margin="0,0,8,0"/>
@@ -34,7 +34,7 @@
         </Grid>
 
         <!-- Status -->
-        <Border Grid.Row="1" Background="{StaticResource SurfaceAltBrush}" CornerRadius="4" Padding="12,8" Margin="0,0,0,12">
+        <Border Grid.Row="1" Background="{DynamicResource SurfaceAltBrush}" CornerRadius="4" Padding="12,8" Margin="0,0,0,12">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -42,7 +42,7 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <TextBlock x:Name="TraceStatusText" Text="Trace is stopped. Start to capture svchost spawns, connections and byte flows."
-                           Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center"/>
+                           Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center"/>
                 <Border Grid.Column="1" Background="#1A4A8A" CornerRadius="10" Padding="10,3" Margin="0,0,10,0" VerticalAlignment="Center">
                     <TextBlock x:Name="EventsChip" Text="events: 0" Foreground="#7EB8F7" FontSize="11" FontFamily="Consolas"/>
                 </Border>
@@ -54,7 +54,7 @@
 
         <!-- Capture service strip: start/stop the headless collector, toggle
              boot auto-start (per-user LIMITED scheduled task), analyze saved traces -->
-        <Border Grid.Row="2" Background="{StaticResource SurfaceAltBrush}" CornerRadius="4" Padding="12,8" Margin="0,0,0,12">
+        <Border Grid.Row="2" Background="{DynamicResource SurfaceAltBrush}" CornerRadius="4" Padding="12,8" Margin="0,0,0,12">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -64,16 +64,16 @@
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                     <Ellipse x:Name="CaptureDot" Width="8" Height="8" Fill="#6B7280" Margin="0,0,8,0" VerticalAlignment="Center"/>
                     <TextBlock x:Name="CaptureStatusText" Text="Capture: stopped · auto-start: off"
-                               Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,16,0"/>
+                               Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,16,0"/>
                     <Button x:Name="StartCaptureBtn" Content="▶ Start" Style="{StaticResource PrimaryButton}" Padding="10,2" Click="StartCaptureBtn_Click" Margin="0,0,8,0"/>
                     <Button x:Name="StopCaptureBtn" Content="⏹ Stop" Style="{StaticResource PrimaryButton}" Padding="10,2" Click="StopCaptureBtn_Click" Margin="0,0,16,0"/>
-                    <CheckBox x:Name="AutoStartToggle" Content="Auto-start on boot" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center" Margin="0,0,16,0"
+                    <CheckBox x:Name="AutoStartToggle" Content="Auto-start on boot" Foreground="{DynamicResource TextPrimaryBrush}" VerticalAlignment="Center" Margin="0,0,16,0"
                               Checked="AutoStartToggle_Changed" Unchecked="AutoStartToggle_Changed"
                               ToolTip="Starts the headless capture at logon via your user Run key (no admin needed). Off = remove the entry."/>
                     <Button Content="📂 Captures" Style="{StaticResource PrimaryButton}" Padding="10,2" Click="OpenFolderBtn_Click"/>
                 </StackPanel>
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                    <ComboBox x:Name="TracesCombo" Width="250" Background="{StaticResource SurfaceBrush}" Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,8,0"/>
+                    <ComboBox x:Name="TracesCombo" Width="250" Background="{DynamicResource SurfaceBrush}" Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,8,0"/>
                     <Button x:Name="AnalyzeFileBtn" Content="🔍 Analyze File" Style="{StaticResource PrimaryButton}" Padding="10,2" Click="AnalyzeFileBtn_Click"/>
                 </StackPanel>
             </Grid>
@@ -111,10 +111,10 @@
 
         <!-- Analysis report -->
         <GridSplitter Grid.Row="4" Height="6" HorizontalAlignment="Stretch" Background="Transparent"/>
-        <Border Grid.Row="5" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrush}"
+        <Border Grid.Row="5" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}"
                 BorderThickness="1" CornerRadius="4" Padding="8">
             <TextBox x:Name="AnalysisBox" IsReadOnly="True" BorderThickness="0" Background="Transparent"
-                     Foreground="{StaticResource TextPrimaryBrush}" FontFamily="Consolas" FontSize="11"
+                     Foreground="{DynamicResource TextPrimaryBrush}" FontFamily="Consolas" FontSize="11"
                      VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"
                      Text="Pattern analysis report appears here — press Analyze Patterns (auto-refreshes every 30s while tracing)."/>
         </Border>

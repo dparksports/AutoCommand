@@ -19,7 +19,7 @@
             <StackPanel>
                 <TextBlock Text="Startup Persistence Scanner" Style="{StaticResource PageHeader}"/>
                 <TextBlock Text="Scans registry Run keys and Startup folders for persistent binaries." 
-                           Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" Margin="0,-12,0,0"/>
+                           Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12" Margin="0,-12,0,0"/>
             </StackPanel>
             <StackPanel Grid.Column="2" Orientation="Horizontal">
                 <Button Content="↻ Refresh" Style="{StaticResource PrimaryButton}" Click="RefreshBtn_Click"/>

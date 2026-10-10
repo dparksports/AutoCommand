@@ -26,11 +26,11 @@
             <StackPanel>
                 <TextBlock Text="Advanced Firewall Settings" Style="{StaticResource PageHeader}" Margin="0,0,0,4"/>
                 <TextBlock Text="Manage Windows Defender Firewall profiles and port rules via native COM APIs." 
-                           Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" Margin="0,0,0,0"/>
+                           Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12" Margin="0,0,0,0"/>
             </StackPanel>
 
             <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                <TextBlock Text="Quick Profile:" Foreground="{StaticResource TextPrimaryBrush}" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                <TextBlock Text="Quick Profile:" Foreground="{DynamicResource TextPrimaryBrush}" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,8,0"/>
                 <ComboBox x:Name="ProfileCombo" Width="140" Margin="0,0,8,0" SelectionChanged="ProfileCombo_SelectionChanged">
                     <ComboBoxItem Content="Custom (Current)" IsSelected="True"/>
                     <ComboBoxItem Content="Shield Up"/>
@@ -46,12 +46,12 @@
         <!-- View Filter -->
         <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,12">
             <RadioButton x:Name="InboundRadio" Content="Inbound Rules" IsChecked="True" 
-                         Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,16,0"
+                         Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,16,0"
                          Checked="FilterChanged"/>
             <RadioButton x:Name="OutboundRadio" Content="Outbound Rules" 
-                         Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,16,0"
+                         Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,16,0"
                          Checked="FilterChanged"/>
-            <TextBlock x:Name="RuleCountText" Text="" Foreground="{StaticResource TextSecondaryBrush}"
+            <TextBlock x:Name="RuleCountText" Text="" Foreground="{DynamicResource TextSecondaryBrush}"
                        Margin="20,0,0,0" VerticalAlignment="Center" FontSize="11"/>
             <Button x:Name="RebaselineBtn" Content="📌 Re-baseline" Margin="16,0,0,0"
                     Style="{StaticResource PrimaryButton}" Click="RebaselineBtn_Click"
@@ -59,11 +59,11 @@
             <Button x:Name="PauseEnforcementBtn" Content="⏸ Pause auto-fix (15 min)" Margin="12,0,0,0"
                     Style="{StaticResource PrimaryButton}" Click="PauseEnforcementBtn_Click"
                     ToolTip="Suspend baseline enforcement for 15 minutes while you edit rules externally (wf.msc / netsh). Re-baseline afterwards to adopt your changes."/>
-            <TextBlock x:Name="BaselineStatusText" Text="" Foreground="{StaticResource TextSecondaryBrush}"
+            <TextBlock x:Name="BaselineStatusText" Text="" Foreground="{DynamicResource TextSecondaryBrush}"
                        Margin="12,0,0,0" VerticalAlignment="Center" FontSize="11"/>
             <ProgressBar x:Name="ProfileProgress" Width="120" Height="14" IsIndeterminate="True"
                          Visibility="Collapsed" Margin="16,0,0,0" VerticalAlignment="Center"/>
-            <TextBlock x:Name="ProfileStatusText" Text="" Foreground="{StaticResource TextSecondaryBrush}"
+            <TextBlock x:Name="ProfileStatusText" Text="" Foreground="{DynamicResource TextSecondaryBrush}"
                        FontStyle="Italic" FontSize="11" Margin="12,0,0,0" VerticalAlignment="Center"
                        TextTrimming="CharacterEllipsis"/>
         </StackPanel>
@@ -79,10 +79,10 @@
                                 <Setter.Value>
                                     <ControlTemplate TargetType="{x:Type GroupItem}">
                                         <Expander IsExpanded="{Binding Converter={StaticResource GroupSizeExpander}, Mode=OneWay}"
-                                                  Background="{StaticResource SurfaceAltBrush}"
-                                                  BorderBrush="{StaticResource BorderBrush}"
+                                                  Background="{DynamicResource SurfaceAltBrush}"
+                                                  BorderBrush="{DynamicResource BorderBrush}"
                                                   BorderThickness="1"
-                                                  Foreground="{StaticResource TextPrimaryBrush}">
+                                                  Foreground="{DynamicResource TextPrimaryBrush}">
                                             <Expander.Header>
                                                 <TextBlock FontWeight="SemiBold" FontSize="12" Padding="4"
                                                            Text="{Binding Name, StringFormat='{} {0}'}"/>

@@ -30,7 +30,7 @@
 
         <!-- Filter -->
         <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,12">
-            <TextBlock Text="Source:" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+            <TextBlock Text="Source:" Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center" Margin="0,0,8,0"/>
             <ComboBox x:Name="SourceCombo" Width="140" Margin="0,0,16,0" SelectionChanged="SourceChanged">
                 <ComboBoxItem Content="Polling (Live)" IsSelected="True"/>
                 <ComboBoxItem Content="Sysmon (Events)"/>
@@ -38,18 +38,18 @@
             </ComboBox>
 
             <RadioButton x:Name="AllRadio" Content="All" IsChecked="True" 
-                         Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,16,0"
+                         Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,16,0"
                          Checked="FilterChanged"/>
             <RadioButton x:Name="TcpRadio" Content="TCP Only" 
-                         Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,16,0"
+                         Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,16,0"
                          Checked="FilterChanged"/>
             <RadioButton x:Name="UdpRadio" Content="UDP Only" 
-                         Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,16,0"
+                         Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,16,0"
                          Checked="FilterChanged"/>
             <CheckBox x:Name="LiveViewCheck" Content="Auto-Refresh" 
-                      Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,16,0"
+                      Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,16,0"
                       Checked="LiveViewChanged" Unchecked="LiveViewChanged"/>
-            <TextBlock x:Name="ConnectionCountText" Text="" Foreground="{StaticResource TextSecondaryBrush}" 
+            <TextBlock x:Name="ConnectionCountText" Text="" Foreground="{DynamicResource TextSecondaryBrush}" 
                        Margin="20,0,0,0" VerticalAlignment="Center" FontSize="11"/>
         </StackPanel>
 
@@ -64,10 +64,10 @@
                                 <Setter.Value>
                                     <ControlTemplate TargetType="{x:Type GroupItem}">
                                         <Expander IsExpanded="{Binding Converter={StaticResource GroupSizeExpander}, Mode=OneWay}"
-                                                  Background="{StaticResource SurfaceAltBrush}"
-                                                  BorderBrush="{StaticResource BorderBrush}"
+                                                  Background="{DynamicResource SurfaceAltBrush}"
+                                                  BorderBrush="{DynamicResource BorderBrush}"
                                                   BorderThickness="1"
-                                                  Foreground="{StaticResource TextPrimaryBrush}">
+                                                  Foreground="{DynamicResource TextPrimaryBrush}">
                                             <Expander.Header>
                                                 <TextBlock FontWeight="SemiBold" FontSize="12" Padding="4"
                                                            Text="{Binding Name, StringFormat='{} {0}'}"/>
@@ -91,11 +91,11 @@
                             <TextBlock Text="{Binding RemoteHost}">
                                 <TextBlock.Style>
                                     <Style TargetType="TextBlock">
-                                        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+                                        <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
                                         <Setter Property="FontStyle"  Value="Normal"/>
                                         <Style.Triggers>
                                             <DataTrigger Binding="{Binding IsResolved}" Value="False">
-                                                <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+                                                <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
                                                 <Setter Property="FontStyle"  Value="Italic"/>
                                             </DataTrigger>
                                         </Style.Triggers>

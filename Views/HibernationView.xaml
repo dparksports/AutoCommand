@@ -18,10 +18,10 @@
                 <StackPanel>
                     <TextBlock Text="Hibernation" FontSize="14" FontWeight="SemiBold"/>
                     <TextBlock Text="Hibernate writes RAM to disk — creates hiberfile that can be forensically analyzed."
-                               Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" TextWrapping="Wrap"
+                               Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" TextWrapping="Wrap"
                                Margin="0,4,0,12"/>
 
-                    <Border Background="{StaticResource SurfaceAltBrush}" CornerRadius="4" Padding="12,8" Margin="0,0,0,12">
+                    <Border Background="{DynamicResource SurfaceAltBrush}" CornerRadius="4" Padding="12,8" Margin="0,0,0,12">
                         <TextBlock x:Name="HibernateStatusText" Text="Checking..." FontSize="12"/>
                     </Border>
 
@@ -38,9 +38,9 @@
             <Border Style="{StaticResource CardPanel}">
                 <StackPanel>
                     <TextBlock Text="Available Power States" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,8"/>
-                    <Border Background="{StaticResource SurfaceAltBrush}" CornerRadius="4" Padding="12,8">
+                    <Border Background="{DynamicResource SurfaceAltBrush}" CornerRadius="4" Padding="12,8">
                         <TextBlock x:Name="PowerStatesText" Text="Loading..." FontSize="11"
-                                   Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap"/>
+                                   Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap"/>
                     </Border>
                 </StackPanel>
             </Border>
@@ -50,7 +50,7 @@
                 <StackPanel>
                     <TextBlock Text="True Shutdown" FontSize="14" FontWeight="SemiBold"/>
                     <TextBlock Text="Performs a full shutdown (not hybrid). Clears RAM and all session state."
-                               Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" TextWrapping="Wrap"
+                               Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" TextWrapping="Wrap"
                                Margin="0,4,0,12"/>
                     <Button Content="⏻  True Shutdown Now" Style="{StaticResource DangerButton}"
                             Click="TrueShutdownBtn_Click" HorizontalAlignment="Left"/>

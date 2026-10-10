@@ -16,7 +16,7 @@
             <StackPanel>
                 <TextBlock Text="Quick Scan" Style="{StaticResource PageHeader}"/>
                 <TextBlock Text="Everything a fresh Windows 11 install needs, in one pass. Each step reuses the exact actions behind its dedicated page — the checklist doubles as a live status dashboard."
-                           Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" Margin="0,6,0,0"
+                           Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12" Margin="0,6,0,0"
                            TextWrapping="Wrap"/>
             </StackPanel>
         </Grid>
@@ -35,7 +35,7 @@
             <ProgressBar x:Name="OverallProgress" Grid.Column="1" Width="260" Height="16"
                          Minimum="0" Maximum="7" Value="0" Margin="16,0,0,0" VerticalAlignment="Center"/>
             <TextBlock x:Name="SetupStatusText" Grid.Column="2" Margin="14,0,0,0"
-                       Foreground="{StaticResource TextSecondaryBrush}" FontSize="11"
+                       Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11"
                        VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
                        Text="Ready. Press Apply to harden this machine in one pass."/>
         </Grid>
@@ -56,9 +56,9 @@
                                            Foreground="{Binding StatusBrush}" VerticalAlignment="Center"
                                            Margin="0,0,14,0" Width="24" TextAlignment="Center"/>
                                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                    <TextBlock Text="{Binding Title}" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}"/>
+                                    <TextBlock Text="{Binding Title}" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}"/>
                                     <TextBlock Text="{Binding Description}" FontSize="11"
-                                               Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" Margin="0,2,0,0"/>
+                                               Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap" Margin="0,2,0,0"/>
                                 </StackPanel>
                                 <TextBlock Grid.Column="2" Text="{Binding StatusText}" FontSize="11"
                                            Foreground="{Binding StatusBrush}" VerticalAlignment="Center"
@@ -73,7 +73,7 @@
         <!-- Footer -->
         <Border Grid.Row="3" Margin="0,14,0,0" Style="{StaticResource CardPanel}" Padding="12">
             <TextBlock Text="Note: device removals, firewall rules, IPv6 and UAC changes fully take effect after a reboot. The Security Enforcer keeps SSTP and kernel debug disabled between reboots."
-                       Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" TextWrapping="Wrap"/>
+                       Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" TextWrapping="Wrap"/>
         </Border>
     </Grid>
 </UserControl>

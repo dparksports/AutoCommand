@@ -8,6 +8,10 @@ namespace AutoCommand
         {
             base.OnStartup(e);
 
+            // Apply the saved theme before any window loads (brushes are
+            // DynamicResource, so this also re-themes live when changed later)
+            Services.ThemeService.ApplyTheme(Services.ThemeService.Saved);
+
             // Handle UI thread exceptions
             this.DispatcherUnhandledException += (s, args) =>
             {

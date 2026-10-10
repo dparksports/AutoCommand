@@ -32,9 +32,9 @@
                         <StackPanel>
                             <TextBlock Text="VPN Services" FontSize="14" FontWeight="SemiBold"/>
                             <TextBlock Text="RasMan, IKEEXT, PolicyAgent, RemoteAccess" 
-                                       Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" Margin="0,4,0,0"/>
+                                       Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" Margin="0,4,0,0"/>
                             <TextBlock x:Name="VpnStatusText" Text="Checking..." 
-                                       Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" Margin="0,8,0,0"/>
+                                       Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12" Margin="0,8,0,0"/>
                         </StackPanel>
                         <StackPanel Grid.Column="1" Orientation="Horizontal">
                             <Button x:Name="VpnDisableBtn" Content="Disable All" Margin="0,0,8,0"
@@ -55,9 +55,9 @@
                         <StackPanel>
                             <TextBlock Text="WiFi Direct Virtual Adapter" FontSize="14" FontWeight="SemiBold"/>
                             <TextBlock Text="Microsoft Virtual WiFi adapter — can create hidden hotspots" 
-                                       Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" Margin="0,4,0,0"/>
+                                       Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" Margin="0,4,0,0"/>
                             <TextBlock x:Name="WifiDirectStatusText" Text="Checking..." 
-                                       Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" Margin="0,8,0,0"/>
+                                       Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12" Margin="0,8,0,0"/>
                         </StackPanel>
                         <StackPanel Grid.Column="1" Orientation="Horizontal">
                             <Button Content="Disable" Margin="0,0,8,0"
@@ -78,9 +78,9 @@
                         <StackPanel>
                             <TextBlock Text="Kernel Debug Network" FontSize="14" FontWeight="SemiBold"/>
                             <TextBlock Text="KDNET — kernel-level remote debugger access" 
-                                       Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" Margin="0,4,0,0"/>
+                                       Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" Margin="0,4,0,0"/>
                             <TextBlock x:Name="KdnetStatusText" Text="Checking..." 
-                                       Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" Margin="0,8,0,0"/>
+                                       Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12" Margin="0,8,0,0"/>
                         </StackPanel>
                         <StackPanel Grid.Column="1" Orientation="Horizontal">
                             <Button Content="Disable" Margin="0,0,8,0"
@@ -101,9 +101,9 @@
                         <StackPanel>
                             <TextBlock Text="Usage Data &amp; Telemetry" FontSize="14" FontWeight="SemiBold"/>
                             <TextBlock Text="UsageDataReceiver scheduled task — sends telemetry to Microsoft" 
-                                       Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" Margin="0,4,0,0"/>
+                                       Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" Margin="0,4,0,0"/>
                             <TextBlock x:Name="UsageDataStatusText" Text="Checking..." 
-                                       Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" Margin="0,8,0,0"/>
+                                       Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12" Margin="0,8,0,0"/>
                         </StackPanel>
                         <StackPanel Grid.Column="1" Orientation="Horizontal">
                             <Button Content="Disable" Margin="0,0,8,0"
@@ -124,9 +124,9 @@
                         <StackPanel>
                             <TextBlock Text="Defender Tamper Protection" FontSize="14" FontWeight="SemiBold"/>
                             <TextBlock Text="Prevents unauthorized changes to Windows Defender settings" 
-                                       Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" Margin="0,4,0,0"/>
+                                       Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" Margin="0,4,0,0"/>
                             <TextBlock x:Name="TamperStatusText" Text="Checking..." 
-                                       Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" Margin="0,8,0,0"/>
+                                       Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12" Margin="0,8,0,0"/>
                         </StackPanel>
                         <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                             <Button x:Name="TamperEnableBtn" Content="Enable in Windows Security"

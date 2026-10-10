@@ -7,7 +7,7 @@
 
             <TextBlock Text="Telemetry Opt-Out" Style="{StaticResource PageHeader}"/>
             <TextBlock Text="Many installed apps and libraries phone home usage statistics by default. This tab knows the official opt-out switch for each one, shows whether it is currently on, and applies or reverts the setting with the previous value snapshotted — nothing here is a one-way door."
-                       Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" Margin="0,4,0,16"/>
+                       Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap" Margin="0,4,0,16"/>
 
             <Border Style="{StaticResource CardPanel}">
                 <StackPanel>
@@ -21,7 +21,7 @@
                                 Padding="12,4" Click="ScanBtn_Click"/>
                     </Grid>
                     <TextBlock x:Name="StatusText" Text="Scanning…"
-                               Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" Margin="0,0,0,8" TextWrapping="Wrap"/>
+                               Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" Margin="0,0,0,8" TextWrapping="Wrap"/>
                     <DataGrid x:Name="RulesGrid" MinHeight="160" MaxHeight="400" AutoGenerateColumns="False" IsReadOnly="True">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="App" Binding="{Binding AppName}" Width="170"/>
@@ -50,11 +50,11 @@
             <Border Style="{StaticResource CardPanel}">
                 <StackPanel>
                     <TextBlock Text="How this works" Style="{StaticResource SectionHeader}" Margin="0,0,0,6"/>
-                    <TextBlock TextWrapping="Wrap" Foreground="{StaticResource TextSecondaryBrush}">
+                    <TextBlock TextWrapping="Wrap" Foreground="{DynamicResource TextSecondaryBrush}">
                         <Run Text="Each entry applies the vendor's own documented opt-out (a settings key, environment variable or policy), not a firewall block. Changes are snapshotted to telemetry_state.json before they are made, so Revert puts back exactly what was there."/>
                     </TextBlock>
                     <TextBlock x:Name="DetailText" TextWrapping="Wrap" Margin="0,10,0,0"
-                               Foreground="{StaticResource TextSecondaryBrush}" FontSize="11"/>
+                               Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11"/>
                 </StackPanel>
             </Border>
 

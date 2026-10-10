@@ -54,7 +54,7 @@
                                 <StackPanel>
                                     <TextBlock Text="SSTP Service (sstpsvc)" FontWeight="SemiBold"/>
                                     <TextBlock x:Name="SstpStatusText" Text="Loading..." 
-                                               Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" Margin="0,2,0,0"/>
+                                               Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" Margin="0,2,0,0"/>
                                 </StackPanel>
                                 <Button x:Name="SstpToggleBtn" Grid.Column="1" Content="Disable + Neuter" 
                                         Style="{StaticResource PrimaryButton}" Click="SstpToggleBtn_Click"/>
@@ -92,7 +92,7 @@
                                 <StackPanel>
                                     <TextBlock Text="Hosted Network (WiFi)" FontWeight="SemiBold"/>
                                     <TextBlock x:Name="WifiDirectStatusText" Text="Loading..."
-                                               Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" Margin="0,2,0,0"/>
+                                               Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" Margin="0,2,0,0"/>
                                 </StackPanel>
                                 <Button x:Name="WifiDirectToggleBtn" Grid.Column="1" Content="Toggle"
                                         Style="{StaticResource PrimaryButton}" Click="WifiDirectToggleBtn_Click"/>
@@ -132,7 +132,7 @@
                                 <StackPanel>
                                     <TextBlock Text="KDNET Adapter" FontWeight="SemiBold"/>
                                     <TextBlock x:Name="KdnetStatusText" Text="Loading..."
-                                               Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" Margin="0,2,0,0"/>
+                                               Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" Margin="0,2,0,0"/>
                                 </StackPanel>
                                 <Button x:Name="KdnetToggleBtn" Grid.Column="1" Content="Toggle"
                                         Style="{StaticResource PrimaryButton}" Click="KdnetToggleBtn_Click"/>
@@ -156,12 +156,12 @@
                           ToolTip="Remove all WAN Miniport phantom devices">
                     <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
                         <TextBlock Text="Remove all WAN Miniports." 
-                                   Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap"
+                                   Foreground="{DynamicResource TextSecondaryBrush}" TextWrapping="Wrap"
                                    TextAlignment="Center" Margin="0,0,0,16"/>
                         <Button x:Name="RemoveAllMiniportsBtn" Content="Remove All Miniports"
                                 Style="{StaticResource DangerButton}" Click="RemoveAllMiniportsBtn_Click"
                                 HorizontalAlignment="Center"/>
-                        <TextBlock x:Name="RemovalResultText" Text="" Foreground="{StaticResource TextSecondaryBrush}" 
+                        <TextBlock x:Name="RemovalResultText" Text="" Foreground="{DynamicResource TextSecondaryBrush}" 
                                    FontSize="11" Margin="0,12,0,0" TextWrapping="Wrap" TextAlignment="Center"/>
                     </StackPanel>
                 </GroupBox>

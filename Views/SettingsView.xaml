@@ -11,7 +11,7 @@
         <StackPanel Grid.Row="0" Margin="0,0,0,24">
             <TextBlock Text="Settings" Style="{StaticResource PageHeader}"/>
             <TextBlock Text="Configure Auto-Command preferences and startup behavior." 
-                       Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" Margin="0,-12,0,0"/>
+                       Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12" Margin="0,-12,0,0"/>
         </StackPanel>
 
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
@@ -29,19 +29,43 @@
                         <TextBlock Text="Application Information" Style="{StaticResource SectionHeader}"/>
                         
                         <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,8,0,0">
-                            <TextBlock Text="Version:" Foreground="{StaticResource TextSecondaryBrush}" Width="150" VerticalAlignment="Center"/>
+                            <TextBlock Text="Version:" Foreground="{DynamicResource TextSecondaryBrush}" Width="150" VerticalAlignment="Center"/>
                             <TextBlock x:Name="VersionValueText" Text="…" FontWeight="SemiBold" VerticalAlignment="Center"/>
                         </StackPanel>
                         
                         <!-- Footnote -->
                         <StackPanel Grid.Row="2" Margin="0,16,0,0">
                             <TextBlock Text="Made with ❤️ in California"
-                                       Foreground="{StaticResource TextSecondaryBrush}" FontSize="11"/>
+                                       Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11"/>
                             <TextBlock Text="Apache License 2.0" Margin="0,10,0,0"
-                                       Foreground="{StaticResource TextSecondaryBrush}" FontSize="11"/>
+                                       Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11"/>
                             <TextBlock Text="© 2026 Dan Park, magicpoint.ai" Margin="0,10,0,0"
-                                       Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" FontWeight="SemiBold"/>
+                                       Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" FontWeight="SemiBold"/>
                         </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- Appearance -->
+                <Border Style="{StaticResource CardPanel}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Text="Appearance" Style="{StaticResource SectionHeader}"/>
+
+                        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,8,0,8">
+                            <TextBlock Text="Theme:" Foreground="{DynamicResource TextSecondaryBrush}" Width="150" VerticalAlignment="Center"/>
+                            <ComboBox x:Name="ThemeCombo" Width="200" SelectionChanged="ThemeCombo_SelectionChanged">
+                                <ComboBoxItem Content="🌙 Dark (default)" Tag="Dark"/>
+                                <ComboBoxItem Content="☀️ Light" Tag="Light"/>
+                            </ComboBox>
+                        </StackPanel>
+
+                        <TextBlock Grid.Row="2" Text="Dark = deep-space gradients. Light = airy Fluent theme with white cards. Applies instantly across every tab and is remembered for next launch."
+                                   Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" TextWrapping="Wrap"/>
                     </Grid>
                 </Border>
 
@@ -64,7 +88,7 @@
                         </StackPanel>
                         
                         <TextBlock Grid.Row="2" Text="This creates a Scheduled Task to run Auto-Command with highest privileges upon user login, bypassing the UAC prompt."
-                                   Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" TextWrapping="Wrap"/>
+                                   Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" TextWrapping="Wrap"/>
                     </Grid>
                 </Border>
 
@@ -87,7 +111,7 @@
                         </StackPanel>
                         
                         <TextBlock Grid.Row="2" Text="If disabled, you will be notified when an unauthorized adapter becomes active and given the option to block it."
-                                   Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" TextWrapping="Wrap"/>
+                                   Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" TextWrapping="Wrap"/>
                     </Grid>
                 </Border>
 
@@ -117,7 +141,7 @@
                         </StackPanel>
 
                         <TextBlock Grid.Row="2" Text="How often the fast security checks run (SSTP service, hosted network, adapter events). Heavier scans (kernel debug, hosts file, privileged tasks, firewall drift) keep fixed 30–60 second cadences. Takes effect immediately; persisted across restarts."
-                                   Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" TextWrapping="Wrap"/>
+                                   Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" TextWrapping="Wrap"/>
                     </Grid>
                 </Border>
 
@@ -141,7 +165,7 @@
                         </StackPanel>
                         
                         <TextBlock Grid.Row="2" Text="Sends basic usage events (like app opens) to Firebase/Google Analytics using the Measurement Protocol. No personal or identifiable data is collected."
-                                   Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" TextWrapping="Wrap"/>
+                                   Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" TextWrapping="Wrap"/>
                     </Grid>
                 </Border>
 

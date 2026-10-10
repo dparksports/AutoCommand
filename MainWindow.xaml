@@ -192,7 +192,7 @@
         </TabControl>
 
         <!-- Status Bar -->
-        <Border Grid.Row="1" Background="#0B101E" BorderBrush="#1F2937" BorderThickness="0,1,0,0" Padding="12,6">
+        <Border Grid.Row="1" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0" Padding="12,6">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -203,8 +203,7 @@
                 <!-- Enforcer Status -->
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                     <Ellipse x:Name="EnforcerDot" Width="8" Height="8" Fill="#00E5FF" Margin="0,0,8,0"/>
-                    <TextBlock x:Name="EnforcerStatusText" Text="Security Enforcer: Active" 
-                               Foreground="#9D9DA5" FontSize="11"/>
+                    <TextBlock x:Name="EnforcerStatusText" Text="Security Enforcer: Active" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11"/>
                 </StackPanel>
 
                 <!-- Threat Alert -->
