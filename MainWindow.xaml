@@ -181,16 +181,6 @@
                 </TabItem.Header>
                 <views:SettingsView x:Name="SettingsTab"/>
             </TabItem>
-
-            <TabItem x:Name="AiSetupTabItem">
-                <TabItem.Header>
-                    <StackPanel Width="160" Margin="0,10">
-                        <TextBlock Text="✨" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,4"/>
-                        <TextBlock Text="AI Setup" HorizontalAlignment="Center"/>
-                    </StackPanel>
-                </TabItem.Header>
-                <views:AiSetupView x:Name="AiSetupTab"/>
-            </TabItem>
         </TabControl>
 
         <!-- AI Insight Panel: shown automatically after tab switch -->

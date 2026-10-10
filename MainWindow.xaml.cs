@@ -270,7 +270,19 @@ namespace AutoCommand
 
         private void ShowAiSetup()
         {
-            MainTabControl.SelectedItem = AiSetupTabItem;
+            // The AI Setup tab was removed from the strip; the engine config
+            // now opens as a modal dialog from the status-bar buttons
+            var dialog = new Window
+            {
+                Title = "AI Engine Setup",
+                Content = new Views.AiSetupView(),
+                SizeToContent = SizeToContent.WidthAndHeight,
+                MaxWidth = 760,
+                MaxHeight = 860,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                Owner = this
+            };
+            dialog.ShowDialog();
         }
 
         // ── Proactive AI: tab-switch handler ──────────────────────────────────
