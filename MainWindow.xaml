@@ -63,21 +63,41 @@
             <TabItem>
                 <TabItem.Header>
                     <StackPanel Width="160" Margin="0,10">
-                        <TextBlock Text="🌙" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,4"/>
-                        <TextBlock Text="Hibernation" HorizontalAlignment="Center"/>
-                    </StackPanel>
-                </TabItem.Header>
-                <views:HibernationView x:Name="HibernationTab"/>
-            </TabItem>
-
-            <TabItem>
-                <TabItem.Header>
-                    <StackPanel Width="160" Margin="0,10">
                         <TextBlock Text="❄" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,4"/>
                         <TextBlock Text="Update Control" HorizontalAlignment="Center"/>
                     </StackPanel>
                 </TabItem.Header>
                 <views:UpdateControlView x:Name="UpdateControlTab"/>
+            </TabItem>
+
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Width="160" Margin="0,10">
+                        <TextBlock Text="📋" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                        <TextBlock Text="Tasks" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <views:TasksView x:Name="TasksTab"/>
+            </TabItem>
+
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Width="160" Margin="0,10">
+                        <TextBlock Text="🚀" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                        <TextBlock Text="Startup" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <views:StartupView x:Name="StartupTab"/>
+            </TabItem>
+
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Width="160" Margin="0,10">
+                        <TextBlock Text="🌙" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                        <TextBlock Text="Hibernation" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <views:HibernationView x:Name="HibernationTab"/>
             </TabItem>
 
             <TabItem>
@@ -108,26 +128,6 @@
                     </StackPanel>
                 </TabItem.Header>
                 <views:FirewallSettingsView x:Name="FirewallTab"/>
-            </TabItem>
-
-            <TabItem>
-                <TabItem.Header>
-                    <StackPanel Width="160" Margin="0,10">
-                        <TextBlock Text="📋" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,4"/>
-                        <TextBlock Text="Tasks" HorizontalAlignment="Center"/>
-                    </StackPanel>
-                </TabItem.Header>
-                <views:TasksView x:Name="TasksTab"/>
-            </TabItem>
-
-            <TabItem>
-                <TabItem.Header>
-                    <StackPanel Width="160" Margin="0,10">
-                        <TextBlock Text="🚀" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,4"/>
-                        <TextBlock Text="Startup" HorizontalAlignment="Center"/>
-                    </StackPanel>
-                </TabItem.Header>
-                <views:StartupView x:Name="StartupTab"/>
             </TabItem>
 
             <TabItem>
