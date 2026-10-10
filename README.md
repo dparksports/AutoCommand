@@ -79,8 +79,10 @@ Run the published `AutoCommand.exe` as Administrator — WPF, .NET 10, Windows 1
 
 ## Credits & license
 
-Apache License 2.0  
-Made with ❤️ in California  
+Apache License 2.0
+
+Made with ❤️ in California
+
 © 2026 Dan Park, magicpoint.ai
 
 Issues and PRs welcome — pick a tab, keep the design rules in the [Technical Notes](docs/TECHNICAL_NOTES.md), and match the existing code style.
