@@ -6,26 +6,26 @@
     <Application.Resources>
 
         <!-- ══════════════════════════════════════════════ -->
-        <!--  DEEP SPACE GRADIENT THEME — violet→magenta→   -->
-        <!--  blue identity gradient, from the app icon     -->
+        <!--  FLUENT THEME — reference palette; slate dark   -->
+        <!--  default with ThemeService live light/dark swap -->
         <!-- ══════════════════════════════════════════════ -->
 
         <!-- Base Colors (violet-tinted darks: richer than flat navy, still crisp) -->
-        <Color x:Key="BackgroundColor">#140F2D</Color>
-        <Color x:Key="SurfaceColor">#1C1640</Color>
-        <Color x:Key="SurfaceAltColor">#271E52</Color>
-        <Color x:Key="BorderColor">#3A2C6E</Color>
-        <Color x:Key="TextPrimaryColor">#FFFFFF</Color>
-        <Color x:Key="TextSecondaryColor">#C3B8EE</Color>
+        <Color x:Key="BackgroundColor">#171B22</Color>
+        <Color x:Key="SurfaceColor">#1F242E</Color>
+        <Color x:Key="SurfaceAltColor">#282F3B</Color>
+        <Color x:Key="BorderColor">#39414F</Color>
+        <Color x:Key="TextPrimaryColor">#F1F4F9</Color>
+        <Color x:Key="TextSecondaryColor">#98A2B3</Color>
 
         <!-- Accent Colors -->
-        <Color x:Key="AccentBlueColor">#7C5CFF</Color>
+        <Color x:Key="AccentBlueColor">#3B82F6</Color>
         <Color x:Key="AccentGreenColor">#34D399</Color>
         <Color x:Key="AccentAmberColor">#FBBF24</Color>
-        <Color x:Key="AccentRedColor">#F43F5E</Color>
-        <Color x:Key="AccentVioletColor">#C084FC</Color>
-        <Color x:Key="AccentPinkColor">#EC4899</Color>
-        <Color x:Key="AccentCyanColor">#22D3EE</Color>
+        <Color x:Key="AccentRedColor">#F87171</Color>
+        <Color x:Key="AccentVioletColor">#4A9EEF</Color>
+        <Color x:Key="AccentPinkColor">#5FA8F5</Color>
+        <Color x:Key="AccentCyanColor">#53B4E8</Color>
 
         <!-- Brushes -->
         <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource BackgroundColor}"/>
@@ -50,22 +50,18 @@
         <SolidColorBrush x:Key="RowSelectedBrush" Color="#20FFFFFF"/>
         <SolidColorBrush x:Key="GridLineBrush" Color="#18FFFFFF"/>
 
-        <!-- Identity gradient: violet → magenta → blue (the app icon, as a brush) -->
+        <!-- Identity gradients: the Fluent blue scheme (values swapped per theme by ThemeService) -->
         <LinearGradientBrush x:Key="PrimaryGradientBrush" StartPoint="0,0" EndPoint="1,1">
-            <GradientStop Color="#8B5CF6" Offset="0"/>
-            <GradientStop Color="#D946EF" Offset="0.55"/>
-            <GradientStop Color="#4F8DFD" Offset="1"/>
+            <GradientStop Color="#3B82F6" Offset="0"/>
+            <GradientStop Color="#60A5FA" Offset="1"/>
         </LinearGradientBrush>
-        <!-- Tab indicator: cyan → violet → pink -->
         <LinearGradientBrush x:Key="TabIndicatorGradientBrush" StartPoint="0,0" EndPoint="0,1">
-            <GradientStop Color="#22D3EE" Offset="0"/>
-            <GradientStop Color="#C084FC" Offset="0.5"/>
-            <GradientStop Color="#EC4899" Offset="1"/>
+            <GradientStop Color="#60A5FA" Offset="0"/>
+            <GradientStop Color="#3B82F6" Offset="1"/>
         </LinearGradientBrush>
-        <!-- Danger gradient: rose → pink -->
         <LinearGradientBrush x:Key="DangerGradientBrush" StartPoint="0,0" EndPoint="1,1">
-            <GradientStop Color="#F43F5E" Offset="0"/>
-            <GradientStop Color="#EC4899" Offset="1"/>
+            <GradientStop Color="#EF4444" Offset="0"/>
+            <GradientStop Color="#F87171" Offset="1"/>
         </LinearGradientBrush>
 
         <!-- ── Window ── -->

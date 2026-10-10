@@ -64,7 +64,7 @@
                             </ComboBox>
                         </StackPanel>
 
-                        <TextBlock Grid.Row="2" Text="Dark = deep-space gradients. Light = airy Fluent theme with white cards. Applies instantly across every tab and is remembered for next launch."
+                        <TextBlock Grid.Row="2" Text="Dark = deep slate with the Fluent blue accent. Light = airy white-card Fluent theme. Applies instantly across every tab and is remembered for next launch."
                                    Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" TextWrapping="Wrap"/>
                     </Grid>
                 </Border>

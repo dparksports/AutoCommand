@@ -10,11 +10,11 @@ namespace AutoCommand.Services
     /// at runtime — every theme-brush reference in XAML is a DynamicResource, so
     /// the swap applies live without a restart. Choice persists in HKCU.
     ///
-    /// Dark = deep-space gradient identity (violet→magenta→blue, from the icon).
-    /// Light = Fluent adaptation of the reference UI: airy lilac-tinted canvas,
-    /// pure-white floating cards, hairline borders, brand-violet accent —
-    /// the reference's shape language is in App.xaml (pills, 16px cards,
-    /// soft shadows) and is shared by both themes.
+    /// One identity: the Fluent reference palette and its slate dark variant.
+    /// Light = airy gray-blue canvas, white floating cards, muted blue accent.
+    /// Dark  = the same blues on a deep slate canvas. (Some brush KEY names
+    /// retain historical "Violet/Pink/Cyan" wording — values are all blues
+    /// now; keys are internal identifiers referenced across the XAML.)
     /// </summary>
     public static class ThemeService
     {
@@ -24,25 +24,25 @@ namespace AutoCommand.Services
         // (resource key, dark value, light value)
         private static readonly (string Key, string Dark, string Light)[] BrushMap =
         {
-            ("BackgroundBrush",    "#140F2D", "#F3F2F8"),
-            ("SurfaceBrush",       "#1C1640", "#FFFFFF"),
-            ("SurfaceAltBrush",    "#271E52", "#F7F5FB"),
-            ("BorderBrush",        "#3A2C6E", "#E3DEF0"),
-            ("TextPrimaryBrush",   "#FFFFFF", "#1C1633"),
-            ("TextSecondaryBrush", "#C3B8EE", "#6B6390"),
-            ("AccentBlueBrush",    "#7C5CFF", "#6D28D9"),
+            ("BackgroundBrush",    "#171B22", "#F0F2F6"),
+            ("SurfaceBrush",       "#1F242E", "#FFFFFF"),
+            ("SurfaceAltBrush",    "#282F3B", "#F7F9FC"),
+            ("BorderBrush",        "#39414F", "#D9DEE7"),
+            ("TextPrimaryBrush",   "#F1F4F9", "#1A1D23"),
+            ("TextSecondaryBrush", "#98A2B3", "#5B6472"),
+            ("AccentBlueBrush",    "#3B82F6", "#2F74B5"),
             ("AccentGreenBrush",   "#34D399", "#059669"),
-            ("AccentAmberBrush",   "#FBBF24", "#B45309"),
-            ("AccentRedBrush",     "#F43F5E", "#DC2626"),
-            ("AccentVioletBrush",  "#C084FC", "#7C3AED"),
-            ("AccentPinkBrush",    "#EC4899", "#DB2777"),
-            ("AccentCyanBrush",    "#22D3EE", "#0E7490"),
-            ("NavSelectedBrush",   "#14FFFFFF", "#EBE6F8"),
-            ("NavHoverBrush",      "#0BFFFFFF", "#F1EEFA"),
-            ("RowAltBrush",        "#08FFFFFF", "#F8F6FC"),
-            ("RowHoverBrush",      "#0CFFFFFF", "#EFEBF8"),
-            ("RowSelectedBrush",   "#20FFFFFF", "#E3DCF6"),
-            ("GridLineBrush",      "#18FFFFFF", "#EBE7F3"),
+            ("AccentAmberBrush",   "#F59E0B", "#B45309"),
+            ("AccentRedBrush",     "#F87171", "#DC2626"),
+            ("AccentVioletBrush",  "#4A9EEF", "#2F74B5"),   // hover accent — blue now
+            ("AccentPinkBrush",    "#5FA8F5", "#3E86D6"),   // secondary accent — blue now
+            ("AccentCyanBrush",    "#53B4E8", "#2A6FA8"),
+            ("NavSelectedBrush",   "#16202E", "#E2EAF4"),
+            ("NavHoverBrush",      "#101823", "#EAEFF6"),
+            ("RowAltBrush",        "#20262F", "#F4F7FA"),
+            ("RowHoverBrush",      "#262E3A", "#EBF0F6"),
+            ("RowSelectedBrush",   "#31405A", "#D9E4F2"),
+            ("GridLineBrush",      "#2A323E", "#E6EAF0"),
         };
 
         public static string Saved =>
@@ -58,16 +58,15 @@ namespace AutoCommand.Services
 
             if (light)
             {
-                // Fluent light: gentler gradients so white text keeps contrast
-                res["PrimaryGradientBrush"] = MakeGradient("#7C3AED", "#9333EA", "#6D28D9");
-                res["DangerGradientBrush"] = MakeGradient("#DC2626", "#DB2777");
-                res["TabIndicatorGradientBrush"] = MakeGradient("#7C3AED", "#A855F7", "#DB2777");
+                res["PrimaryGradientBrush"] = MakeGradient("#2F74B5", "#3E86D6");
+                res["DangerGradientBrush"] = MakeGradient("#DC2626", "#EF4444");
+                res["TabIndicatorGradientBrush"] = MakeGradient("#2F74B5", "#5FA8F5");
             }
             else
             {
-                res["PrimaryGradientBrush"] = MakeGradient("#8B5CF6", "#D946EF", "#4F8DFD");
-                res["DangerGradientBrush"] = MakeGradient("#F43F5E", "#EC4899");
-                res["TabIndicatorGradientBrush"] = MakeGradient("#22D3EE", "#C084FC", "#EC4899");
+                res["PrimaryGradientBrush"] = MakeGradient("#3B82F6", "#60A5FA");
+                res["DangerGradientBrush"] = MakeGradient("#EF4444", "#F87171");
+                res["TabIndicatorGradientBrush"] = MakeGradient("#60A5FA", "#3B82F6");
             }
 
             using var k = Registry.CurrentUser.CreateSubKey(RegKey);
