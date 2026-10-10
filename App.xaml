@@ -5,22 +5,24 @@
     <Application.Resources>
 
         <!-- ══════════════════════════════════════════════ -->
-        <!--  CORPORATE DARK THEME — Azure-Inspired        -->
+        <!--  DEEP SPACE NEON THEME — matches the README    -->
+        <!--  infographics (cyan/violet/lime/rose on navy)  -->
         <!-- ══════════════════════════════════════════════ -->
 
         <!-- Base Colors -->
-        <Color x:Key="BackgroundColor">#0B101E</Color>
-        <Color x:Key="SurfaceColor">#121929</Color>
-        <Color x:Key="SurfaceAltColor">#1A243B</Color>
-        <Color x:Key="BorderColor">#2A3655</Color>
-        <Color x:Key="TextPrimaryColor">#FFFFFF</Color>
-        <Color x:Key="TextSecondaryColor">#A0ABC0</Color>
+        <Color x:Key="BackgroundColor">#0B1121</Color>
+        <Color x:Key="SurfaceColor">#141E33</Color>
+        <Color x:Key="SurfaceAltColor">#1B2740</Color>
+        <Color x:Key="BorderColor">#24345C</Color>
+        <Color x:Key="TextPrimaryColor">#F2F6FF</Color>
+        <Color x:Key="TextSecondaryColor">#9FB0D0</Color>
 
         <!-- Accent Colors -->
-        <Color x:Key="AccentBlueColor">#00E5FF</Color>
-        <Color x:Key="AccentGreenColor">#4EC96F</Color>
-        <Color x:Key="AccentAmberColor">#E5A631</Color>
-        <Color x:Key="AccentRedColor">#E5534B</Color>
+        <Color x:Key="AccentBlueColor">#22D3EE</Color>
+        <Color x:Key="AccentGreenColor">#2DD4BF</Color>
+        <Color x:Key="AccentAmberColor">#FB923C</Color>
+        <Color x:Key="AccentRedColor">#FF5C7A</Color>
+        <Color x:Key="AccentVioletColor">#A78BFA</Color>
 
         <!-- Brushes -->
         <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource BackgroundColor}"/>
@@ -33,6 +35,7 @@
         <SolidColorBrush x:Key="AccentGreenBrush" Color="{StaticResource AccentGreenColor}"/>
         <SolidColorBrush x:Key="AccentAmberBrush" Color="{StaticResource AccentAmberColor}"/>
         <SolidColorBrush x:Key="AccentRedBrush" Color="{StaticResource AccentRedColor}"/>
+        <SolidColorBrush x:Key="AccentVioletBrush" Color="{StaticResource AccentVioletColor}"/>
 
         <!-- ── Window ── -->
         <Style TargetType="Window">
@@ -84,8 +87,14 @@
                         <Border x:Name="border" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" Cursor="Hand">
                             <Grid>
                                 <ContentPresenter ContentSource="Header" HorizontalAlignment="Left" VerticalAlignment="Center"/>
-                                <Border x:Name="indicator" Width="3" HorizontalAlignment="Left" VerticalAlignment="Stretch" Margin="-20,-12,0,-12"
-                                        Background="{StaticResource AccentBlueBrush}" Visibility="Collapsed"/>
+                                <Border x:Name="indicator" Width="3" HorizontalAlignment="Left" VerticalAlignment="Stretch" Margin="-20,-12,0,-12">
+                                    <Border.Background>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                            <GradientStop Color="{StaticResource AccentBlueColor}" Offset="0"/>
+                                            <GradientStop Color="{StaticResource AccentVioletColor}" Offset="1"/>
+                                        </LinearGradientBrush>
+                                    </Border.Background>
+                                </Border>
                             </Grid>
                         </Border>
                         <ControlTemplate.Triggers>
@@ -177,7 +186,7 @@
                         <Border x:Name="border" Background="{TemplateBinding Background}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="4" Padding="{TemplateBinding Padding}"
+                                CornerRadius="8" Padding="{TemplateBinding Padding}"
                                 SnapsToDevicePixels="True">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
@@ -197,10 +206,10 @@
             </Setter>
         </Style>
 
-        <!-- Primary Action Button -->
+        <!-- Primary Action Button — neon cyan with dark ink text (better contrast on bright accents) -->
         <Style x:Key="PrimaryButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
             <Setter Property="Background" Value="{StaticResource AccentBlueBrush}"/>
-            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Foreground" Value="{StaticResource BackgroundBrush}"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
         </Style>
@@ -257,16 +266,16 @@
                                 Padding="{TemplateBinding Padding}"
                                 CornerRadius="2"
                                 SnapsToDevicePixels="True">
-                            <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource SurfaceAltBrush}"/>
-                                <Setter Property="Foreground" Value="{StaticResource AccentBlueBrush}"/>
-                            </Trigger>
+                                    <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="Bd" Property="Background" Value="{StaticResource SurfaceAltBrush}"/>
+                                        <Setter Property="Foreground" Value="{StaticResource AccentVioletBrush}"/>
+                                    </Trigger>
                             <Trigger Property="IsSelected" Value="True">
                                 <Setter TargetName="Bd" Property="Background" Value="{StaticResource AccentBlueBrush}"/>
-                                <Setter Property="Foreground" Value="#0B101E"/>
+                                <Setter Property="Foreground" Value="{StaticResource BackgroundBrush}"/>
                                 <Setter Property="FontWeight" Value="SemiBold"/>
                             </Trigger>
                             <MultiTrigger>
@@ -275,7 +284,7 @@
                                     <Condition Property="IsMouseOver" Value="True"/>
                                 </MultiTrigger.Conditions>
                                 <Setter TargetName="Bd" Property="Background" Value="{StaticResource AccentBlueBrush}"/>
-                                <Setter Property="Foreground" Value="#0B101E"/>
+                                <Setter Property="Foreground" Value="{StaticResource BackgroundBrush}"/>
                             </MultiTrigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -312,7 +321,7 @@
                                         Background="{StaticResource SurfaceBrush}"
                                         BorderBrush="{StaticResource BorderBrush}"
                                         BorderThickness="1"
-                                        CornerRadius="4"
+                                        CornerRadius="8"
                                         Margin="0,2,0,0"
                                         MinWidth="{Binding ActualWidth, ElementName=MainGrid}"
                                         MaxHeight="{TemplateBinding MaxDropDownHeight}">
@@ -334,7 +343,7 @@
                                                 Background="{TemplateBinding Background}"
                                                 BorderBrush="{TemplateBinding BorderBrush}"
                                                 BorderThickness="{TemplateBinding BorderThickness}"
-                                                CornerRadius="4"
+                                                CornerRadius="8"
                                                 SnapsToDevicePixels="True">
                                             <Grid>
                                                 <Grid.ColumnDefinitions>
@@ -381,7 +390,7 @@
         <!-- ── Card Panel Style ── -->
         <Style x:Key="CardPanel" TargetType="Border">
             <Setter Property="Background" Value="{StaticResource SurfaceBrush}"/>
-            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="CornerRadius" Value="10"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
             <Setter Property="Padding" Value="16"/>
