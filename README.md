@@ -2,103 +2,66 @@
 
 ![AutoCommand](Assets/corp_banner.png)
 
-**AutoCommand** is a free, open-source security and control dashboard for Windows 10 and 11. It runs as one administrator window where every question that normally costs you an afternoon — *what is this process, who launched it, where is it connecting, how do I make it stop, why does my PC phone home, what updated itself last night?* — becomes a row in a table, a colored status card, or a single button.
+A free, open-source security and control dashboard for Windows 10 and 11. One administrator window answers every question that normally costs you an afternoon — *what is this process, who launched it, where is it connecting, how do I make it stop?* — as a row in a table, a colored card, or a single button.
 
-> **⬇ Download:** grab the latest self-contained build from the [**Releases page**](https://github.com/dparksports/autocommand-windows/releases) — no .NET installation required. Unzip, run `AutoCommand.exe` as Administrator, done.
+> **⬇ Download** the latest self-contained build from the [**Releases page**](https://github.com/dparksports/autocommand-windows/releases) — no .NET required. Unzip, run `AutoCommand.exe` as Administrator.
 >
-> **🔧 Under the hood:** every technology mentioned below is documented in the [**Technical Notes**](docs/TECHNICAL_NOTES.md) — what runs, what it touches on disk, and why. Licensed Apache 2.0.
+> **🔧 How it works inside:** every technology below is documented in the [Technical Notes](docs/TECHNICAL_NOTES.md). Apache 2.0.
 
 ---
 
 ## Why it exists
 
-Windows spreads the answers across a dozen tools that don't talk to each other. AutoCommand puts the whole picture in one place and turns the scary parts into single clicks:
+Windows spreads the answers across a dozen tools that don't talk to each other. AutoCommand puts the whole picture in one place:
 
 ![Why AutoCommand](Assets/corp_why.png)
 
-Concretely, the situations it is built for:
-
-* **A mystery process is sending packets to a server you don't recognize.** Find it by PID or destination, read which process owns it and what launched it — even if the process already exited — then block the IP, block the executable, kill the process, or disable the scheduled task that would resurrect it tomorrow at 3 a.m.
-* **You want a record, not a guess.** Install Sysmon from the app in one click, and from then on every process launch (full command line and parent), every network connection and every DNS query is recorded locally — so "what was that?" becomes a lookup instead of forensics.
-* **An app keeps replacing itself** and you want it pinned at the version that works. Freeze it: the app keeps running, its updater fails politely, and unfreezing restores the original permissions exactly.
-* **Libraries and apps silently beacon usage statistics.** See which installed software has telemetry on, apply the vendor's own documented opt-out with the previous value snapshotted, and verify the beacons actually stopped.
-* **A fresh Windows install needs an afternoon of cleanup.** Debloat 23 preinstalled apps in one confirmation, lock the firewall down, remove kernel-debug surfaces, guard the Secure Boot chain — and skip the steps for the things you actually use.
+- **A mystery process is phoning home.** Find the row — process, destination, owner — then block the IP, block the executable, kill the process, or disable the scheduled task that would resurrect it at 3 a.m.
+- **You want a record, not a guess.** One click installs Sysmon, and from then on every process launch, connection, and DNS query is recorded locally.
+- **An app keeps replacing itself.** Freeze it: the app runs, its updater fails politely, and unfreezing restores the original permissions exactly.
+- **Software silently beacons usage stats.** Apply the vendor's own documented opt-out, snapshot the previous value, and verify the beacons actually stopped.
 
 ---
 
-## What you get, tab by tab
+## The tabs
 
-### 🚀 Quick Scan — the first-hour ritual, one pass
+| Tab | What it gives you |
+|---|---|
+| 🚀 **Quick Scan** | The whole first-hour ritual — debloat, firewall, privacy, hardening — as one guided pass that re-verifies itself. |
+| 📡 **Attack Surface** | The network doors Windows ships open: SSTP tunneling, KDNET debug adapters, hosted-network hotspots. Inspect, disable, remove. |
+| 🛡 **Firewall** | Curated profiles (lockdown, home-LAN, per-app) in one click over the native `INetFwPolicy2` engine, with drift detection. |
+| 📦 **Bloatware** | 23 preinstalled apps removed in one sweep. Use one of them? Toggle it off the list — permanently. |
+| 🧭 **Sysmon Audit** | One status card + a live feed of every process launch with full command line and parent. Installed and configured from the app. |
+| 🔍 **Process Monitor** | Live grid of outbound connections with packet counters (no WinPcap needed), background reverse-DNS, and attribution that survives process exit. Block, kill, inspect — with warnings before you take out something Windows needs. |
+| 🔬 **Svchost Trace** | A timeline over the 70+ `svchost.exe` service hosts — spawns with parents, connection lifetimes, byte flows — plus a pattern detector: bad parents, respawn loops, beacon-regular connections, upload-dominant flows. Exports JSONL; drives a headless capture service with boot auto-start. |
+| 📊 **Telemetry** | Known telemetry senders (Edge, Chrome, .NET CLI, VS Code, …), the vendor's own documented opt-out, previous value snapshotted, quiet verified via the DNS cache. |
+| 👁 **Privacy** | Microsoft's diagnostic task disabled, AutoCommand's own analytics opt-in, tamper-protection status visible. |
+| ❄ **Update Control** | Freeze self-updating apps at the version that works — `icacls` snapshots make unfreezing exact. Windows binaries are refused. |
+| 📋 **Tasks · 🚀 Startup · 🌙 Hibernation · 🌐 Connections** | Full Task Scheduler control, startup entries, hibernation posture, and a second live connection view. |
+| 🔒 **OS Hardening + ✅ DBX Safety** | Self-healing guards on SSTP/kernel-debug, the Secure Boot chain hashed and watched, DBX revocations applied only with your yes. |
+| ⚙ **Settings** | Startup behavior, analytics opt-in, live version — and the status bar's **🚑 Restore Internet** button. |
 
-![Quick Scan and Bloatware](Assets/corp_debloat.png)
+![Process Monitor and Sysmon Audit](Assets/corp_visibility.png)
 
-The whole post-install cleanup — debloat sweep, firewall lockdown, privacy changes, hardening checks — as a single guided pass. Every step reuses the exact actions behind its dedicated tab, and the checklist doubles as a live status dashboard that re-verifies when the pass finishes. For the first hour after a clean Windows install, this is the only tab you need.
+## Blocked things, managed
 
-### 📡 Attack Surface — close the doors Windows leaves open
+Blocking is easy; *un*-blocking is where other tools strand you. AutoCommand:
 
-One inventory for the network surfaces Windows ships with and never mentions: SSTP tunneling and WAN miniports (remote-access doors), KDNET kernel-debug adapters, hosted-network and Wi-Fi Direct ghost hotspots. Inspect status at a glance, then disable, neuter, or remove each one — with a refresh that keeps the picture honest.
+- **warns before you block** — Microsoft/CDN destinations and DNS-carrying service hosts are flagged with what will break;
+- **keeps rules self-describing** — 2 idempotent rules per target with full provenance in the description, readable from `wf.msc`;
+- **groups every block in one manager** — Microsoft/Windows rows in red, bulk unblock, legacy 4-rules-per-IP consolidation, and hit counts from the firewall's own drop log (one click to enable);
+- **verifies unknown IPs for you** — one button asks the internet registries (RDAP) who owns each target, cached machine-wide;
+- **restores you from mistakes** — the status-bar 🚑 button disables every AutoCommand block and flushes DNS in one click; *Restore except Microsoft/Windows* brings your real blocks back while leaving only the breakage-causing ones off.
 
-### 🛡 Advanced Firewall — lockdown to home-LAN in seconds
-
-Curated profiles (full lockdown, home-LAN, per-app) applied in one click over the `INetFwPolicy2` COM engine, with a baseline of every rule's enabled state and drift reporting on re-scan. One-click block rules for any IP or executable, from here or from the Process Monitor.
-
-### 📦 Bloatware — 23 apps gone in one confirmation
-
-Twenty-three preinstalled apps (Copilot, Teams, OneDrive, Xbox, Solitaire, Feedback Hub, …) removed in one sweep — OneDrive through its own Win32 uninstaller, Store apps through the deployment engine, and classic OS components like `mstsc.exe` deliberately never offered. Every row carries a **＋ Bloatware / ✓ Bloatware** toggle and a Manage-List dialog, so if you actually use one of them, it never gets touched again; your list persists machine-wide as a delta over the defaults.
-
-### 🧭 Sysmon Audit + 🔍 Process Monitor — every connection, attributed
-
-![See everything — and know who launched it](Assets/corp_visibility.png)
-
-**Sysmon Audit** builds the record Windows doesn't keep: one status card (service state, channel health, events per 24 h, active config hash) with Install / Repair / Apply-Config buttons, and a live feed of every process launch with its full command line and parent — backfilled from the log when you open the tab, so the answer survives hours later. The recommended configuration captures process creations, network connections and DNS queries.
-
-**Process Monitor** turns that record into a live, self-updating grid of outbound connections (with a raw-socket sniffer for packet counters — no WinPcap/Npcap needed), sorted most-recent-traffic-first: a row jumps to the top the moment new packets arrive, and rows silent for 5+ minutes fade. Reverse-DNS runs in the background — you read hostnames, not IPs.
-
-The part Windows cannot do: **attribution that survives process exit.** Short-lived helpers (spawned scripts, one-shot updaters, `taskhostw.exe` DLL hosts) are named, pathed, and tied to the scheduled task that launched them — including *which DLL* a COM-handler task actually executes, and a flag when that DLL no longer exists (classic leftover of uninstalled software). Right-click any row to block its IP or executable, kill the process, or inspect/disable the task behind it. Everything exports to CSV.
-
-**Blocking that won't bite you.** Before a block lands, the destination is classified against known Microsoft/CDN ranges and service hosts are recognized — so taking out an update edge or the DNS-carrying svchost instance warns you *first*. Every block is 2 idempotent rules (not 4 near-duplicates) with full provenance in the rule description, readable from `wf.msc`. **Blocked → Manage all** opens the fleet view: targets grouped by destination owner with Microsoft/Windows rows in red, bulk unblock (including "unblock all Microsoft-owned"), one-click legacy-set consolidation (4 rules → 2), hit counts from the firewall's own drop log (one button to enable), and **RDAP-verified ownership** — registry answers cached machine-wide in `C:\ProgramData\AutoCommand\rdap-cache.json`, keyed by registered block so one lookup covers thousands of sibling IPs.
-
-### 🔬 Svchost Trace — the timeline and the pattern detector
-
-**Svchost Trace** watches the 70+ `svchost.exe` service hosts the way Process Monitor watches connections: spawn events with parent process and hosted service, TCP connect/close with lifetimes, cumulative byte samples — one JSONL timeline you can export and re-analyze offline. On top of it, a pattern detector flags what matters: svchost instances whose parent isn't `services.exe`, service respawn loops, destinations classified against known Microsoft/CDN ranges (unknowns flagged for RDAP verification), beacon-regular connection intervals (coefficient of variation below 0.35), and upload-dominant flows.
-
-The tab also drives the headless capture service: **Start/Stop** runs the collector as a detached process that survives the app; **Auto-start on boot** persists it via your user Run key (no UAC); a global mutex keeps exactly one capture alive; size-capped rotation keeps the disk bounded. Traces exported here replay in the command-line analyzer (`svchost-watch/SvchostAnalyzer`).
-
-### 📊 Telemetry — real opt-outs, verified quiet
-
-![Pin the version that works — silence the beacons](Assets/corp_control.png)
-
-Scans installed software against a knowledge base of known telemetry senders (Ultralytics YOLO, .NET CLI, PowerShell 7, VS Code, Edge, Chrome, Windows diagnostic data — updatable without a rebuild). Each row shows the on/off state with the exact evidence, applies the **vendor's own documented opt-out** (a settings key, environment variable or policy — never a firewall hack), keeps the previous value snapshotted so one click reverts it, and verifies via the DNS resolver cache that the beacons actually stopped. The first row of that table is ours: AutoCommand's own telemetry is opt-in.
-
-### 👁 Privacy — your choices, visibly in force
-
-Disables Microsoft's diagnostic-data task, keeps AutoCommand's own analytics behind an explicit opt-in, and surfaces tamper-protection status — so you can see at a glance whether your choices are still in force.
-
-### ❄ Update Control — pin the version that works
-
-Discovers self-updating apps on your machine (self-update `.old` leftovers, updater folders, autostart updaters) with their vendor signatures. Freezing one snapshots its permissions (`icacls /save`) and then denies delete/write on the executable: the app runs normally, its updater fails until you unfreeze, and unfreezing restores the original ACL exactly. Windows-signed system binaries are refused outright.
-
-### 📋 Tasks · 🚀 Startup · 🌙 Hibernation · 🌐 Connections
-
-Full Task Scheduler control (enable, disable, run, stop, delete), startup-entry management, hibernation posture in one toggle, and an alternate live view of current connections with process attribution and background reverse-DNS.
-
-### 🔒 OS Hardening + ✅ DBX Safety — lock it down, keep it locked
-
-![Lock it down — and keep it locked](Assets/corp_hardening.png)
-
-Self-healing guards stop and disable SSTP tunneling and kernel-debug surfaces — and re-assert themselves if something drifts back, with toast alerts from the background Security Enforcer. The Secure Boot chain is hashed and watched: every EFI module against a stored baseline, boot-manager checks gated by SHA256 + Authenticode, and Microsoft DBX revocation updates parsed and applied only after explicit confirmation.
-
-### ⚙ Settings
-
-Startup behavior, analytics preference, and live application information — plus a status bar that always tells you whether the background Security Enforcer is active, and a **🚑 Restore Internet** panic button for the worst-case click: one press disables every AutoCommand-created block rule (nothing deleted, fully reversible) and flushes the DNS cache automatically, while **Restore except Microsoft/Windows** in the Blocked Rules manager brings back your real blocks and leaves only the breakage-causing ones off. The About card carries the © footnote.
-
----
+![Update Control and Telemetry](Assets/corp_control.png)
 
 ## What AutoCommand will not do
 
-* **Nothing runs without you.** Removals, applies, freezes and DBX updates all confirm first; AI-generated commands are displayed for approval.
-* **Non-removable means non-offered.** System-signed OS components never appear in the bloatware list, and Windows binaries are never frozen by Update Control.
-* **No hidden state.** Everything the app remembers is readable JSON/text on disk, listed at the end of the [Technical Notes](docs/TECHNICAL_NOTES.md). Its own telemetry is opt-in and off unless you say yes.
+- **Nothing runs without you.** Removals, applies, freezes, and DBX updates all confirm first.
+- **Non-removable means non-offered.** System-signed components never appear in the bloatware list; Windows binaries are never frozen.
+- **No hidden state.** Everything the app remembers is readable JSON/text on disk (listed in the [Technical Notes](docs/TECHNICAL_NOTES.md)); its own telemetry is opt-in and off by default.
+
+![OS Hardening](Assets/corp_hardening.png)
 
 ## Build from source
 
@@ -114,6 +77,6 @@ dotnet publish AutoCommand.csproj -c Release -r win-x64 --self-contained
 
 Run the published `AutoCommand.exe` as Administrator — WPF, .NET 10, Windows 10 (19041+) / Windows 11.
 
-## Contributing & license
+## Credits & license
 
-Issues and PRs welcome — pick a tab, keep the design rules in the [Technical Notes](docs/TECHNICAL_NOTES.md) (zero-PowerShell core, explicit confirmation, verified downloads), and match the existing code style. Apache License 2.0.
+© 2026 Dan Park, magicpoint.ai · Made with ❤️ in California · Apache License 2.0 · Issues and PRs welcome.
