@@ -33,6 +33,26 @@
             <TabItem>
                 <TabItem.Header>
                     <StackPanel Width="160" Margin="0,10">
+                        <TextBlock Text="📡" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                        <TextBlock Text="Attack Surface" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <views:CommandPanelView x:Name="CommandPanelTab"/>
+            </TabItem>
+
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Width="160" Margin="0,10">
+                        <TextBlock Text="🔍" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                        <TextBlock Text="Process Monitor" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <views:SvchostMonitorView x:Name="SvchostTab"/>
+            </TabItem>
+
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Width="160" Margin="0,10">
                         <TextBlock Text="📦" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,4"/>
                         <TextBlock Text="Bloatware" HorizontalAlignment="Center"/>
                     </StackPanel>
@@ -98,26 +118,6 @@
                     </StackPanel>
                 </TabItem.Header>
                 <views:HibernationView x:Name="HibernationTab"/>
-            </TabItem>
-
-            <TabItem>
-                <TabItem.Header>
-                    <StackPanel Width="160" Margin="0,10">
-                        <TextBlock Text="🔍" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,4"/>
-                        <TextBlock Text="Process Monitor" HorizontalAlignment="Center"/>
-                    </StackPanel>
-                </TabItem.Header>
-                <views:SvchostMonitorView x:Name="SvchostTab"/>
-            </TabItem>
-
-            <TabItem>
-                <TabItem.Header>
-                    <StackPanel Width="160" Margin="0,10">
-                        <TextBlock Text="📡" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,4"/>
-                        <TextBlock Text="Attack Surface" HorizontalAlignment="Center"/>
-                    </StackPanel>
-                </TabItem.Header>
-                <views:CommandPanelView x:Name="CommandPanelTab"/>
             </TabItem>
 
             <TabItem>
