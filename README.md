@@ -28,39 +28,61 @@ Concretely, the situations it is built for:
 
 ## What you get, tab by tab
 
-### 👁 Process Monitor + 🧭 Sysmon Audit — every connection, attributed
+### 🚀 Quick Scan — the first-hour ritual, one pass
+
+![Quick Scan and Bloatware](Assets/corp_debloat.png)
+
+The whole post-install cleanup — debloat sweep, firewall lockdown, privacy changes, hardening checks — as a single guided pass. Every step reuses the exact actions behind its dedicated tab, and the checklist doubles as a live status dashboard that re-verifies when the pass finishes. For the first hour after a clean Windows install, this is the only tab you need.
+
+### 📡 Attack Surface — close the doors Windows leaves open
+
+One inventory for the network surfaces Windows ships with and never mentions: SSTP tunneling and WAN miniports (remote-access doors), KDNET kernel-debug adapters, hosted-network and Wi-Fi Direct ghost hotspots. Inspect status at a glance, then disable, neuter, or remove each one — with a refresh that keeps the picture honest.
+
+### 🛡 Advanced Firewall — lockdown to home-LAN in seconds
+
+Curated profiles (full lockdown, home-LAN, per-app) applied in one click over the `INetFwPolicy2` COM engine, with a baseline of every rule's enabled state and drift reporting on re-scan. One-click block rules for any IP or executable, from here or from the Process Monitor.
+
+### 📦 Bloatware — 23 apps gone in one confirmation
+
+Twenty-three preinstalled apps (Copilot, Teams, OneDrive, Xbox, Solitaire, Feedback Hub, …) removed in one sweep — OneDrive through its own Win32 uninstaller, Store apps through the deployment engine, and classic OS components like `mstsc.exe` deliberately never offered. Every row carries a **＋ Bloatware / ✓ Bloatware** toggle and a Manage-List dialog, so if you actually use one of them, it never gets touched again; your list persists machine-wide as a delta over the defaults.
+
+### 🧭 Sysmon Audit + 🔍 Process Monitor — every connection, attributed
 
 ![See everything — and know who launched it](Assets/corp_visibility.png)
 
-A live, self-updating grid of outbound connections fed by Sysmon events and a raw-socket sniffer (no WinPcap/Npcap needed), sorted most-recent-traffic-first: a row jumps to the top the moment new packets arrive, and rows silent for 5+ minutes fade so active conversations stand out. Reverse-DNS runs in the background — you read hostnames, not IPs.
+**Sysmon Audit** builds the record Windows doesn't keep: one status card (service state, channel health, events per 24 h, active config hash) with Install / Repair / Apply-Config buttons, and a live feed of every process launch with its full command line and parent — backfilled from the log when you open the tab, so the answer survives hours later. The recommended configuration captures process creations, network connections and DNS queries.
 
-The part Windows cannot do: **attribution that survives process exit.** Short-lived helpers (spawned scripts, one-shot updaters, `taskhostw.exe` DLL hosts) are named, pathed, and tied to the scheduled task that launched them — including *which DLL* a COM-handler task actually executes, and a flag when that DLL no longer exists (classic leftover of uninstalled software). The **Sysmon Audit** tab keeps the record: one status card (service state, channel health, events per 24 h, active config hash) with Install / Repair / Apply-Config buttons, and a live feed of every process launch with its full command line and parent — backfilled from the log when you open the tab, so the answer survives hours later.
+**Process Monitor** turns that record into a live, self-updating grid of outbound connections (with a raw-socket sniffer for packet counters — no WinPcap/Npcap needed), sorted most-recent-traffic-first: a row jumps to the top the moment new packets arrive, and rows silent for 5+ minutes fade. Reverse-DNS runs in the background — you read hostnames, not IPs.
 
-Right-click any row to block its IP or executable in the firewall, kill the process, or inspect/disable the task behind it. Everything exports to CSV.
+The part Windows cannot do: **attribution that survives process exit.** Short-lived helpers (spawned scripts, one-shot updaters, `taskhostw.exe` DLL hosts) are named, pathed, and tied to the scheduled task that launched them — including *which DLL* a COM-handler task actually executes, and a flag when that DLL no longer exists (classic leftover of uninstalled software). Right-click any row to block its IP or executable, kill the process, or inspect/disable the task behind it. Everything exports to CSV.
 
-### ❄ Update Control + 📊 Telemetry — pin versions, silence beacons
+### 📊 Telemetry — real opt-outs, verified quiet
 
 ![Pin the version that works — silence the beacons](Assets/corp_control.png)
 
-**Update Control** discovers self-updating apps on your machine (self-update `.old` leftovers, updater folders, autostart updaters) with their vendor signatures. Freezing one snapshots its permissions (`icacls /save`) and then denies delete/write on the executable: the app runs normally, its updater fails until you unfreeze, and unfreezing restores the original ACL exactly. Windows-signed system binaries are refused outright.
+Scans installed software against a knowledge base of known telemetry senders (Ultralytics YOLO, .NET CLI, PowerShell 7, VS Code, Edge, Chrome, Windows diagnostic data — updatable without a rebuild). Each row shows the on/off state with the exact evidence, applies the **vendor's own documented opt-out** (a settings key, environment variable or policy — never a firewall hack), keeps the previous value snapshotted so one click reverts it, and verifies via the DNS resolver cache that the beacons actually stopped. The first row of that table is ours: AutoCommand's own telemetry is opt-in.
 
-**Telemetry** scans installed software against a knowledge base of known telemetry senders (Ultralytics YOLO, .NET CLI, PowerShell 7, VS Code, Edge, Chrome, Windows diagnostic data — updatable without a rebuild). Each row shows the on/off state with the exact evidence, applies the **vendor's own documented opt-out** (a settings key, environment variable or policy — never a firewall hack), keeps the previous value snapshotted so one click reverts it, and verifies via the DNS resolver cache that the beacons actually stopped. The first row of that table is ours: AutoCommand's own telemetry is opt-in.
+### 👁 Privacy — your choices, visibly in force
 
-### 🛡 Advanced Firewall + 🔒 OS Hardening + ✅ DBX Safety — lock it down, keep it locked
+Disables Microsoft's diagnostic-data task, keeps AutoCommand's own analytics behind an explicit opt-in, and surfaces tamper-protection status — so you can see at a glance whether your choices are still in force.
+
+### ❄ Update Control — pin the version that works
+
+Discovers self-updating apps on your machine (self-update `.old` leftovers, updater folders, autostart updaters) with their vendor signatures. Freezing one snapshots its permissions (`icacls /save`) and then denies delete/write on the executable: the app runs normally, its updater fails until you unfreeze, and unfreezing restores the original ACL exactly. Windows-signed system binaries are refused outright.
+
+### 📋 Tasks · 🚀 Startup · 🌙 Hibernation · 🌐 Connections
+
+Full Task Scheduler control (enable, disable, run, stop, delete), startup-entry management, hibernation posture in one toggle, and an alternate live view of current connections with process attribution and background reverse-DNS.
+
+### 🔒 OS Hardening + ✅ DBX Safety — lock it down, keep it locked
 
 ![Lock it down — and keep it locked](Assets/corp_hardening.png)
 
-Curated firewall profiles (full lockdown, home-LAN, per-app) applied in one click over the `INetFwPolicy2` COM engine, with a baseline of every rule's enabled state and drift reporting. Self-healing guards stop and disable SSTP tunneling and kernel-debug surfaces — and re-assert themselves if something drifts back, with toast alerts. The Secure Boot chain is hashed and watched: every EFI module against a stored baseline, boot-manager checks gated by SHA256 + Authenticode, and Microsoft DBX revocation updates parsed and applied only after explicit confirmation.
+Self-healing guards stop and disable SSTP tunneling and kernel-debug surfaces — and re-assert themselves if something drifts back, with toast alerts from the background Security Enforcer. The Secure Boot chain is hashed and watched: every EFI module against a stored baseline, boot-manager checks gated by SHA256 + Authenticode, and Microsoft DBX revocation updates parsed and applied only after explicit confirmation.
 
-### 🧹 Bloatware + 🚀 Quick Scan — a new PC, cleaned in one pass
+### ⚙ Settings
 
-![A fresh Windows install, cleaned in one pass](Assets/corp_debloat.png)
-
-Twenty-three preinstalled apps (Copilot, Teams, OneDrive, Xbox, Solitaire, Feedback Hub, …) removed in one sweep — OneDrive through its own Win32 uninstaller, Store apps through the deployment engine, and classic OS components like `mstsc.exe` deliberately never offered. Every row carries a **＋ Bloatware / ✓ Bloatware** toggle and a Manage-List dialog, so if you actually use one of them, it never gets touched again; your list persists machine-wide as a delta over the defaults. **Quick Scan** runs the whole first-hour ritual — debloat, firewall lockdown, privacy, hardening — as one guided pass with per-step verification.
-
-### Also on board
-
-📋 **Tasks** (full Task Scheduler control), 🚀 **Startup** entries, 🌙 **Hibernation** posture, ⚙ **Settings** — and a status bar that always tells you whether the background Security Enforcer is active.
+Startup behavior, analytics preference, and live application information — plus a status bar that always tells you whether the background Security Enforcer is active.
 
 ---
 
