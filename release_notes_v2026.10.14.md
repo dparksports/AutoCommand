@@ -20,3 +20,8 @@ Self-contained Windows build — **no .NET installation required**. Unzip and ru
 - Legacy firewall rule names (`AutoCommand IP Block - <ip>`) were mis-parsed during inventory, which would have broken unblock and classification for pre-upgrade rules.
 - Drop-logging detection/enable avoids INetFwPolicy2's parameterized `FirewallProfile` property, which the .NET COM binder cannot dispatch — netsh + registry are used instead (verified live).
 - README documents the new tab order and the Svchost Trace workflow.
+
+## Assets in this release
+
+- **`AutoCommand-v2026.10.14-win-x64.zip`** — the app, now with the Svchost Trace capture engine bundled at `tools\SvchostAnalyzer.exe`. Unzip, run `AutoCommand.exe` as Administrator.
+- **`SvchostAnalyzer-win-x64.zip` + `SHA256SUMS.txt`** — the capture engine standalone, for machines where the app was installed before this release: the Svchost Trace tab detects the missing engine and offers to download and install it automatically (SHA-256 verified against `SHA256SUMS.txt` before anything runs, installed to `%LOCALAPPDATA%\AutoCommand\tools`).

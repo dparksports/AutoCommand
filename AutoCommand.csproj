@@ -53,5 +53,16 @@
     </ItemGroup>
   </Target>
 
+  <!-- Ship the Svchost Trace capture engine inside the app: published as a
+       self-contained single exe into tools\ next to AutoCommand.exe.
+       Skips silently when the sibling svchost-watch checkout is absent
+       (e.g. source builds without it) — the app then offers to download the
+       engine from the matching GitHub release instead. -->
+  <Target Name="PublishCaptureTool" AfterTargets="Publish"
+          Condition="Exists('..\svchost-watch\SvchostAnalyzer\SvchostAnalyzer.csproj')">
+    <Message Importance="high" Text="Publishing SvchostAnalyzer capture engine -> $(PublishDir)tools" />
+    <Exec Command="dotnet publish ..\svchost-watch\SvchostAnalyzer\SvchostAnalyzer.csproj -c $(Configuration) -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o &quot;$(PublishDir)tools&quot;" />
+  </Target>
+
 </Project>
 
