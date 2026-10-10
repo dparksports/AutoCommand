@@ -13,3 +13,4 @@ Plugins/
 publish_out/
 # SecurityEnforcer persisted check cadence (runtime data)
 check_interval.txt
+Assets/icons/
