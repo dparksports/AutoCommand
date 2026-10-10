@@ -24,10 +24,80 @@
                 <TabItem.Header>
                     <StackPanel Width="160" Margin="0,10">
                         <TextBlock Text="⚡" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,4"/>
-                        <TextBlock Text="Fresh Setup" HorizontalAlignment="Center"/>
+                        <TextBlock Text="Quick Scan" HorizontalAlignment="Center"/>
                     </StackPanel>
                 </TabItem.Header>
                 <views:FreshSetupView x:Name="FreshSetupTab"/>
+            </TabItem>
+
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Width="160" Margin="0,10">
+                        <TextBlock Text="📡" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                        <TextBlock Text="Attack Surface" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <views:CommandPanelView x:Name="CommandPanelTab"/>
+            </TabItem>
+
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Width="160" Margin="0,10">
+                        <TextBlock Text="🛡" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                        <TextBlock Text="Firewall" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <views:FirewallSettingsView x:Name="FirewallTab"/>
+            </TabItem>
+
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Width="160" Margin="0,10">
+                        <TextBlock Text="📊" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                        <TextBlock Text="Telemetry" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <views:TelemetryView x:Name="TelemetryTab"/>
+            </TabItem>
+
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Width="160" Margin="0,10">
+                        <TextBlock Text="❄" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                        <TextBlock Text="Update Control" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <views:UpdateControlView x:Name="UpdateControlTab"/>
+            </TabItem>
+
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Width="160" Margin="0,10">
+                        <TextBlock Text="📦" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                        <TextBlock Text="Bloatware" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <views:DefaultAppsView x:Name="DefaultAppsTab"/>
+            </TabItem>
+
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Width="160" Margin="0,10">
+                        <TextBlock Text="📋" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                        <TextBlock Text="Tasks" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <views:TasksView x:Name="TasksTab"/>
+            </TabItem>
+
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Width="160" Margin="0,10">
+                        <TextBlock Text="🚀" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                        <TextBlock Text="Startup" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <views:StartupView x:Name="StartupTab"/>
             </TabItem>
 
             <TabItem>
@@ -63,26 +133,6 @@
             <TabItem>
                 <TabItem.Header>
                     <StackPanel Width="160" Margin="0,10">
-                        <TextBlock Text="📡" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,4"/>
-                        <TextBlock Text="Attack Surface" HorizontalAlignment="Center"/>
-                    </StackPanel>
-                </TabItem.Header>
-                <views:CommandPanelView x:Name="CommandPanelTab"/>
-            </TabItem>
-
-            <TabItem>
-                <TabItem.Header>
-                    <StackPanel Width="160" Margin="0,10">
-                        <TextBlock Text="🛡" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,4"/>
-                        <TextBlock Text="Firewall" HorizontalAlignment="Center"/>
-                    </StackPanel>
-                </TabItem.Header>
-                <views:FirewallSettingsView x:Name="FirewallTab"/>
-            </TabItem>
-
-            <TabItem>
-                <TabItem.Header>
-                    <StackPanel Width="160" Margin="0,10">
                         <TextBlock Text="🔒" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,4"/>
                         <TextBlock Text="OS Hardening" HorizontalAlignment="Center"/>
                     </StackPanel>
@@ -108,56 +158,6 @@
                     </StackPanel>
                 </TabItem.Header>
                 <views:PrivacyView x:Name="PrivacyTab"/>
-            </TabItem>
-
-            <TabItem>
-                <TabItem.Header>
-                    <StackPanel Width="160" Margin="0,10">
-                        <TextBlock Text="📊" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,4"/>
-                        <TextBlock Text="Telemetry" HorizontalAlignment="Center"/>
-                    </StackPanel>
-                </TabItem.Header>
-                <views:TelemetryView x:Name="TelemetryTab"/>
-            </TabItem>
-
-            <TabItem>
-                <TabItem.Header>
-                    <StackPanel Width="160" Margin="0,10">
-                        <TextBlock Text="❄" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,4"/>
-                        <TextBlock Text="Update Control" HorizontalAlignment="Center"/>
-                    </StackPanel>
-                </TabItem.Header>
-                <views:UpdateControlView x:Name="UpdateControlTab"/>
-            </TabItem>
-
-            <TabItem>
-                <TabItem.Header>
-                    <StackPanel Width="160" Margin="0,10">
-                        <TextBlock Text="📦" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,4"/>
-                        <TextBlock Text="Default Apps" HorizontalAlignment="Center"/>
-                    </StackPanel>
-                </TabItem.Header>
-                <views:DefaultAppsView x:Name="DefaultAppsTab"/>
-            </TabItem>
-
-            <TabItem>
-                <TabItem.Header>
-                    <StackPanel Width="160" Margin="0,10">
-                        <TextBlock Text="📋" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,4"/>
-                        <TextBlock Text="Tasks" HorizontalAlignment="Center"/>
-                    </StackPanel>
-                </TabItem.Header>
-                <views:TasksView x:Name="TasksTab"/>
-            </TabItem>
-
-            <TabItem>
-                <TabItem.Header>
-                    <StackPanel Width="160" Margin="0,10">
-                        <TextBlock Text="🚀" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,4"/>
-                        <TextBlock Text="Startup" HorizontalAlignment="Center"/>
-                    </StackPanel>
-                </TabItem.Header>
-                <views:StartupView x:Name="StartupTab"/>
             </TabItem>
 
             <TabItem>

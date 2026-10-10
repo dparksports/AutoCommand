@@ -23,7 +23,7 @@
         <Grid Grid.Row="0" Margin="0,0,0,12">
             <StackPanel>
                 <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="Default Apps &amp; Bloatware" Style="{StaticResource PageHeader}"/>
+                    <TextBlock Text="Bloatware" Style="{StaticResource PageHeader}"/>
                     <Button Content="↻ Refresh List" Margin="20,0,0,0"
                             Style="{StaticResource PrimaryButton}" Click="RefreshBtn_Click"/>
                     <Button x:Name="RemoveBloatwareBtn" Content="🧹 Remove Bloatware" Margin="12,0,0,0"

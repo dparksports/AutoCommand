@@ -35,7 +35,7 @@
                         
                         <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,16,0,0">
                             <TextBlock Text="Developed by:" Foreground="{StaticResource TextSecondaryBrush}" Width="150" VerticalAlignment="Center"/>
-                            <TextBlock Text="Auto-Command Security Tools" VerticalAlignment="Center"/>
+                            <TextBlock Text="Dan Park, magicpoint.ai" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Grid>
                 </Border>

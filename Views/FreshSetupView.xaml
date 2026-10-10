@@ -14,7 +14,7 @@
         <!-- Header -->
         <Grid Grid.Row="0" Margin="0,0,0,12">
             <StackPanel>
-                <TextBlock Text="Fresh Setup" Style="{StaticResource PageHeader}"/>
+                <TextBlock Text="Quick Scan" Style="{StaticResource PageHeader}"/>
                 <TextBlock Text="Everything a fresh Windows 11 install needs, in one pass. Each step reuses the exact actions behind its dedicated page — the checklist doubles as a live status dashboard."
                            Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" Margin="0,6,0,0"
                            TextWrapping="Wrap"/>

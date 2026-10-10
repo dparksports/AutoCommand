@@ -52,11 +52,11 @@ Right-click any row to block its IP or executable in the firewall, kill the proc
 
 Curated firewall profiles (full lockdown, home-LAN, per-app) applied in one click over the `INetFwPolicy2` COM engine, with a baseline of every rule's enabled state and drift reporting. Self-healing guards stop and disable SSTP tunneling and kernel-debug surfaces — and re-assert themselves if something drifts back, with toast alerts. The Secure Boot chain is hashed and watched: every EFI module against a stored baseline, boot-manager checks gated by SHA256 + Authenticode, and Microsoft DBX revocation updates parsed and applied only after explicit confirmation.
 
-### 🧹 Default Apps + 🚀 Fresh Setup — a new PC, cleaned in one pass
+### 🧹 Bloatware + 🚀 Quick Scan — a new PC, cleaned in one pass
 
 ![A fresh Windows install, cleaned in one pass](Assets/corp_debloat.png)
 
-Twenty-three preinstalled apps (Copilot, Teams, OneDrive, Xbox, Solitaire, Feedback Hub, …) removed in one sweep — OneDrive through its own Win32 uninstaller, Store apps through the deployment engine, and classic OS components like `mstsc.exe` deliberately never offered. Every row carries a **＋ Bloatware / ✓ Bloatware** toggle and a Manage-List dialog, so if you actually use one of them, it never gets touched again; your list persists machine-wide as a delta over the defaults. **Fresh Setup** runs the whole first-hour ritual — debloat, firewall lockdown, privacy, hardening — as one guided pass with per-step verification.
+Twenty-three preinstalled apps (Copilot, Teams, OneDrive, Xbox, Solitaire, Feedback Hub, …) removed in one sweep — OneDrive through its own Win32 uninstaller, Store apps through the deployment engine, and classic OS components like `mstsc.exe` deliberately never offered. Every row carries a **＋ Bloatware / ✓ Bloatware** toggle and a Manage-List dialog, so if you actually use one of them, it never gets touched again; your list persists machine-wide as a delta over the defaults. **Quick Scan** runs the whole first-hour ritual — debloat, firewall lockdown, privacy, hardening — as one guided pass with per-step verification.
 
 ### Also on board
 
