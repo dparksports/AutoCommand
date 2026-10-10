@@ -53,6 +53,16 @@
             <TabItem>
                 <TabItem.Header>
                     <StackPanel Width="160" Margin="0,10">
+                        <TextBlock Text="❄" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                        <TextBlock Text="Update Control" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <views:UpdateControlView x:Name="UpdateControlTab"/>
+            </TabItem>
+
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Width="160" Margin="0,10">
                         <TextBlock Text="🔍" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,4"/>
                         <TextBlock Text="Process Monitor" HorizontalAlignment="Center"/>
                     </StackPanel>
@@ -78,16 +88,6 @@
                     </StackPanel>
                 </TabItem.Header>
                 <views:FirewallSettingsView x:Name="FirewallTab"/>
-            </TabItem>
-
-            <TabItem>
-                <TabItem.Header>
-                    <StackPanel Width="160" Margin="0,10">
-                        <TextBlock Text="❄" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,4"/>
-                        <TextBlock Text="Update Control" HorizontalAlignment="Center"/>
-                    </StackPanel>
-                </TabItem.Header>
-                <views:UpdateControlView x:Name="UpdateControlTab"/>
             </TabItem>
 
             <TabItem>
