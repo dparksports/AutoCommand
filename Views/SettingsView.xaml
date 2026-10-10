@@ -35,9 +35,9 @@
                         
                         <!-- Footnote -->
                         <StackPanel Grid.Row="2" Margin="0,16,0,0">
-                            <TextBlock Text="Apache License 2.0"
+                            <TextBlock Text="Made with ❤️ in California"
                                        Foreground="{StaticResource TextSecondaryBrush}" FontSize="11"/>
-                            <TextBlock Text="Made with ❤️ in California" Margin="0,10,0,0"
+                            <TextBlock Text="Apache License 2.0" Margin="0,10,0,0"
                                        Foreground="{StaticResource TextSecondaryBrush}" FontSize="11"/>
                             <TextBlock Text="© 2026 Dan Park, magicpoint.ai" Margin="0,10,0,0"
                                        Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" FontWeight="SemiBold"/>

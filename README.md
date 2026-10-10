@@ -79,9 +79,9 @@ Run the published `AutoCommand.exe` as Administrator — WPF, .NET 10, Windows 1
 
 ## Credits & license
 
-Apache License 2.0
-
 Made with ❤️ in California
+
+Apache License 2.0
 
 © 2026 Dan Park, magicpoint.ai
 
