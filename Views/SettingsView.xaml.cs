@@ -17,6 +17,11 @@ namespace AutoCommand.Views
         public SettingsView()
         {
             InitializeComponent();
+
+            // Live version from the assembly instead of a hardcoded string
+            // (same source as the status bar)
+            VersionValueText.Text =
+                FileVersionInfo.GetVersionInfo(Environment.ProcessPath).ProductVersion ?? "unknown";
         }
 
         private async void UserControl_Loaded(object sender, RoutedEventArgs e)
