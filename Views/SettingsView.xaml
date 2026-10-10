@@ -36,8 +36,9 @@
                         <!-- Footnote -->
                         <TextBlock Grid.Row="2" Margin="0,16,0,0"
                                    Foreground="{StaticResource TextSecondaryBrush}" FontSize="11">
-                            <Run Text="© 2026 Dan Park, magicpoint.ai" FontWeight="SemiBold"/><LineBreak/>
-                            <Run Text="Made with ❤️ in California"/>
+                            <Run Text="Apache License 2.0"/><LineBreak/>
+                            <Run Text="Made with ❤️ in California"/><LineBreak/>
+                            <Run Text="© 2026 Dan Park, magicpoint.ai" FontWeight="SemiBold"/>
                         </TextBlock>
                     </Grid>
                 </Border>
