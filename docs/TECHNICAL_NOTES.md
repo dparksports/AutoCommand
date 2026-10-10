@@ -8,7 +8,7 @@ How AutoCommand delivers what the [README](../README.md) promises: the technolog
 
 1. **Zero-PowerShell core.** Monitoring and mitigation talk to Windows directly — COM, WMI, and P/Invoke — never by spawning `powershell.exe`. Native command-line tools (`powercfg`, `bcdedit`, `schtasks`, `wevtutil`) are used only where Microsoft ships no COM or .NET surface, and always through one audited runner (`Helpers/ProcessRunner.cs`).
    *The one documented exception:* applying DBX updates uses the `Set-SecureBootUEFI` PowerShell cmdlet, because Microsoft provides no native C# API for UEFI Secure Boot variable writes.
-2. **Nothing runs without you.** Bloatware removal, firewall profile applies, and DBX updates all confirm first; AI-generated commands are shown for explicit approval before execution.
+2. **Nothing runs without you.** Bloatware removal, firewall profile applies, and DBX updates all confirm first.
 3. **Non-removable means non-offered.** System-signed OS components are filtered out of the Default Apps list and are never offered by bloatware removal — by design, not by configuration.
 4. **Verified downloads.** Auto-downloaded tools (Sysinternals `sigcheck64.exe`) must pass both a logged SHA256 check and a native `WinVerifyTrust` Authenticode verification; anything else is deleted, never executed.
 5. **Plain, inspectable state.** User preferences live in readable JSON and text files (listed at the end), so you can back up, diff, or edit everything the app remembers.
@@ -86,14 +86,7 @@ How AutoCommand delivers what the [README](../README.md) promises: the technolog
 
 ### AI Assistant
 
-> The dedicated AI chat tab is currently disabled in the UI; these services remain in force behind the status-bar **AI Security Audit** button and the proactive per-tab insight bar.
-
-| Concern | Technology |
-|---|---|
-| Cloud engine | Gemini REST API; the API key is stored locally, never bundled |
-| Local engine | `LLamaSharp` running GGUF models on CPU or CUDA 12 — works air-gapped |
-| Context | Every page implements `IAiAuditable`, serializing its live state (rules, packages, rows, boot files) into the prompt |
-| Safety | Generated commands are displayed for approval; execution goes through the same native runner as everything else |
+> Removed in v2026.10.12 — the audit/insight feature is being rethought. The per-tab state serialization it used (`IAiAuditable.GetAuditContext()` in every view) is intentionally kept in the codebase as the foundation for whatever replaces it.
 
 ### Platform
 * **.NET 10 (WPF)** front end; WebView2 hosts the opt-in Firebase Analytics page only.
@@ -116,4 +109,4 @@ How AutoCommand delivers what the [README](../README.md) promises: the technolog
 | `<app>\update_freeze.json` + `freeze_backups\` | Frozen self-updaters and their ACL snapshots |
 | `<app>\telemetry_state.json` | Snapshots of the settings changed by telemetry opt-outs |
 
-Telemetry is **opt-in** and limited to the Firebase JS SDK inside a sandboxed WebView2 control; the local LLM and Gemini paths send nothing anywhere by themselves.
+Telemetry is **opt-in** and limited to the Firebase JS SDK inside a sandboxed WebView2 control; nothing else in the app sends data anywhere on its own.

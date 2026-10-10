@@ -58,12 +58,6 @@ Curated firewall profiles (full lockdown, home-LAN, per-app) applied in one clic
 
 Twenty-three preinstalled apps (Copilot, Teams, OneDrive, Xbox, Solitaire, Feedback Hub, …) removed in one sweep — OneDrive through its own Win32 uninstaller, Store apps through the deployment engine, and classic OS components like `mstsc.exe` deliberately never offered. Every row carries a **＋ Bloatware / ✓ Bloatware** toggle and a Manage-List dialog, so if you actually use one of them, it never gets touched again; your list persists machine-wide as a delta over the defaults. **Fresh Setup** runs the whole first-hour ritual — debloat, firewall lockdown, privacy, hardening — as one guided pass with per-step verification.
 
-### ✨ AI Security Audit — explains, never acts alone
-
-![AI that explains — and never acts alone](Assets/corp_ai.png)
-
-The status-bar **AI Security Audit** button and per-tab insight bar serialize each page's live state and get an expert read-back: cloud (Gemini) or fully local (LLamaSharp on your own CPU/CUDA — air-gapped works). Generated commands are shown for explicit approval before anything executes. *(The dedicated AI chat tab is currently disabled in the UI; the audit and insight paths are the supported surface.)*
-
 ### Also on board
 
 📋 **Tasks** (full Task Scheduler control), 🚀 **Startup** entries, 🌙 **Hibernation** posture, ⚙ **Settings** — and a status bar that always tells you whether the background Security Enforcer is active.

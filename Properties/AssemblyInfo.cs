@@ -5,9 +5,9 @@ using System.Runtime.Versioning;
 // from the running exe. Keep this in sync with <Version> in AutoCommand.csproj
 // on every release (GenerateAssemblyInfo is disabled for the WPF designer, so
 // the csproj value alone does not reach the binary).
-[assembly: AssemblyVersion("2026.10.11.0")]
-[assembly: AssemblyFileVersion("2026.10.11.0")]
-[assembly: AssemblyInformationalVersion("2026.10.11")]
+[assembly: AssemblyVersion("2026.10.12.0")]
+[assembly: AssemblyFileVersion("2026.10.12.0")]
+[assembly: AssemblyInformationalVersion("2026.10.12")]
 
 // AutoCommand is a Windows-only WPF application.
 // Declaring the assembly target here satisfies the CA1416 platform-compatibility

@@ -8,7 +8,6 @@ Outputs (Assets/):
   corp_control.png     Update Control + Telemetry
   corp_hardening.png   Firewall + guards + Secure Boot/DBX
   corp_debloat.png     Default Apps + Fresh Setup
-  corp_ai.png          AI audit flow
 Requires: matplotlib, numpy
 """
 import os
@@ -408,41 +407,6 @@ def corp_debloat():
 
 
 # ---------------------------------------------------------------------------
-def corp_ai():
-    w, h = 1500, 780
-    fig, ax = canvas(w, h)
-    page_header(ax, w, "AI Security Audit",
-                "AI that explains — and never acts alone",
-                "Every page can be read back by an expert model, or run fully local and air-gapped.")
-
-    boxes = [
-        ("Every tab reports live state", "Rules, packages, rows and boot\nfiles serialized into the\nprompt (IAiAuditable).", ACCENT),
-        ("Your engine, your choice", "Gemini in the cloud — or\nLLamaSharp on your own\nCPU / CUDA, fully offline.", ACCENT),
-        ("Drafted, shown, approved", "Generated commands shown\nfor your explicit approval\nbefore anything executes.", ACCENT),
-        ("One audited runner", "Execution through the same\nnative, zero-PowerShell\nrunner as every feature.", ACCENT),
-    ]
-    x0, y0, cw, ch, gap = 56, 190, 330, 220, 16
-    for i, (t, body, accent) in enumerate(boxes):
-        x = x0 + i * (cw + gap)
-        card(ax, x, y0, cw, ch, face=SURFACE, bar=accent)
-        ax.text(x + 24, y0 + 38, t, fontsize=13.5, color=NAVY, fontweight="bold", va="center")
-        ax.text(x + 24, y0 + 128, body, fontsize=11.3, color=MUTED, va="center", linespacing=1.55)
-        if i < 3:
-            arrow_right(ax, y0 + ch / 2, x + cw + 2, x + cw + gap - 4)
-
-    card(ax, 56, 470, 1388, 120, face=GREEN_SOFT, edge="#BFE0CC", bar=GREEN)
-    ax.text(88, 510, "✓  Nothing runs without you.", fontsize=17, color=GREEN, fontweight="bold", va="center")
-    ax.text(88, 548, "The dedicated chat tab is currently disabled in the UI — the status-bar AI Security Audit\nbutton and the per-tab insight bar are the supported surface.", fontsize=11.8, color=INK, va="center", linespacing=1.45)
-
-    chip(ax, 56, 646, "API keys stay local — never bundled", face=SURFACE, color=INK, size=11.5)
-    chip(ax, 400, 646, "Local engine works air-gapped", face=SURFACE, color=INK, size=11.5)
-    chip(ax, 700, 646, "The app's own telemetry is opt-in and off by default", face=SURFACE, color=INK, size=11.5)
-
-    footer(ax, w, h, "An expert second opinion on every page")
-    fig.savefig(os.path.join(OUT, "corp_ai.png"), dpi=150)
-    plt.close(fig)
-
-
 # ---------------------------------------------------------------------------
 if __name__ == "__main__":
     corp_banner()
@@ -451,5 +415,4 @@ if __name__ == "__main__":
     corp_control()
     corp_hardening()
     corp_debloat()
-    corp_ai()
     print("Corporate infographics written to", OUT)
