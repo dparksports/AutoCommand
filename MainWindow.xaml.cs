@@ -148,7 +148,7 @@ namespace AutoCommand
             }
             else
             {
-                MessageBox.Show($"{_currentThreatType}\n\n{_currentThreatDetails}\n\nPlease check the Command Panel for more details.", "Security Alert", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show($"{_currentThreatType}\n\n{_currentThreatDetails}\n\nPlease check the Attack Surface tab for more details.", "Security Alert", MessageBoxButton.OK, MessageBoxImage.Information);
                 ReviewAlertBtn.Visibility = Visibility.Collapsed;
             }
         }

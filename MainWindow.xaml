@@ -26,7 +26,7 @@
                 <TabItem.Header>
                     <StackPanel Width="160" Margin="0,10">
                         <TextBlock Text="⚡" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,4"/>
-                        <TextBlock Text="One-Click Setup" HorizontalAlignment="Center"/>
+                        <TextBlock Text="Fresh Setup" HorizontalAlignment="Center"/>
                     </StackPanel>
                 </TabItem.Header>
                 <views:FreshSetupView x:Name="FreshSetupTab"/>
@@ -35,13 +35,43 @@
             <TabItem>
                 <TabItem.Header>
                     <StackPanel Width="160" Margin="0,10">
-                        <TextBlock Text="🏠" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,4"/>
-                        <TextBlock Text="Command Panel" HorizontalAlignment="Center"/>
+                        <TextBlock Text="🧭" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                        <TextBlock Text="Sysmon Audit" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <views:SysmonStatusView x:Name="SysmonTab"/>
+            </TabItem>
+
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Width="160" Margin="0,10">
+                        <TextBlock Text="🔍" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                        <TextBlock Text="Process Monitor" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <views:SvchostMonitorView x:Name="SvchostTab"/>
+            </TabItem>
+
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Width="160" Margin="0,10">
+                        <TextBlock Text="🌐" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                        <TextBlock Text="Connections" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <views:ConnectionsView x:Name="ConnectionsTab"/>
+            </TabItem>
+
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Width="160" Margin="0,10">
+                        <TextBlock Text="📡" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                        <TextBlock Text="Attack Surface" HorizontalAlignment="Center"/>
                     </StackPanel>
                 </TabItem.Header>
                 <views:CommandPanelView x:Name="CommandPanelTab"/>
             </TabItem>
-            
+
             <TabItem>
                 <TabItem.Header>
                     <StackPanel Width="160" Margin="0,10">
@@ -49,8 +79,27 @@
                         <TextBlock Text="Firewall" HorizontalAlignment="Center"/>
                     </StackPanel>
                 </TabItem.Header>
-                <!-- Grouping multiple security views into one layout would be complex, keeping them separate but reordered for now -->
                 <views:FirewallSettingsView x:Name="FirewallTab"/>
+            </TabItem>
+
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Width="160" Margin="0,10">
+                        <TextBlock Text="🔒" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                        <TextBlock Text="OS Hardening" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <views:HardeningView x:Name="HardeningTab"/>
+            </TabItem>
+
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Width="160" Margin="0,10">
+                        <TextBlock Text="✅" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                        <TextBlock Text="DBX Safety" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </TabItem.Header>
+                <views:DbxSafetyView x:Name="DbxTab"/>
             </TabItem>
 
             <TabItem>
@@ -82,55 +131,15 @@
                 </TabItem.Header>
                 <views:UpdateControlView x:Name="UpdateControlTab"/>
             </TabItem>
-            
-            <TabItem>
-                <TabItem.Header>
-                    <StackPanel Width="160" Margin="0,10">
-                        <TextBlock Text="🔒" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,4"/>
-                        <TextBlock Text="OS Hardening" HorizontalAlignment="Center"/>
-                    </StackPanel>
-                </TabItem.Header>
-                <views:HardeningView x:Name="HardeningTab"/>
-            </TabItem>
 
             <TabItem>
                 <TabItem.Header>
                     <StackPanel Width="160" Margin="0,10">
-                        <TextBlock Text="✅" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,4"/>
-                        <TextBlock Text="DBX Safety" HorizontalAlignment="Center"/>
+                        <TextBlock Text="📦" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                        <TextBlock Text="Default Apps" HorizontalAlignment="Center"/>
                     </StackPanel>
                 </TabItem.Header>
-                <views:DbxSafetyView x:Name="DbxTab"/>
-            </TabItem>
-
-            <TabItem>
-                <TabItem.Header>
-                    <StackPanel Width="160" Margin="0,10">
-                        <TextBlock Text="🌐" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,4"/>
-                        <TextBlock Text="Connections" HorizontalAlignment="Center"/>
-                    </StackPanel>
-                </TabItem.Header>
-                <views:ConnectionsView x:Name="ConnectionsTab"/>
-            </TabItem>
-
-            <TabItem>
-                <TabItem.Header>
-                    <StackPanel Width="160" Margin="0,10">
-                        <TextBlock Text="🧭" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,4"/>
-                        <TextBlock Text="Sysmon Audit" HorizontalAlignment="Center"/>
-                    </StackPanel>
-                </TabItem.Header>
-                <views:SysmonStatusView x:Name="SysmonTab"/>
-            </TabItem>
-
-            <TabItem>
-                <TabItem.Header>
-                    <StackPanel Width="160" Margin="0,10">
-                        <TextBlock Text="🔍" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,4"/>
-                        <TextBlock Text="Process Monitor" HorizontalAlignment="Center"/>
-                    </StackPanel>
-                </TabItem.Header>
-                <views:SvchostMonitorView x:Name="SvchostTab"/>
+                <views:DefaultAppsView x:Name="DefaultAppsTab"/>
             </TabItem>
 
             <TabItem>
@@ -161,16 +170,6 @@
                     </StackPanel>
                 </TabItem.Header>
                 <views:HibernationView x:Name="HibernationTab"/>
-            </TabItem>
-
-            <TabItem>
-                <TabItem.Header>
-                    <StackPanel Width="160" Margin="0,10">
-                        <TextBlock Text="📦" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,4"/>
-                        <TextBlock Text="Default Apps" HorizontalAlignment="Center"/>
-                    </StackPanel>
-                </TabItem.Header>
-                <views:DefaultAppsView x:Name="DefaultAppsTab"/>
             </TabItem>
 
             <TabItem>
