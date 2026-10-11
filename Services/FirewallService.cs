@@ -314,6 +314,8 @@ namespace AutoCommand.Services
 
         /// <summary>
         /// Adds TCP and UDP block rules (inbound and outbound) for a specific remote IP address.
+        /// Legacy 4-rule scheme — creates rules with the caller-supplied name. Prefer
+        /// AddIpBlockAsync for new blocks (2-rule v2 scheme, AC-BLOCK naming).
         /// </summary>
         public Task AddBlockRuleForIpAsync(string remoteIp, string ruleName)
         {

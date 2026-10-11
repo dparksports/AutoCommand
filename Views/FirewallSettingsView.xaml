@@ -59,6 +59,9 @@
             <Button x:Name="PauseEnforcementBtn" Content="⏸ Pause auto-fix (15 min)" Margin="12,0,0,0"
                     Style="{StaticResource PrimaryButton}" Click="PauseEnforcementBtn_Click"
                     ToolTip="Suspend baseline enforcement for 15 minutes while you edit rules externally (wf.msc / netsh). Re-baseline afterwards to adopt your changes."/>
+            <Button x:Name="RenameLegacyBtn" Content="✏️ Rename legacy blocks" Margin="12,0,0,0"
+                    Style="{StaticResource PrimaryButton}" Click="RenameLegacyBtn_Click" IsEnabled="False"
+                    ToolTip="Recreate AutoCommand block rules still using the legacy 'AutoCommand IP Block / Process Block' names under the current AC-BLOCK naming. Lossless: descriptions carry over, redundant inbound duplicates are removed, protection unchanged."/>
             <TextBlock x:Name="BaselineStatusText" Text="" Foreground="{DynamicResource TextSecondaryBrush}"
                        Margin="12,0,0,0" VerticalAlignment="Center" FontSize="11"/>
             <ProgressBar x:Name="ProfileProgress" Width="120" Height="14" IsIndeterminate="True"

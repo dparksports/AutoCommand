@@ -294,14 +294,19 @@ namespace AutoCommand.Views
                 return;
             }
 
-            if (MessageBox.Show($"Block all traffic to remote IP '{ip}' (contacted by '{item.ProcessName}') in Windows Firewall?\n\n" +
-                                "Four rules are created: TCP/UDP, inbound and outbound.",
-                "Confirm Block", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes) return;
+            string warning = Services.IpClassifier.WarningText(ip);
+            string confirm = $"{warning}Block all traffic to remote IP '{ip}' (contacted by '{item.ProcessName}')?\n\n" +
+                             "2 rules are created: outbound TCP and UDP. Inbound is already covered by the\n" +
+                             "firewall's stateful filtering — this avoids the old 4-rule clutter.\n" +
+                             "Undo anytime via the Blocked list (Svchost Monitor → Blocked → Manage all).";
+            if (MessageBox.Show(confirm, "Confirm Block",
+                    MessageBoxButton.YesNo, warning.Length > 0 ? MessageBoxImage.Warning : MessageBoxImage.Question) != MessageBoxResult.Yes) return;
 
             try
             {
-                await FirewallService.Instance.AddBlockRuleForIpAsync(ip, $"AutoCommand IP Block - {ip}");
-                MessageBox.Show($"Successfully blocked remote IP:\n{ip}\n\n(TCP/UDP, inbound and outbound)", "Blocked", MessageBoxButton.OK, MessageBoxImage.Information);
+                string note = $"[blocked {DateTime.UtcNow:yyyy-MM-dd HH:mm} UTC] {item.ProcessName} PID {item.ProcessId} → {ip} · AutoCommand Connections Monitor";
+                await FirewallService.Instance.AddIpBlockAsync(ip, note);
+                MessageBox.Show($"Successfully blocked remote IP:\n{ip}\n\n(outbound TCP and UDP)", "Blocked", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
@@ -336,7 +341,8 @@ namespace AutoCommand.Views
             {
                 try
                 {
-                    await FirewallService.Instance.AddBlockRuleForIpAsync(ip, $"AutoCommand IP Block - {ip}");
+                    string note = $"[blocked {DateTime.UtcNow:yyyy-MM-dd HH:mm} UTC] {item.ProcessName} PID {item.ProcessId} → {ip} · AutoCommand Connections Monitor";
+                    await FirewallService.Instance.AddIpBlockAsync(ip, note);
                     blocked++;
                 }
                 catch (Exception ex) { errors.Add($"{ip}: {ex.Message}"); }

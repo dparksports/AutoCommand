@@ -68,6 +68,42 @@ namespace AutoCommand.Views
             await UpdateBaselineStatusAsync();
         }
 
+        private async void RenameLegacyBtn_Click(object sender, RoutedEventArgs e)
+        {
+            if (MessageBox.Show(
+                    "Block rules still using the legacy \"AutoCommand IP Block / Process Block\" names will be\n" +
+                    "recreated under the current AC-BLOCK naming scheme.\n\n" +
+                    "• Lossless — descriptions (provenance) carry over\n" +
+                    "• Redundant inbound duplicates are removed (covered by stateful filtering)\n" +
+                    "• Protection is unchanged\n" +
+                    "• The baseline is re-captured afterwards so the enforcer doesn't flag the new names",
+                    "Rename legacy blocks", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes) return;
+
+            RenameLegacyBtn.IsEnabled = false;
+            ProfileStatusText.Text = "Renaming legacy block rules…";
+            try
+            {
+                var (targets, removedIn, migrated) = await FirewallService.Instance.ConsolidateLegacyIpBlocksAsync();
+
+                // Names changed — re-capture so the enforcer doesn't report the new
+                // AC-BLOCK names as drift (the baseline is keyed by rule name)
+                var (count, at) = await FirewallBaselineManager.CaptureBaselineAsync();
+                BaselineStatusText.Text = $"Baseline: {count} rules (captured {at:yyyy-MM-dd HH:mm})";
+
+                ProfileStatusText.Text = $"Renamed legacy rules across {targets} target(s): "
+                                         + $"{migrated} migrated to AC-BLOCK naming, {removedIn} redundant inbound rule(s) removed.";
+            }
+            catch (Exception ex)
+            {
+                ProfileStatusText.Text = $"Rename failed: {ex.Message}";
+                MessageBox.Show($"Failed to rename legacy block rules: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                await LoadRules(); // refresh the grid and the button's enabled state
+            }
+        }
+
         private async void FilterChanged(object sender, RoutedEventArgs e) => await LoadRules();
 
         private async Task LoadRules()
@@ -89,6 +125,12 @@ namespace AutoCommand.Views
             int enabled = _currentRules.Count(r => r.Enabled);
             string dir = direction == 1 ? "Inbound" : "Outbound";
             RuleCountText.Text = $"{_currentRules.Count} {dir} rules ({enabled} enabled)";
+
+            int legacy = await FirewallService.Instance.CountLegacyBlocksAsync();
+            RenameLegacyBtn.IsEnabled = legacy > 0;
+            RenameLegacyBtn.ToolTip = legacy == 0
+                ? "No legacy-named AutoCommand block rules — nothing to rename."
+                : $"{legacy} legacy-named AutoCommand block rule(s) found. Click to rename them to the current AC-BLOCK scheme.";
         }
 
         private async void ToggleRule_Click(object sender, RoutedEventArgs e)
