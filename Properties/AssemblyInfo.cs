@@ -1,13 +1,10 @@
-using System.Reflection;
 using System.Runtime.Versioning;
 
-// Release version — the status bar reads ProductVersion (InformationalVersion)
-// from the running exe. Keep this in sync with <Version> in AutoCommand.csproj
-// on every release (GenerateAssemblyInfo is disabled for the WPF designer, so
-// the csproj value alone does not reach the binary).
-[assembly: AssemblyVersion("2026.10.13.0")]
-[assembly: AssemblyFileVersion("2026.10.13.0")]
-[assembly: AssemblyInformationalVersion("2026.10.13")]
+// Assembly version attributes (AssemblyVersion / FileVersion / InformationalVersion)
+// are GENERATED at build time from <Version> in AutoCommand.csproj by the
+// GenerateVersionAssemblyInfo target — the csproj is the single source of truth.
+// GenerateAssemblyInfo stays false (WPF designer CS0579 workaround), so never add
+// these attributes back to this file by hand.
 
 // AutoCommand is a Windows-only WPF application.
 // Declaring the assembly target here satisfies the CA1416 platform-compatibility

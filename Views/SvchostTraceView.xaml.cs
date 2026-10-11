@@ -510,7 +510,9 @@ namespace AutoCommand.Views
         /// </summary>
         private async Task<string> DownloadCaptureToolAsync()
         {
-            string ver = "v" + (System.Reflection.Assembly.GetEntryAssembly()?.GetName().Version?.ToString(3) ?? "2026.10.14");
+            // ProductVersion (= InformationalVersion) matches the release tag
+            // exactly; AssemblyVersion alone lags when AssemblyInfo.cs drifts
+            string ver = "v" + (FileVersionInfo.GetVersionInfo(Environment.ProcessPath).ProductVersion ?? "unknown");
             string baseUrl = $"https://github.com/dparksports/autocommand-windows/releases/download/{ver}";
             string zipPath = Path.Combine(Path.GetTempPath(), "SvchostAnalyzer-win-x64.zip");
             try

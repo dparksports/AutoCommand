@@ -53,6 +53,34 @@
     </ItemGroup>
   </Target>
 
+  <!-- ── Versioning: <Version> above is the single source of truth ──
+       GenerateAssemblyInfo stays false (WPF designer CS0579 workaround), so this
+       target generates the assembly version attributes from <Version> into obj\
+       at build time. Properties\AssemblyInfo.cs deliberately carries none — never
+       hand-add AssemblyVersion/FileVersion/InformationalVersion anywhere; bump
+       <Version> and everything (binary, tag, zips, release title via release.ps1)
+       follows. -->
+  <Target Name="GenerateVersionAssemblyInfo" BeforeTargets="BeforeCompile">
+    <Error Condition="'$(Version)' == ''"
+           Text="GenerateVersionAssemblyInfo: &lt;Version&gt; is empty — it is the single source of truth and must be set (e.g. 2026.10.15)." />
+    <PropertyGroup>
+      <Version4>$([System.Version]::Parse('$(Version)').ToString()).0</Version4>
+      <GeneratedVersionFile>$(IntermediateOutputPath)GeneratedVersionInfo.cs</GeneratedVersionFile>
+    </PropertyGroup>
+    <MakeDir Directories="$(IntermediateOutputPath)" Condition="!Exists('$(IntermediateOutputPath)')" />
+    <ItemGroup>
+      <GeneratedVersionLines Include="// Auto-generated from &lt;Version&gt; in AutoCommand.csproj — do not edit." />
+      <GeneratedVersionLines Include="using System.Reflection%3B" />
+      <GeneratedVersionLines Include="[assembly: AssemblyVersion(&quot;$(Version4)&quot;)]" />
+      <GeneratedVersionLines Include="[assembly: AssemblyFileVersion(&quot;$(Version4)&quot;)]" />
+      <GeneratedVersionLines Include="[assembly: AssemblyInformationalVersion(&quot;$(Version)&quot;)]" />
+    </ItemGroup>
+    <WriteLinesToFile File="$(GeneratedVersionFile)" Lines="@(GeneratedVersionLines)" Overwrite="true" />
+    <ItemGroup>
+      <Compile Include="$(GeneratedVersionFile)" />
+    </ItemGroup>
+  </Target>
+
   <!-- Ship the Svchost Trace capture engine inside the app: published as a
        self-contained single exe into tools\ next to AutoCommand.exe.
        Skips silently when the sibling svchost-watch checkout is absent

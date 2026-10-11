@@ -20,7 +20,7 @@ namespace AutoCommand
         private TrayNotifier _trayNotifier;
 
         private static string AppVersion =>
-            FileVersionInfo.GetVersionInfo(Environment.ProcessPath).ProductVersion ?? "3.7.0";
+            FileVersionInfo.GetVersionInfo(Environment.ProcessPath).ProductVersion ?? "unknown";
 
         public MainWindow()
         {
